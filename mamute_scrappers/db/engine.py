@@ -14,10 +14,30 @@ from sqlalchemy.orm import Session, sessionmaker
 
 # Garante leitura do arquivo .env mesmo quando o comando é executado de subpastas.
 BASE_DIR = Path(__file__).resolve().parents[2]
-load_dotenv(BASE_DIR / ".env", override=False)
+CURRENT_DIR = Path(__file__).resolve().parent
+
+ENV_CANDIDATES = [
+    BASE_DIR / ".env",
+    BASE_DIR / "@.env",
+    CURRENT_DIR.parent / ".env",
+    CURRENT_DIR.parent / "@.env",
+    CURRENT_DIR / ".env",
+    CURRENT_DIR / "@.env",
+    Path.cwd() / ".env",
+    Path.cwd() / "@.env",
+]
+
+for env_file in ENV_CANDIDATES:
+    if env_file.exists():
+        load_dotenv(env_file, override=False)
 
 APPLICATION_NAME = os.getenv("APPLICATION_NAME", "MAMUTE_POLITICO_CRAWLER")
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./mamute.db")
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL não definido. Ajuste o arquivo .env ou exporte a variável antes de executar."
+    )
 
 
 def _str_to_bool(value: Optional[str], default: bool = False) -> bool:
@@ -33,11 +53,16 @@ CONNECT_ARGS: dict[str, str] = {}
 if DATABASE_URL.startswith("postgresql"):
     CONNECT_ARGS["application_name"] = APPLICATION_NAME
 
+create_engine_kwargs = {
+    "echo": SQLALCHEMY_ECHO,
+    "future": True,
+}
+if CONNECT_ARGS:
+    create_engine_kwargs["connect_args"] = CONNECT_ARGS
+
 engine: Engine = create_engine(
     DATABASE_URL,
-    echo=SQLALCHEMY_ECHO,
-    future=True,
-    connect_args=CONNECT_ARGS or None,
+    **create_engine_kwargs,
 )
 
 SessionLocal: sessionmaker[Session] = sessionmaker(
