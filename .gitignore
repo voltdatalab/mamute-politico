@@ -3,3 +3,4 @@ __pycache__/
 .env
 mamute_scrappers/.env
 api/.env
+api/.venv/
