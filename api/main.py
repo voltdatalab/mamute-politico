@@ -1,9 +1,31 @@
 """Aplicação FastAPI para exposição dos dados coletados."""
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import parliamentarians, propositions
+try:
+    # Permite execução como pacote (api.main).
+    from .routers import (
+        authors_proposition,
+        parliamentarians,
+        propositions,
+        roll_call_votes,
+        speeches_transcripts,
+        speeches_transcripts_proposition,
+    )
+    from .security import verify_token
+except ImportError:
+    # Permite execução dentro do diretório api/ (python main.py / uvicorn main:app).
+    from routers import (
+        authors_proposition,
+        parliamentarians,
+        propositions,
+        roll_call_votes,
+        speeches_transcripts,
+        speeches_transcripts_proposition,
+    )
+    from security import verify_token
 
 
 def create_app() -> FastAPI:
@@ -22,8 +44,75 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.include_router(parliamentarians.router)
-    app.include_router(propositions.router)
+    auth_dependencies = [Depends(verify_token)]
+
+    app.include_router(parliamentarians.router, dependencies=auth_dependencies)
+    app.include_router(propositions.router, dependencies=auth_dependencies)
+    app.include_router(authors_proposition.router, dependencies=auth_dependencies)
+    app.include_router(roll_call_votes.router, dependencies=auth_dependencies)
+    app.include_router(speeches_transcripts.router, dependencies=auth_dependencies)
+    app.include_router(
+        speeches_transcripts_proposition.router, dependencies=auth_dependencies
+    )
+
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    def read_root() -> str:
+        return """
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+            <head>
+                <meta charset="utf-8" />
+                <title>Mamute Político API</title>
+                <style>
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                        background: #0f172a;
+                        color: #e2e8f0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 100vh;
+                        margin: 0;
+                    }
+                    .card {
+                        background: rgba(15, 23, 42, 0.75);
+                        border: 1px solid rgba(148, 163, 184, 0.3);
+                        border-radius: 16px;
+                        padding: 32px;
+                        max-width: 560px;
+                        text-align: center;
+                        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.4);
+                    }
+                    h1 {
+                        margin-top: 0;
+                        font-size: 2.2rem;
+                    }
+                    p {
+                        line-height: 1.6;
+                        margin: 16px 0 24px;
+                    }
+                    a {
+                        color: #38bdf8;
+                        text-decoration: none;
+                        font-weight: 600;
+                    }
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                </style>
+            </head>
+            <body>
+                <main class="card">
+                    <h1>Bem-vindo à Mamute Político API</h1>
+                    <p>
+                        Consulte a documentação interativa em
+                        <a href="/docs">/docs</a> ou acesse o schema JSON em
+                        <a href="/openapi.json">/openapi.json</a>.
+                    </p>
+                </main>
+            </body>
+        </html>
+        """
 
     return app
 
