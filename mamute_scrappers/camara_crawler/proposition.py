@@ -1,0 +1,762 @@
+"""Raspador de proposições de parlamentares da Câmara dos Deputados (API REST)."""
+
+from __future__ import annotations
+
+import json
+import logging
+import sys
+import time
+from datetime import date, datetime, timedelta
+from pathlib import Path
+from typing import (
+    Any,
+    Callable,
+    ContextManager,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    TYPE_CHECKING,
+    TypedDict,
+)
+
+import requests
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+logger = logging.getLogger(__name__)
+
+CAMARA_API_BASE_URL = "https://dadosabertos.camara.leg.br/api/v2"
+CAMARA_PROPOSICOES_ENDPOINT = f"{CAMARA_API_BASE_URL}/proposicoes"
+CAMARA_PROPOSICAO_WEB_URL = "https://www.camara.leg.br/proposicoesWeb/fichadetramitacao"
+
+REQUEST_DELAY = 0.5  # Delay entre requests de detalhes (segundos)
+PAGE_SIZE = 100
+
+if TYPE_CHECKING:  # pragma: no cover - apenas para tipagem
+    from mamute_scrappers.db.models import (
+        Agency as AgencyModel,
+        AuthorsProposition as AuthorsPropositionModel,
+        Parliamentarian as ParliamentarianModel,
+        Proposition as PropositionModel,
+        PropositionStatus as PropositionStatusModel,
+        PropositionType as PropositionTypeModel,
+    )
+    from mamute_scrappers.db.session import session_scope as session_scope_type
+
+    SessionScopeCallable = Callable[[], ContextManager["Session"]]
+else:
+    AgencyModel = Any
+    AuthorsPropositionModel = Any
+    ParliamentarianModel = Any
+    PropositionModel = Any
+    PropositionStatusModel = Any
+    PropositionTypeModel = Any
+    SessionScopeCallable = Callable[[], ContextManager[Session]]
+
+Proposition: Any = None
+AuthorsProposition: Any = None
+Parliamentarian: Any = None
+PropositionType: Any = None
+PropositionStatus: Any = None
+Agency: Any = None
+_SESSION_SCOPE: Optional[SessionScopeCallable] = None
+
+
+class PropositionPayload(TypedDict, total=False):
+    proposition_code: int
+    title: Optional[str]
+    link: Optional[str]
+    proposition_acronym: Optional[str]
+    proposition_number: Optional[int]
+    presentation_year: Optional[int]
+    presentation_date: Optional[date]
+    presentation_month: Optional[int]
+    current_status: Optional[str]
+    summary: Optional[str]
+    proposition_description: Optional[str]
+    details: Dict[str, Any]
+    agency_code: Optional[int]
+    proposition_type_code: Optional[str]
+    author_codes: List[int]
+
+
+PROPOSITION_MUTABLE_FIELDS = [
+    "title",
+    "link",
+    "proposition_acronym",
+    "proposition_number",
+    "presentation_year",
+    "presentation_date",
+    "presentation_month",
+    "current_status",
+    "summary",
+    "proposition_description",
+    "details",
+]
+
+
+def _ensure_db_dependencies() -> None:
+    global Proposition, AuthorsProposition, Parliamentarian, PropositionType, PropositionStatus, Agency, _SESSION_SCOPE
+    if _SESSION_SCOPE is not None:
+        return
+
+    try:
+        from mamute_scrappers.db.models import (
+            Agency as AgencyModelRuntime,
+            AuthorsProposition as AuthorsPropositionModelRuntime,
+            Parliamentarian as ParliamentarianModelRuntime,
+            Proposition as PropositionModelRuntime,
+            PropositionStatus as PropositionStatusModelRuntime,
+            PropositionType as PropositionTypeModelRuntime,
+        )
+        from mamute_scrappers.db.session import session_scope as session_scope_runtime
+    except ImportError as exc:  # pragma: no cover - depende do ambiente
+        raise RuntimeError("Não foi possível carregar dependências de banco.") from exc
+
+    Proposition = PropositionModelRuntime
+    AuthorsProposition = AuthorsPropositionModelRuntime
+    Parliamentarian = ParliamentarianModelRuntime
+    PropositionType = PropositionTypeModelRuntime
+    PropositionStatus = PropositionStatusModelRuntime
+    Agency = AgencyModelRuntime
+    _SESSION_SCOPE = session_scope_runtime
+
+
+def _normalize_text(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    cleaned = " ".join(value.split())
+    return cleaned or None
+
+
+def _coerce_text(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return _normalize_text(value)
+    return _normalize_text(str(value))
+
+
+def _parse_int(value: Any) -> Optional[int]:
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def _parse_date(value: Any) -> Optional[date]:
+    text = _coerce_text(value)
+    if not text:
+        return None
+    for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def _ensure_list(value: Any) -> List[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def _request_json(url: str, *, params: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+    headers = {"Accept": "application/json"}
+    try:
+        response = requests.get(url, params=params, headers=headers, timeout=30)
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        logger.error("Falha ao consultar %s: %s", url, exc)
+        return None
+
+    try:
+        data = response.json()
+    except ValueError as exc:
+        logger.error("Erro ao parsear JSON da Câmara (%s): %s", url, exc)
+        return None
+
+    if not isinstance(data, dict):
+        logger.error("Resposta JSON inesperada da Câmara (%s): tipo %s", url, type(data))
+        return None
+
+    return data
+
+
+def _get_last_proposition_date(session: Session, year_start: int) -> Optional[date]:
+    """Busca a data da última proposição salva no banco."""
+    if Proposition is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    last_proposition = (
+        session.query(Proposition)
+        .filter(Proposition.presentation_year >= year_start)
+        .filter(Proposition.presentation_date.isnot(None))
+        .order_by(Proposition.presentation_date.desc())
+        .first()
+    )
+
+    if last_proposition and last_proposition.presentation_date:
+        return last_proposition.presentation_date
+
+    return None
+
+
+def _fetch_propositions_list(
+    year: int,
+    page: int = 1,
+) -> Optional[Dict[str, Any]]:
+    """Busca lista paginada de proposições."""
+    params = {
+        "ano": year,
+        "ordem": "DESC",
+        "ordenarPor": "id",
+        "pagina": page,
+        "itens": PAGE_SIZE,
+    }
+
+    logger.debug("Buscando lista de proposições (ano=%s, página=%s)", year, page)
+    return _request_json(CAMARA_PROPOSICOES_ENDPOINT, params=params)
+
+
+def _fetch_proposition_detail(proposition_id: int) -> Optional[Dict[str, Any]]:
+    """Busca detalhes completos de uma proposição específica."""
+    url = f"{CAMARA_PROPOSICOES_ENDPOINT}/{proposition_id}"
+    
+    logger.debug("Buscando detalhes da proposição %s", proposition_id)
+    data = _request_json(url)
+    
+    if data is None:
+        return None
+    
+    dados = data.get("dados")
+    if not isinstance(dados, dict):
+        logger.error("Resposta sem campo 'dados' para proposição %s", proposition_id)
+        return None
+    
+    return dados
+
+def _fetch_proposition_authors(proposition_id: int) -> List[int]:
+    """Busca autores de uma proposição específica."""
+    url = f"{CAMARA_PROPOSICOES_ENDPOINT}/{proposition_id}/autores"
+    
+    logger.debug("Buscando autores da proposição %s", proposition_id)
+    data = _request_json(url)
+    
+    if data is None:
+        return []
+    
+    dados = data.get("dados")
+    if not isinstance(dados, list):
+        return []
+    
+    author_codes = []
+    for autor in dados:
+        if not isinstance(autor, dict):
+            continue
+        
+        # Extrair ID da URI (ex: "https://.../deputados/220715" -> 220715)
+        uri = autor.get("uri")
+        if isinstance(uri, str):
+            segments = uri.rstrip("/").split("/")
+            if segments:
+                try:
+                    author_id = int(segments[-1])
+                    if author_id not in author_codes:
+                        author_codes.append(author_id)
+                except (ValueError, TypeError):
+                    logger.debug("Falha ao extrair ID do autor da URI: %s", uri)
+    
+    return author_codes
+
+def _iter_propositions_paginated(
+    year_start: int,
+    force_full: bool = False,
+    session: Optional[Session] = None,
+) -> Iterable[Tuple[Dict[str, Any], Optional[Dict[str, Any]]]]:
+    """Itera sobre proposições com busca incremental e paginação.
+    
+    Yields:
+        Tuple[basic_data, detail_data]: dados básicos da lista e detalhes completos
+    """
+
+    # Determinar última data (se busca incremental)
+    last_date = None
+    if not force_full and session is not None:
+        last_date = _get_last_proposition_date(session, year_start)
+        if last_date:
+            logger.info("Última proposição no banco: %s", last_date)
+            logger.info("Busca incremental habilitada")
+
+    page = 1
+    total_fetched = 0
+
+    while True:
+        data = _fetch_propositions_list(year_start, page)
+
+        if data is None:
+            logger.warning("Falha ao buscar página %s", page)
+            break
+
+        dados = data.get("dados")
+        if not isinstance(dados, list) or not dados:
+            logger.debug("Página %s sem dados", page)
+            break
+
+        page_count = 0
+
+        for item in dados:
+            if not isinstance(item, dict):
+                continue
+
+            # Verificar data para busca incremental
+            if last_date is not None:
+                data_apresentacao = _parse_date(item.get("dataApresentacao"))
+                if data_apresentacao and data_apresentacao < (last_date - timedelta(days=1)):
+                    # Já processamos tudo até aqui
+                    logger.info("Alcançada data limite da busca incremental")
+                    return
+
+            page_count += 1
+            total_fetched += 1
+
+            # Retornar dados básicos primeiro
+            yield item, None
+
+        logger.info("Página %s processada (%s proposições)", page, page_count)
+
+        # Verificar se tem próxima página
+        links = data.get("links", [])
+        has_next = any(
+            isinstance(link, dict) and link.get("rel") == "next"
+            for link in links
+        )
+
+        if not has_next:
+            logger.debug("Última página alcançada (página %s)", page)
+            break
+
+        page += 1
+
+    logger.info("Total de proposições obtidas: %s", total_fetched)
+
+
+def _build_payload_from_data(
+    basic_data: Dict[str, Any],
+    detail_data: Optional[Dict[str, Any]],
+    author_codes: Optional[List[int]] = None,
+) -> Optional[PropositionPayload]:
+    """Constrói payload interno a partir dos dados básicos e detalhados."""
+
+    proposition_id = _parse_int(basic_data.get("id"))
+    if proposition_id is None:
+        logger.debug("Proposição sem ID; pulando registro")
+        return None
+
+    # Dados básicos (sempre disponíveis)
+    presentation_date = _parse_date(basic_data.get("dataApresentacao"))
+    presentation_year = _parse_int(basic_data.get("ano"))
+
+    if presentation_year is None and presentation_date is not None:
+        presentation_year = presentation_date.year
+
+    # Código do tipo de proposição
+    proposition_type_code_raw = basic_data.get("codTipo")
+    proposition_type_code = None
+    if isinstance(proposition_type_code_raw, int):
+        proposition_type_code = str(proposition_type_code_raw)
+    elif isinstance(proposition_type_code_raw, str) and proposition_type_code_raw.strip():
+        proposition_type_code = proposition_type_code_raw.strip()
+
+    payload: PropositionPayload = {
+        "proposition_code": proposition_id,
+        "title": _coerce_text(basic_data.get("ementa")),  # Na lista, ementa é resumida
+        "link": f"{CAMARA_PROPOSICAO_WEB_URL}?idProposicao={proposition_id}",
+        "proposition_acronym": _coerce_text(basic_data.get("siglaTipo")),
+        "proposition_number": _parse_int(basic_data.get("numero")),
+        "presentation_year": presentation_year,
+        "presentation_date": presentation_date,
+        "presentation_month": presentation_date.month if presentation_date else None,
+        "summary": _coerce_text(basic_data.get("ementa")),
+        "details": basic_data,  # Começa com dados básicos
+        "proposition_type_code": proposition_type_code,
+        "author_codes": [],
+        "agency_code": None,
+        "current_status": None,
+        "proposition_description": None,
+    }
+
+    # Enriquecer com dados detalhados (se disponíveis)
+    if detail_data is not None:
+        payload["details"] = detail_data  # Substituir com dados completos
+
+        # Ementa completa
+        ementa_completa = _coerce_text(detail_data.get("ementa"))
+        if ementa_completa:
+            payload["summary"] = ementa_completa
+            payload["title"] = ementa_completa
+
+        # Descrição do tipo
+        payload["proposition_description"] = _coerce_text(detail_data.get("descricaoTipo"))
+
+        # Status atual
+        status_proposicao = detail_data.get("statusProposicao")
+        if isinstance(status_proposicao, dict):
+            payload["current_status"] = _coerce_text(
+                status_proposicao.get("descricaoSituacao")
+                or status_proposicao.get("despacho")
+            )
+
+        # Órgão de origem
+        payload["agency_code"] = _parse_int(detail_data.get("idOrgaoOrigem"))
+
+        payload["author_codes"] = author_codes if author_codes is not None else []
+
+    return payload
+
+
+def _debug_print_payload(payload: PropositionPayload) -> None:
+    debug_repr = json.dumps(payload, ensure_ascii=False, indent=2, default=str)
+    print(debug_repr)
+
+
+def _proposition_exists(session: Session, proposition_code: int) -> bool:
+    """Verifica se proposição já existe no banco."""
+    if Proposition is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+    
+    return (
+        session.query(Proposition)
+        .filter_by(proposition_code=proposition_code)
+        .count()
+    ) > 0
+
+
+def _upsert_proposition(session: Session, payload: PropositionPayload) -> Tuple[Any, bool]:
+    """Atualiza ou cria uma proposição conforme o payload informado.
+    
+    Returns:
+        Tuple[record, created]: registro e flag indicando se foi criado
+    """
+    code = payload.get("proposition_code")
+    if code is None:
+        raise ValueError("Payload de proposição sem 'proposition_code'.")
+
+    if Proposition is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    record: Any = session.query(Proposition).filter_by(proposition_code=code).one_or_none()
+    created = False
+    if record is None:
+        record = Proposition(proposition_code=code)
+        session.add(record)
+        created = True
+
+    for field in PROPOSITION_MUTABLE_FIELDS:
+        if field in payload:
+            setattr(record, field, payload[field])
+
+    session.flush()  # Garante ID para relacionamentos
+
+    _assign_type(session, record, payload)
+    _assign_agency(session, record, payload)
+    _sync_authors(session, record, payload.get("author_codes", []))
+    _assign_status(session, record, payload)
+
+    return record, created
+
+
+def _assign_type(session: Session, record: Any, payload: PropositionPayload) -> None:
+    """Atribui tipo de proposição (FK)."""
+    if PropositionType is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    proposition_type_code = payload.get("proposition_type_code")
+    if not proposition_type_code:
+        return
+
+    type_record = (
+        session.query(PropositionType)
+        .filter_by(proposition_type_code=proposition_type_code, type="Camara")
+        .one_or_none()
+    )
+
+    if type_record is None:
+        logger.warning(
+            "Tipo de proposição %s não encontrado no banco (proposição %s)",
+            proposition_type_code,
+            payload.get("proposition_code")
+        )
+        return
+
+    record.proposition_type = type_record
+
+
+def _assign_agency(session: Session, record: Any, payload: PropositionPayload) -> None:
+    """Atribui órgão de origem (FK, pode ser NULL)."""
+    if Agency is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    agency_code = payload.get("agency_code")
+    if agency_code is None:
+        record.agency = None
+        return
+
+    agency_record = session.query(Agency).filter_by(agency_code=agency_code).one_or_none()
+
+    if agency_record is None:
+        logger.debug(
+            "Órgão %s não encontrado no banco (proposição %s)",
+            agency_code,
+            payload.get("proposition_code")
+        )
+        record.agency = None
+        return
+
+    record.agency = agency_record
+
+def _assign_status(session: Session, record: Any, payload: PropositionPayload) -> None:
+    """Atribui status de proposição (FK), criando automaticamente se não existir."""
+    if PropositionStatus is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    current_status_text = payload.get("current_status")
+    if not current_status_text:
+        record.proposition_status = None
+        return
+
+    # Buscar status existente
+    status_record = (
+        session.query(PropositionStatus)
+        .filter_by(description=current_status_text)
+        .one_or_none()
+    )
+
+    # Se não existe, criar automaticamente
+    if status_record is None:
+        # Gerar código único baseado no hash do texto
+        import hashlib
+        status_code = f"CAM-{hashlib.md5(current_status_text.encode()).hexdigest()[:8]}"
+        
+        status_record = PropositionStatus(
+            proposition_status_code=status_code,
+            description=current_status_text,
+            name=current_status_text[:100] if len(current_status_text) > 100 else current_status_text,
+            acronym=None,
+        )
+        session.add(status_record)
+        session.flush()
+        
+        logger.info("Status criado automaticamente: %s (Câmara)", current_status_text)
+
+    record.proposition_status = status_record
+
+
+def _sync_authors(session: Session, record: Any, author_codes: List[int]) -> None:
+    """Sincroniza autores (M2M via authors_proposition)."""
+    if Parliamentarian is None or AuthorsProposition is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    if not author_codes:
+        return
+
+    # Buscar autores existentes vinculados
+    existing_links = (
+        session.query(AuthorsProposition)
+        .filter(AuthorsProposition.proposition_id == record.id)
+        .all()
+    )
+
+    existing_codes = {
+        link.parliamentarian.parliamentarian_code
+        for link in existing_links
+        if link.parliamentarian and link.parliamentarian.parliamentarian_code is not None
+    }
+
+    # Adicionar novos vínculos
+    for code in author_codes:
+        if code in existing_codes:
+            continue
+
+        parliamentarian = (
+            session.query(Parliamentarian)
+            .filter_by(parliamentarian_code=code)
+            .one_or_none()
+        )
+
+        if parliamentarian is None:
+            logger.warning(
+                "Autor %s não encontrado no banco (proposição %s)",
+                code,
+                record.proposition_code
+            )
+            continue
+
+        session.add(
+            AuthorsProposition(
+                parliamentarian=parliamentarian,
+                proposition=record,
+            )
+        )
+
+
+def proposition(
+    *,
+    year_start: int = 2025,
+    force_full: bool = False,
+    persist: bool = True,
+    interactive: bool = False,
+) -> None:
+    """Busca proposições da Câmara e opcionalmente salva/atualiza o banco.
+
+    Args:
+        year_start: Ano inicial para buscar proposições (padrão: 2025)
+        force_full: Ignora busca incremental e reprocessa tudo
+        persist: Se False, apenas exibe payloads (dry-run)
+        interactive: Pausa após cada proposição
+    """
+    logger.info(
+        "Iniciando sincronização de proposições da Câmara (persist=%s, year=%s, force_full=%s)",
+        persist,
+        year_start,
+        force_full,
+    )
+
+    _ensure_db_dependencies()
+    if _SESSION_SCOPE is None:
+        raise RuntimeError("Função de sessão do banco não carregada.")
+
+    processed = 0
+    inserted = 0
+    updated = 0
+    skipped_existing = 0
+
+    try:
+        with _SESSION_SCOPE() as session:
+            iterator = _iter_propositions_paginated(
+                year_start,
+                force_full=force_full,
+                session=session if persist else None,
+            )
+
+            for basic_data, _ in iterator:
+                proposition_id = _parse_int(basic_data.get("id"))
+                if proposition_id is None:
+                    continue
+
+                processed += 1
+
+                # Verificar se já existe (para otimizar)
+                exists = False
+                if persist:
+                    exists = _proposition_exists(session, proposition_id)
+
+                # Buscar detalhes completos (sempre para novas, opcional para existentes)
+                detail_data = None
+                author_codes_list = []
+                if not exists or force_full:
+                    detail_data = _fetch_proposition_detail(proposition_id)
+                    if detail_data and REQUEST_DELAY > 0:
+                        time.sleep(REQUEST_DELAY)
+                    
+                    # Buscar autores (endpoint separado)
+                    author_codes_list = _fetch_proposition_authors(proposition_id)
+                    if author_codes_list and REQUEST_DELAY > 0:
+                        time.sleep(REQUEST_DELAY)
+
+                # Construir payload
+                payload = _build_payload_from_data(basic_data, detail_data, author_codes_list)
+                if payload is None:
+                    continue
+
+                if interactive or not persist:
+                    _debug_print_payload(payload)
+                    if interactive:
+                        try:
+                            input("Pressione ENTER para continuar; Ctrl+C para sair.")
+                        except (KeyboardInterrupt, EOFError):
+                            logger.info("Execução interrompida pelo usuário.")
+                            return
+
+                if persist:
+                    # Se existe e não forçou full, apenas atualizar campos básicos
+                    if exists and not force_full and detail_data is None:
+                        skipped_existing += 1
+                        logger.debug("Proposição %s já existe, pulando detalhes", proposition_id)
+                        continue
+
+                    record, created = _upsert_proposition(session, payload)
+                    if created:
+                        inserted += 1
+                        logger.info("Proposição %s inserida", proposition_id)
+                    else:
+                        updated += 1
+                        logger.debug("Proposição %s atualizada", proposition_id)
+
+    except KeyboardInterrupt:
+        logger.info("Execução interrompida pelo usuário após %s proposições.", processed)
+        return
+
+    if processed == 0:
+        logger.warning("Nenhuma proposição retornada pela Câmara")
+    elif persist:
+        logger.info(
+            "Sincronização concluída: %s inseridas, %s atualizadas, %s existentes puladas, %s total",
+            inserted,
+            updated,
+            skipped_existing,
+            processed,
+        )
+    else:
+        logger.info("Processamento concluído em modo dry-run (%s proposições)", processed)
+
+
+if __name__ == "__main__":
+    import argparse
+
+    logging.basicConfig(level=logging.INFO)
+
+    parser = argparse.ArgumentParser(description="Sincroniza proposições da Câmara dos Deputados.")
+    parser.add_argument(
+        "--year",
+        type=int,
+        default=2025,
+        help="Ano inicial para buscar proposições (padrão: 2025).",
+    )
+    parser.add_argument(
+        "--force-full",
+        action="store_true",
+        help="Ignora busca incremental e reprocessa todas as proposições com detalhes.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Não persiste no banco; apenas exibe os payloads.",
+    )
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Pausa após cada proposição para inspeção manual.",
+    )
+
+    args = parser.parse_args()
+
+    proposition(
+        year_start=args.year,
+        force_full=args.force_full,
+        persist=not args.dry_run,
+        interactive=args.interactive,
+    )
