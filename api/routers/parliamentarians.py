@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from mamute_scrappers.db.models.parliamentarian import Parliamentarian
-
-from ..dependencies import get_db
+try:
+    # Execução como pacote (api.routers.parliamentarians).
+    from ..db.models.parliamentarian import Parliamentarian
+    from ..dependencies import get_db
+except (ImportError, ValueError):
+    # Execução local dentro de api/ sem reconhecimento de pacote.
+    from db.models.parliamentarian import Parliamentarian
+    from dependencies import get_db
 
 router = APIRouter(prefix="/parliamentarians", tags=["parliamentarians"])
 
@@ -42,21 +47,21 @@ class ParliamentarianOut(BaseModel):
     office_email: Optional[str] = None
     biography_link: Optional[str] = None
     biography_text: Optional[str] = None
-    details: Optional[dict[str, Any]] = None
+    details: Optional[Dict[str, Any]] = None
     created_at: datetime
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 
-@router.get("/", response_model=list[ParliamentarianOut])
+@router.get("/", response_model=List[ParliamentarianOut])
 def list_parliamentarians(
     *,
     db: Session = Depends(get_db),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     party: Optional[str] = Query(default=None, description="Filtrar por partido"),
-) -> list[Parliamentarian]:
+) -> List[Parliamentarian]:
     """Retorna uma lista paginada de parlamentares."""
     stmt = select(Parliamentarian).offset(offset).limit(limit)
 
