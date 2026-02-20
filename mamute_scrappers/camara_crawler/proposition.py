@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import json
 import logging
 import sys
@@ -285,73 +286,111 @@ def _fetch_proposition_authors(proposition_id: int) -> List[int]:
 def _iter_propositions_paginated(
     year_start: int,
     force_full: bool = False,
+    data_inicio: Optional[str] = None,
     session: Optional[Session] = None,
-) -> Iterable[Tuple[Dict[str, Any], Optional[Dict[str, Any]]]]:
-    """Itera sobre proposições com busca incremental e paginação.
+) -> Generator[Tuple[Dict[str, Any], bool], None, None]:
+    """Itera sobre proposições da Câmara com paginação automática.
     
+    Args:
+        year_start: Ano inicial para buscar
+        force_full: Se True, ignora busca incremental
+        data_inicio: Data inicial YYYY-MM-DD (sobrescreve busca incremental)
+        session: Sessão do banco (para busca incremental)
+        
     Yields:
-        Tuple[basic_data, detail_data]: dados básicos da lista e detalhes completos
+        Tupla (dados_basicos, is_new)
     """
-
-    # Determinar última data (se busca incremental)
-    last_date = None
-    if not force_full and session is not None:
+    # Determinar data inicial
+    start_date = None
+    
+    if data_inicio:
+        # Prioridade 1: Data fornecida como parâmetro
+        start_date = data_inicio
+        logger.info("Usando data inicial fornecida: %s", start_date)
+    elif not force_full and session:
+        # Prioridade 2: Busca incremental (última data no banco)
         last_date = _get_last_proposition_date(session, year_start)
         if last_date:
-            logger.info("Última proposição no banco: %s", last_date)
-            logger.info("Busca incremental habilitada")
-
+            next_day = last_date + timedelta(days=1)
+            start_date = next_day.strftime("%Y-%m-%d")
+            logger.info("Busca incremental desde: %s", start_date)
+    
+    # Se não tem data inicial, usa início do ano
+    if not start_date:
+        start_date = f"{year_start}-01-01"
+        logger.info("Buscando desde início do ano: %s", start_date)
+    
+    # Parâmetros base da API
+    base_params = {
+        "dataInicio": start_date,  # ← USA A DATA AQUI
+        "ordem": "DESC",
+        "ordenarPor": "id",
+        "itens": PAGE_SIZE,
+    }
+    
     page = 1
-    total_fetched = 0
-
+    total_pages = None
+    total_items = None
+    
     while True:
-        data = _fetch_propositions_list(year_start, page)
-
-        if data is None:
-            logger.warning("Falha ao buscar página %s", page)
-            break
-
-        dados = data.get("dados")
-        if not isinstance(dados, list) or not dados:
-            logger.debug("Página %s sem dados", page)
-            break
-
-        page_count = 0
-
-        for item in dados:
-            if not isinstance(item, dict):
-                continue
-
-            # Verificar data para busca incremental
-            if last_date is not None:
-                data_apresentacao = _parse_date(item.get("dataApresentacao"))
-                if data_apresentacao and data_apresentacao < (last_date - timedelta(days=1)):
-                    # Já processamos tudo até aqui
-                    logger.info("Alcançada data limite da busca incremental")
-                    return
-
-            page_count += 1
-            total_fetched += 1
-
-            # Retornar dados básicos primeiro
-            yield item, None
-
-        logger.info("Página %s processada (%s proposições)", page, page_count)
-
-        # Verificar se tem próxima página
-        links = data.get("links", [])
-        has_next = any(
-            isinstance(link, dict) and link.get("rel") == "next"
-            for link in links
+        params = base_params.copy()
+        params["pagina"] = page
+        
+        logger.info(
+            "Buscando proposições: página %s%s (desde %s)",
+            page,
+            f"/{total_pages}" if total_pages else "",
+            start_date,
         )
-
-        if not has_next:
-            logger.debug("Última página alcançada (página %s)", page)
+        
+        # Fazer request para API
+        data = _request_json(
+            url=f"{CAMARA_PROPOSICOES_ENDPOINT}",
+            params=params,
+        )
+        
+        if data is None:
+            logger.warning("Nenhum dado retornado na página %s", page)
             break
-
+        
+        # Extrair informações de paginação
+        items = data.get("dados", [])
+        links = data.get("links", [])
+        
+        # Na primeira página, extrair total de páginas
+        if page == 1:
+            for link in links:
+                if link.get("rel") == "last":
+                    href = link.get("href", "")
+                    match = re.search(r"pagina=(\d+)", href)
+                    if match:
+                        total_pages = int(match.group(1))
+                        total_items = total_pages * PAGE_SIZE
+                        logger.info(
+                            "Total estimado: ~%s proposições em %s páginas",
+                            total_items,
+                            total_pages,
+                        )
+        
+        if not items:
+            logger.info("Nenhuma proposição encontrada na página %s", page)
+            break
+        
+        # Yield cada proposição
+        for item in items:
+            yield item, True  # True = pode ser nova (não verificado aqui)
+        
+        # Verificar se tem próxima página
+        has_next = any(link.get("rel") == "next" for link in links)
+        if not has_next:
+            logger.info("Última página alcançada (%s)", page)
+            break
+        
         page += 1
-
-    logger.info("Total de proposições obtidas: %s", total_fetched)
+        
+        # Delay entre páginas
+        if REQUEST_DELAY > 0:
+            time.sleep(REQUEST_DELAY)
 
 
 def _build_payload_from_data(
@@ -617,6 +656,7 @@ def proposition(
     *,
     year_start: int = 2025,
     force_full: bool = False,
+    data_inicio: Optional[str] = None,
     persist: bool = True,
     interactive: bool = False,
 ) -> None:
@@ -625,9 +665,11 @@ def proposition(
     Args:
         year_start: Ano inicial para buscar proposições (padrão: 2025)
         force_full: Ignora busca incremental e reprocessa tudo
+        data_inicio: Data inicial no formato YYYY-MM-DD (default: últimos 30 dias)
         persist: Se False, apenas exibe payloads (dry-run)
         interactive: Pausa após cada proposição
     """
+    print(f"DEBUG: data_inicio recebido = {data_inicio!r}")
     logger.info(
         "Iniciando sincronização de proposições da Câmara (persist=%s, year=%s, force_full=%s)",
         persist,
@@ -649,6 +691,7 @@ def proposition(
             iterator = _iter_propositions_paginated(
                 year_start,
                 force_full=force_full,
+                data_inicio=data_inicio,
                 session=session if persist else None,
             )
 
@@ -737,6 +780,11 @@ if __name__ == "__main__":
         help="Ano inicial para buscar proposições (padrão: 2025).",
     )
     parser.add_argument(
+        "--data-inicio",
+        type=str,
+        help="Data inicial no formato YYYY-MM-DD (sobrescreve busca incremental).",
+    )
+    parser.add_argument(
         "--force-full",
         action="store_true",
         help="Ignora busca incremental e reprocessa todas as proposições com detalhes.",
@@ -756,6 +804,7 @@ if __name__ == "__main__":
 
     proposition(
         year_start=args.year,
+        data_inicio=args.data_inicio,
         force_full=args.force_full,
         persist=not args.dry_run,
         interactive=args.interactive,
