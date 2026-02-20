@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from mamute_scrappers.db.models.proposition import Proposition
-
-from ..dependencies import get_db
+try:
+    # Execução como pacote (api.routers.propositions).
+    from ..db.models.proposition import Proposition
+    from ..dependencies import get_db
+except (ImportError, ValueError):
+    # Execução local dentro de api/ sem reconhecimento de pacote.
+    from db.models.proposition import Proposition
+    from dependencies import get_db
 
 router = APIRouter(prefix="/propositions", tags=["propositions"])
 
@@ -35,14 +40,14 @@ class PropositionOut(BaseModel):
     presentation_date: Optional[date] = None
     presentation_month: Optional[int] = None
     summary: Optional[str] = None
-    details: Optional[dict] = None
+    details: Optional[Dict[str, Any]] = None
     created_at: datetime
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 
-@router.get("/", response_model=list[PropositionOut])
+@router.get("/", response_model=List[PropositionOut])
 def list_propositions(
     *,
     db: Session = Depends(get_db),
@@ -52,7 +57,7 @@ def list_propositions(
     acronym: Optional[str] = Query(
         None, description="Filtra pela sigla da proposição (ex: PEC, PL, etc)."
     ),
-) -> list[Proposition]:
+) -> List[Proposition]:
     """Retorna uma lista paginada de proposições."""
     stmt = select(Proposition).offset(offset).limit(limit)
 
