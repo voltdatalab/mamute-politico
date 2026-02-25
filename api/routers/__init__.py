@@ -2,6 +2,7 @@
 
 from . import (
     authors_proposition,
+    projects,
     parliamentarians,
     propositions,
     roll_call_votes,
@@ -11,6 +12,7 @@ from . import (
 
 __all__ = [
     "authors_proposition",
+    "projects",
     "parliamentarians",
     "propositions",
     "roll_call_votes",
