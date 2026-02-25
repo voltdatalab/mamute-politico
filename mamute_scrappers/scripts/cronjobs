@@ -1,0 +1,42 @@
+##########################
+#
+#    MAMUTE POLÍTICO
+#
+##########################
+
+# Definições globais para o crontab.
+PROJECT_ROOT=/app/
+PYTHON_BIN=/usr/local/bin/python
+LOG_DIR=/app/.logs
+
+###########################
+#    RASPADORES
+###########################
+
+# Rodar a cada 2h as taquigrafias do Senado
+*/120 * * * *  cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.speechs_transcipts >> $LOG_DIR/crawlers/speechs_transcripts.log 2>&1
+
+# Rodar a cada 3h as votações nominais do Senado
+0 */3 * * *    cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.roll_call_votes >> $LOG_DIR/crawlers/roll_call_votes.log 2>&1
+
+# Rodar a cada 6h as proposições do Senado
+0 */6 * * *    cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.proposition >> $LOG_DIR/crawlers/propositions.log 2>&1
+
+# Rodar diariamente (03h) o status das proposições do Senado
+0 3 * * *      cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.proposition_status >> $LOG_DIR/crawlers/proposition_status.log 2>&1
+
+# Rodar diariamente (04h) os tipos de proposição do Senado
+0 4 * * *      cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.proposition_type >> $LOG_DIR/crawlers/proposition_type.log 2>&1
+
+# Rodar diariamente (05h) a base de parlamentares do Senado
+0 5 * * *      cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.parliamentarian >> $LOG_DIR/crawlers/parliamentarians.log 2>&1
+
+###########################
+#    SCRIPTS AUXILIARES
+###########################
+
+# Rodar a cada 30 minutos a sincronização de usuários do Ghost
+*/30 * * * *   cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.scripts.create_users >> $LOG_DIR/scripts/create_users.log 2>&1
+
+# Rotina mensal para limpeza dos logs (dia 1, 02h)
+0 2 1 * *      mkdir -p $LOG_DIR/crawlers $LOG_DIR/scripts && find $LOG_DIR -type f -mtime +30 -delete
