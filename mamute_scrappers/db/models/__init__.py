@@ -9,6 +9,7 @@ from .plenary_attendance import PlenaryAttendance
 from .proposition import Proposition
 from .proposition_status import PropositionStatus
 from .proposition_type import PropositionType
+from .project import Projetos, ProjetosParliamentarian, Tiers
 from .roll_call_votes import RollCallVote
 from .social_network import ParliamentarianSocialNetwork, SocialNetwork
 from .speeches_transcripts import SpeechesTranscript
@@ -23,6 +24,8 @@ __all__ = [
     "Parliamentarian",
     "ParliamentarianSocialNetwork",
     "PlenaryAttendance",
+    "Projetos",
+    "ProjetosParliamentarian",
     "Proposition",
     "PropositionStatus",
     "PropositionType",
@@ -30,6 +33,7 @@ __all__ = [
     "SocialNetwork",
     "SpeechesTranscript",
     "SpeechesTranscriptsProposition",
+    "Tiers",
     "VideoAudio",
 ]
 
