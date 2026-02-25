@@ -3,4 +3,10 @@ __pycache__/
 .env
 mamute_scrappers/.env
 api/.env
+<<<<<<< HEAD
+mamute_scrappers/.env
+=======
+api/.venv/
+venv/
+>>>>>>> b607eb5658ec0b57cb4fd59054ea547c029a938b
 mamute_scrappers/.env
