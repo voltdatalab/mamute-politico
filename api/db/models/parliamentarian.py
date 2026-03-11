@@ -79,6 +79,11 @@ class Parliamentarian(Base):
         back_populates="parliamentarian",
         cascade="all, delete-orphan",
     )
+    favoritos = relationship(
+        "ProjetosParliamentarian",
+        back_populates="parliamentarian",
+        cascade="all, delete-orphan",
+    )
 
 
 __all__ = ["Parliamentarian"]

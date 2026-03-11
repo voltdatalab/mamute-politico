@@ -1,0 +1,1 @@
+"""Pacote com os scrapers e modelos de dados do Mamute."""

@@ -8,6 +8,7 @@ try:
     # Permite execução como pacote (api.main).
     from .routers import (
         authors_proposition,
+        projects,
         parliamentarians,
         propositions,
         roll_call_votes,
@@ -19,6 +20,7 @@ except ImportError:
     # Permite execução dentro do diretório api/ (python main.py / uvicorn main:app).
     from routers import (
         authors_proposition,
+        projects,
         parliamentarians,
         propositions,
         roll_call_votes,
@@ -48,6 +50,7 @@ def create_app() -> FastAPI:
 
     app.include_router(parliamentarians.router, dependencies=auth_dependencies)
     app.include_router(propositions.router, dependencies=auth_dependencies)
+    app.include_router(projects.router, dependencies=auth_dependencies)
     app.include_router(authors_proposition.router, dependencies=auth_dependencies)
     app.include_router(roll_call_votes.router, dependencies=auth_dependencies)
     app.include_router(speeches_transcripts.router, dependencies=auth_dependencies)
