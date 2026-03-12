@@ -1,0 +1,25 @@
+name: Deploy Mamute Politico
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    name: Inicio
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout arquivos
+      uses: actions/checkout@v3
+
+    - name: Ajusta permissões
+      run: sudo chown -R root:root .
+
+    - name: Copiando arquivos via SSH
+      uses: easingthemes/ssh-deploy@main
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.KEY_GH_ACTIONS }}
+        ARGS: "-rltgoDzvO"
+        SOURCE: "./"
+        REMOTE_HOST: ${{ secrets.HOST_PRD }}
+        REMOTE_USER: "deploy"
+        TARGET: "/var/www/mamute/"
