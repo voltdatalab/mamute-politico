@@ -13,6 +13,8 @@ from .project import Projetos, ProjetosParliamentarian, Tiers
 from .roll_call_votes import RollCallVote
 from .social_network import ParliamentarianSocialNetwork, SocialNetwork
 from .speeches_transcripts import SpeechesTranscript
+from .speeches_transcripts_entity import SpeechesTranscriptsEntity
+from .speeches_transcripts_keyword import SpeechesTranscriptsKeyword
 from .speeches_transcripts_proposition import SpeechesTranscriptsProposition
 from .videos_audios import VideoAudio
 
@@ -32,6 +34,8 @@ __all__ = [
     "RollCallVote",
     "SocialNetwork",
     "SpeechesTranscript",
+    "SpeechesTranscriptsEntity",
+    "SpeechesTranscriptsKeyword",
     "SpeechesTranscriptsProposition",
     "Tiers",
     "VideoAudio",

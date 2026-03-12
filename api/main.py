@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 try:
     # Permite execução como pacote (api.main).
     from .routers import (
+        analysis,
         authors_proposition,
         projects,
         parliamentarians,
@@ -19,6 +20,7 @@ try:
 except ImportError:
     # Permite execução dentro do diretório api/ (python main.py / uvicorn main:app).
     from routers import (
+        analysis,
         authors_proposition,
         projects,
         parliamentarians,
@@ -48,6 +50,7 @@ def create_app() -> FastAPI:
 
     auth_dependencies = [Depends(verify_token)]
 
+    app.include_router(analysis.router, dependencies=auth_dependencies)
     app.include_router(parliamentarians.router, dependencies=auth_dependencies)
     app.include_router(propositions.router, dependencies=auth_dependencies)
     app.include_router(projects.router, dependencies=auth_dependencies)
