@@ -1,6 +1,7 @@
 """Coleção de rotas da API."""
 
 from . import (
+    analysis,
     authors_proposition,
     projects,
     parliamentarians,
@@ -11,6 +12,7 @@ from . import (
 )
 
 __all__ = [
+    "analysis",
     "authors_proposition",
     "projects",
     "parliamentarians",
