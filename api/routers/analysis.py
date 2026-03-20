@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date as date_type
 from typing import Dict, List, Literal, Optional, Set
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -75,7 +75,7 @@ class SpeechAnalysisSummaryOut(BaseModel):
     """Resumo da análise disponível para um discurso."""
 
     id: int
-    date: Optional[date] = None
+    date: Optional[date_type] = None
     analysis_types: List[str]
     primary_keyword: Optional[KeywordOut] = None
     keywords_count: int
