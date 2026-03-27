@@ -2,6 +2,8 @@
 
 Backend construído com FastAPI e LangChain para oferecer um chatbot especializado nas notas taquigráficas, combinando busca vetorial no PostgreSQL (pgvector) e consultas SQL auxiliares.
 
+Projeto pai: [README raiz](../README.md)
+
 ## Estrutura
 
 - `app/` – código da aplicação FastAPI (rotas, serviços e configurações)
@@ -15,7 +17,7 @@ Backend construído com FastAPI e LangChain para oferecer um chatbot especializa
 2. Banco PostgreSQL com extensão [`pgvector`](https://github.com/pgvector/pgvector) habilitada
 3. Chave de API do OpenAI (modelo GPT e embeddings)
 
-## Configuração
+## Inicialização
 
 1. Crie e ajuste o arquivo de variáveis de ambiente:
 
@@ -25,7 +27,16 @@ Backend construído com FastAPI e LangChain para oferecer um chatbot especializa
 
    Edite o `.env` com suas credenciais de banco e chaves do OpenAI. Os campos `APPLICATION_NAME` (PostgreSQL) e `RERANK_TOP_K` (reranqueador) permitem ajustes de monitoramento e qualidade das respostas.
 
-## Inicializando a coleção vetorial
+2. Crie um ambiente virtual e instale as dependências:
+
+   ```bash
+   cd chatbot_backend
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+3. Inicialize a coleção vetorial
 
 Com as variáveis `DATABASE_URL` e `PGVECTOR_CONNECTION` apontando para o banco desejado:
 
@@ -44,14 +55,6 @@ Caso o banco já tenha um esquema anterior (ex.: tabelas criadas com outra estru
 ```bash
 python -m chatbot_backend.scripts.init_vector_collection --reset --dimension 3072
 ```
-2. Crie um ambiente virtual e instale as dependências:
-
-   ```bash
-   cd chatbot_backend
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
 
 ## Indexação das notas taquigráficas
 
