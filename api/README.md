@@ -46,8 +46,8 @@ Projeto pai: [README raiz](../README.md)
 
 ## Endereços locais
 
-- API: `http://127.0.0.1:8000`
-- Docs Swagger: `http://127.0.0.1:8000/docs`
+- API (rotas): prefixo `http://127.0.0.1:8000/api` (ex.: `/api/parliamentarians`, `/api/analysis/...`)
+- Docs Swagger: `http://127.0.0.1:8000/api/docs`
 
 ## Observações
 

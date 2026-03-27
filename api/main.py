@@ -1,6 +1,6 @@
 """Aplicação FastAPI para exposição dos dados coletados."""
 
-from fastapi import Depends, FastAPI
+from fastapi import APIRouter, Depends, FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -38,6 +38,9 @@ def create_app() -> FastAPI:
         title="Mamute Político API",
         description="API para consulta das tabelas do projeto Mamute Político.",
         version="0.1.0",
+        docs_url="/api/docs",
+        openapi_url="/api/openapi.json",
+        redoc_url="/api/redoc",
     )
 
     app.add_middleware(
@@ -50,19 +53,22 @@ def create_app() -> FastAPI:
 
     auth_dependencies = [Depends(verify_token)]
 
-    app.include_router(analysis.router, dependencies=auth_dependencies)
-    app.include_router(parliamentarians.router, dependencies=auth_dependencies)
-    app.include_router(propositions.router, dependencies=auth_dependencies)
-    app.include_router(projects.router, dependencies=auth_dependencies)
-    app.include_router(authors_proposition.router, dependencies=auth_dependencies)
-    app.include_router(roll_call_votes.router, dependencies=auth_dependencies)
-    app.include_router(speeches_transcripts.router, dependencies=auth_dependencies)
-    app.include_router(
+    api_router = APIRouter(prefix="/api")
+
+    api_router.include_router(analysis.router, dependencies=auth_dependencies)
+    api_router.include_router(parliamentarians.router, dependencies=auth_dependencies)
+    api_router.include_router(propositions.router, dependencies=auth_dependencies)
+    api_router.include_router(projects.router, dependencies=auth_dependencies)
+    api_router.include_router(authors_proposition.router, dependencies=auth_dependencies)
+    api_router.include_router(roll_call_votes.router, dependencies=auth_dependencies)
+    api_router.include_router(speeches_transcripts.router, dependencies=auth_dependencies)
+    api_router.include_router(
         speeches_transcripts_proposition.router, dependencies=auth_dependencies
     )
 
-    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-    def read_root() -> str:
+    @api_router.get("", response_class=HTMLResponse, include_in_schema=False)
+    @api_router.get("/", response_class=HTMLResponse, include_in_schema=False)
+    def read_api_root() -> str:
         return """
         <!DOCTYPE html>
         <html lang="pt-BR">
@@ -112,13 +118,15 @@ def create_app() -> FastAPI:
                     <h1>Bem-vindo à Mamute Político API</h1>
                     <p>
                         Consulte a documentação interativa em
-                        <a href="/docs">/docs</a> ou acesse o schema JSON em
-                        <a href="/openapi.json">/openapi.json</a>.
+                        <a href="/api/docs">/api/docs</a> ou acesse o schema JSON em
+                        <a href="/api/openapi.json">/api/openapi.json</a>.
                     </p>
                 </main>
             </body>
         </html>
         """
+
+    app.include_router(api_router)
 
     return app
 
