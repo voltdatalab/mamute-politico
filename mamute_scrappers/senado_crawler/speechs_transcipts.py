@@ -36,7 +36,6 @@ except ImportError:  # pragma: no cover - depende de dependências opcionais
     PortugueseSpeechAnalyzer = Any  # type: ignore[assignment]
     analyze_with_chatgpt = None  # type: ignore[assignment]
     load_portuguese_analyzer = None  # type: ignore[assignment]
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -120,7 +119,6 @@ _SESSION_SCOPE: Optional[SessionScopeCallable] = None
 
 _TEXT_ANALYZER: Optional[PortugueseSpeechAnalyzer] = None
 _TEXT_ANALYZER_INITIALIZED = False
-
 
 class SpeechPayload(TypedDict, total=False):
     parliamentarian_code: int
@@ -507,8 +505,6 @@ def rebuild_speech_text_analysis(
         processed,
         normalized_type,
     )
-
-
 def _normalize_text(value: Optional[str]) -> Optional[str]:
     if value is None:
         return None

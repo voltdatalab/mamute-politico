@@ -67,7 +67,6 @@ _PROPOSITIONS_SELECT = """
     JOIN parliamentarian p ON p.id = st.parliamentarian_id
 """
 
-
 def _extract_keywords(question: str) -> List[str]:
     """Gera palavras-chave básicas a partir da pergunta."""
 
@@ -266,7 +265,6 @@ def fetch_sql_context(
         **pattern_params,
         **filter_params,
     }
-
     context_query = (
         _CONTEXT_SELECT
         + where_clause
@@ -345,7 +343,6 @@ def fetch_sql_context(
             "propositions_limit": settings.sql_propositions_limit,
         }
         propositions_rows = _execute_query(propositions_query, propositions_params)
-
     sections = []
     context_text = _format_rows(context_rows)
     if context_text:
@@ -366,7 +363,6 @@ def fetch_sql_context(
     propositions_text = _format_proposition_rows(propositions_rows)
     if propositions_text:
         sections.append(propositions_text)
-
     return "\n\n".join(sections).strip()
 
 

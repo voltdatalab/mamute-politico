@@ -203,7 +203,6 @@ class ChatbotService:
             inputs = {**inputs, "filters": normalized_filters}
         else:
             inputs = {k: v for k, v in inputs.items() if k != "filters"}
-
         iterator_handler = AsyncIteratorCallbackHandler()
         json_handler = JSONTokenStreamingHandler(iterator_handler)
         chain = self._build_chain()
@@ -236,7 +235,6 @@ class ChatbotService:
             inputs = {**inputs, "filters": normalized_filters}
         else:
             inputs = {k: v for k, v in inputs.items() if k != "filters"}
-
         chain = self._build_chain()
         result = await chain.ainvoke(inputs)
         if isinstance(result, str):

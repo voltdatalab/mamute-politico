@@ -44,7 +44,6 @@ Caso o banco já tenha um esquema anterior (ex.: tabelas criadas com outra estru
 ```bash
 python -m chatbot_backend.scripts.init_vector_collection --reset --dimension 3072
 ```
-
 2. Crie um ambiente virtual e instale as dependências:
 
    ```bash
@@ -65,7 +64,6 @@ python -m chatbot_backend.scripts.ingest_transcripts --batch-size 200
 O script lê as notas diretamente da tabela `speeches_transcripts`, cria chunks com `RecursiveCharacterTextSplitter` e adiciona documentos ao índice definido em `PGVECTOR_COLLECTION`.
 
 Cada chunk recebe metadados `speech_id`, `parliamentarian_id`, `date`, `session_number` e `type`, permitindo rastreamento e filtros posteriores no JSONB (`cmetadata`) armazenado no PostgreSQL.
-
 ## Sincronização contínua
 
 Para manter o índice atualizado, execute periodicamente:
@@ -119,7 +117,6 @@ curl -N \
 ```
 
 Campos aceitos dentro de `filters`: `parliamentarian_ids` (lista de IDs numéricos), `parties` (siglas), `states` (UFs) e `roles` (tipos de parlamentares). Todos são opcionais; se nenhum filtro for enviado, a busca considera todo o conjunto disponível.
-
 ## Personalizações
 
 - Ajuste `RETRIEVER_K` e `RETRIEVER_SCORE_THRESHOLD` para calibrar a quantidade de chunks trazidos do vetor.
