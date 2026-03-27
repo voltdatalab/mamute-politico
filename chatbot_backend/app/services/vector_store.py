@@ -48,11 +48,11 @@ def get_vector_store() -> PGVector:
 
 
 def get_retriever(
-    search_kwargs: Optional[dict[str, int | float]] = None,
+    search_kwargs: Optional[dict[str, object]] = None,
 ) -> VectorStoreRetriever:
     """Expõe um retriever com parâmetros padrão."""
 
-    kwargs: dict[str, int | float] = {"k": settings.retriever_k}
+    kwargs: dict[str, object] = {"k": settings.retriever_k}
     if search_kwargs:
         kwargs.update(search_kwargs)
 

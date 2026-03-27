@@ -40,7 +40,11 @@ def _fetch_updated_rows(
             st.session_number,
             st.type,
             st.updated_at,
-            p.name AS parliamentarian_name
+            st.parliamentarian_id,
+            p.name AS parliamentarian_name,
+            p.party AS parliamentarian_party,
+            p.state_elected AS parliamentarian_state,
+            p.type AS parliamentarian_role
         FROM speeches_transcripts st
         LEFT JOIN parliamentarian p ON p.id = st.parliamentarian_id
         WHERE st.updated_at >= :since

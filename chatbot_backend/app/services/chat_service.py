@@ -43,7 +43,6 @@ class ChatbotService:
 
     def __init__(self) -> None:
         self.prompt = build_prompt()
-        self.retriever = get_retriever()
         self.reranker = LLMReranker()
 
     @staticmethod
@@ -77,11 +76,88 @@ class ChatbotService:
             chunks.append(f"{heading}\n{body}")
         return "\n\n".join(chunks)
 
+    @staticmethod
+    def _normalize_filters(raw_filters: Dict[str, Any] | None) -> Dict[str, List[object]] | None:
+        """Normaliza filtros vindos da API."""
+
+        if not raw_filters:
+            return None
+
+        normalized: Dict[str, List[object]] = {}
+
+        ids = raw_filters.get("parliamentarian_ids") if isinstance(raw_filters, dict) else None
+        if isinstance(ids, list):
+            norm_ids: List[int] = []
+            for value in ids:
+                try:
+                    norm_ids.append(int(value))
+                except (TypeError, ValueError):
+                    continue
+            if norm_ids:
+                normalized["parliamentarian_ids"] = sorted(set(norm_ids))
+
+        def _string_list(values: Any) -> List[str]:
+            if not isinstance(values, list):
+                return []
+            result: List[str] = []
+            for value in values:
+                text = str(value).strip()
+                if text:
+                    result.append(text.upper())
+            return sorted(set(result))
+
+        parties = _string_list(raw_filters.get("parties") if isinstance(raw_filters, dict) else None)
+        if parties:
+            normalized["parties"] = parties
+
+        states = _string_list(raw_filters.get("states") if isinstance(raw_filters, dict) else None)
+        if states:
+            normalized["states"] = states
+
+        roles = _string_list(raw_filters.get("roles") if isinstance(raw_filters, dict) else None)
+        if roles:
+            normalized["roles"] = roles
+
+        return normalized or None
+
+    @staticmethod
+    def _build_retriever_filter(
+        normalized_filters: Dict[str, List[object]] | None,
+    ) -> Dict[str, Any] | None:
+        """Converte filtros simples de entrada em filtros para o vetor."""
+
+        if not normalized_filters:
+            return None
+
+        vector_filter: Dict[str, Any] = {}
+
+        ids = normalized_filters.get("parliamentarian_ids")
+        if ids:
+            vector_filter["parliamentarian_id"] = {"$in": ids}
+
+        parties = normalized_filters.get("parties")
+        if parties:
+            vector_filter["party"] = {"$in": parties}
+
+        states = normalized_filters.get("states")
+        if states:
+            vector_filter["state"] = {"$in": states}
+
+        roles = normalized_filters.get("roles")
+        if roles:
+            vector_filter["role"] = {"$in": roles}
+
+        return vector_filter or None
+
     async def _retrieve_and_rerank(self, inputs: Dict[str, Any]) -> str:
         """Recupera documentos, executa reranking e prepara o contexto."""
 
         question = inputs["question"]
-        documents = await self.retriever.ainvoke(question)
+        normalized_filters = inputs.get("filters")
+        filter_payload = self._build_retriever_filter(normalized_filters)
+        search_kwargs = {"filter": filter_payload} if filter_payload else None
+        retriever = get_retriever(search_kwargs=search_kwargs)
+        documents = await retriever.ainvoke(question)
         reranked = await self.reranker.arerank(
             question, documents, settings.rerank_top_k
         )
@@ -100,7 +176,9 @@ class ChatbotService:
 
         retriever_chain = RunnableLambda(self._retrieve_and_rerank)
 
-        sql_chain = RunnableLambda(lambda x: fetch_sql_context(x["question"]))
+        sql_chain = RunnableLambda(
+            lambda x: fetch_sql_context(x["question"], x.get("filters"))
+        )
 
         history_chain = RunnableLambda(
             lambda x: self._convert_history(x.get("history", []))
@@ -119,6 +197,12 @@ class ChatbotService:
         self, inputs: Dict[str, Any]
     ) -> AsyncIterator[Dict[str, Any]]:
         """Executa o chain e produz eventos incrementais."""
+
+        normalized_filters = self._normalize_filters(inputs.get("filters"))
+        if normalized_filters:
+            inputs = {**inputs, "filters": normalized_filters}
+        else:
+            inputs = {k: v for k, v in inputs.items() if k != "filters"}
 
         iterator_handler = AsyncIteratorCallbackHandler()
         json_handler = JSONTokenStreamingHandler(iterator_handler)
@@ -146,6 +230,12 @@ class ChatbotService:
 
     async def invoke(self, inputs: Dict[str, Any]) -> str:
         """Executa o chain de forma síncrona (sem streaming)."""
+
+        normalized_filters = self._normalize_filters(inputs.get("filters"))
+        if normalized_filters:
+            inputs = {**inputs, "filters": normalized_filters}
+        else:
+            inputs = {k: v for k, v in inputs.items() if k != "filters"}
 
         chain = self._build_chain()
         result = await chain.ainvoke(inputs)

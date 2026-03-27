@@ -26,6 +26,17 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
 
+try:
+    from .speech_text_analysis import (
+        PortugueseSpeechAnalyzer,
+        analyze_with_chatgpt,
+        load_portuguese_analyzer,
+    )
+except ImportError:  # pragma: no cover - depende de dependências opcionais
+    PortugueseSpeechAnalyzer = Any  # type: ignore[assignment]
+    analyze_with_chatgpt = None  # type: ignore[assignment]
+    load_portuguese_analyzer = None  # type: ignore[assignment]
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -83,6 +94,8 @@ if TYPE_CHECKING:  # pragma: no cover - apenas para tipagem
         Parliamentarian as ParliamentarianModel,
         Proposition as PropositionModel,
         SpeechesTranscript as SpeechesTranscriptModel,
+        SpeechesTranscriptsEntity as SpeechesTranscriptsEntityModel,
+        SpeechesTranscriptsKeyword as SpeechesTranscriptsKeywordModel,
         SpeechesTranscriptsProposition as SpeechesTranscriptsPropositionModel,
     )
     from mamute_scrappers.db.session import session_scope as session_scope_type
@@ -92,14 +105,21 @@ else:
     ParliamentarianModel = Any
     PropositionModel = Any
     SpeechesTranscriptModel = Any
+    SpeechesTranscriptsEntityModel = Any
+    SpeechesTranscriptsKeywordModel = Any
     SpeechesTranscriptsPropositionModel = Any
     SessionScopeCallable = Callable[[], ContextManager[Session]]
 
 Parliamentarian: Any = None
 Proposition: Any = None
 SpeechesTranscript: Any = None
+SpeechesTranscriptsKeyword: Any = None
+SpeechesTranscriptsEntity: Any = None
 SpeechesTranscriptsProposition: Any = None
 _SESSION_SCOPE: Optional[SessionScopeCallable] = None
+
+_TEXT_ANALYZER: Optional[PortugueseSpeechAnalyzer] = None
+_TEXT_ANALYZER_INITIALIZED = False
 
 
 class SpeechPayload(TypedDict, total=False):
@@ -131,7 +151,13 @@ SPEECH_MUTABLE_FIELDS = [
 
 
 def _ensure_db_dependencies() -> None:
-    global Parliamentarian, Proposition, SpeechesTranscript, SpeechesTranscriptsProposition, _SESSION_SCOPE
+    global Parliamentarian
+    global Proposition
+    global SpeechesTranscript
+    global SpeechesTranscriptsKeyword
+    global SpeechesTranscriptsEntity
+    global SpeechesTranscriptsProposition
+    global _SESSION_SCOPE
     if _SESSION_SCOPE is not None:
         return
 
@@ -140,6 +166,8 @@ def _ensure_db_dependencies() -> None:
             Parliamentarian as ParliamentarianModelRuntime,
             Proposition as PropositionModelRuntime,
             SpeechesTranscript as SpeechesTranscriptModelRuntime,
+            SpeechesTranscriptsEntity as SpeechesTranscriptsEntityModelRuntime,
+            SpeechesTranscriptsKeyword as SpeechesTranscriptsKeywordModelRuntime,
             SpeechesTranscriptsProposition as SpeechesTranscriptsPropositionModelRuntime,
         )
         from mamute_scrappers.db.session import session_scope as session_scope_runtime
@@ -149,10 +177,336 @@ def _ensure_db_dependencies() -> None:
     Parliamentarian = ParliamentarianModelRuntime
     Proposition = PropositionModelRuntime
     SpeechesTranscript = SpeechesTranscriptModelRuntime
+    SpeechesTranscriptsKeyword = SpeechesTranscriptsKeywordModelRuntime
+    SpeechesTranscriptsEntity = SpeechesTranscriptsEntityModelRuntime
     SpeechesTranscriptsProposition = SpeechesTranscriptsPropositionModelRuntime
     _SESSION_SCOPE = session_scope_runtime
 
     _configure_sqlalchemy_logging(_SQL_LOG_LEVEL)
+
+
+def _get_text_analyzer(model: Optional[str] = None) -> Optional[PortugueseSpeechAnalyzer]:
+    global _TEXT_ANALYZER, _TEXT_ANALYZER_INITIALIZED
+
+    if model is None and _TEXT_ANALYZER is not None:
+        return _TEXT_ANALYZER
+
+    if load_portuguese_analyzer is None:
+        if not _TEXT_ANALYZER_INITIALIZED:
+            logger.warning(
+                "Dependências de NLP (spaCy) não instaladas; análise de palavras-chave será ignorada."
+            )
+            _TEXT_ANALYZER_INITIALIZED = True
+        return None
+
+    try:
+        analyzer = load_portuguese_analyzer(model=model)
+    except RuntimeError as exc:
+        if not _TEXT_ANALYZER_INITIALIZED:
+            logger.warning("Análise de discurso indisponível: %s", exc)
+            _TEXT_ANALYZER_INITIALIZED = True
+        return None
+
+    if model is None:
+        _TEXT_ANALYZER = analyzer
+        _TEXT_ANALYZER_INITIALIZED = True
+    return analyzer
+
+
+def _delete_speech_keywords(
+    session: Session,
+    speech_id: int,
+    *,
+    analysis_type: str,
+) -> None:
+    if SpeechesTranscriptsKeyword is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    session.query(SpeechesTranscriptsKeyword).filter(
+        SpeechesTranscriptsKeyword.speeches_transcripts_id == speech_id,
+        SpeechesTranscriptsKeyword.analysis_type == analysis_type,
+    ).delete(synchronize_session=False)
+
+
+def _delete_speech_entities(
+    session: Session,
+    speech_id: int,
+    *,
+    analysis_type: str,
+) -> None:
+    if SpeechesTranscriptsEntity is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    session.query(SpeechesTranscriptsEntity).filter(
+        SpeechesTranscriptsEntity.speeches_transcripts_id == speech_id,
+        SpeechesTranscriptsEntity.analysis_type == analysis_type,
+    ).delete(synchronize_session=False)
+
+
+def _persist_speech_keywords(
+    session: Session,
+    speech_id: int,
+    keywords: Sequence[Dict[str, Any]],
+    *,
+    analysis_type: str,
+) -> None:
+    if SpeechesTranscriptsKeyword is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    _delete_speech_keywords(session, speech_id, analysis_type=analysis_type)
+    for index, data in enumerate(keywords, start=1):
+        keyword_value = str(data.get("keyword") or data.get("term") or "").strip().lower()
+        term_value = str(data.get("term") or data.get("keyword") or "").strip()
+        if not keyword_value or not term_value:
+            continue
+
+        frequency_value = _parse_int(data.get("frequency"))
+        if frequency_value is None:
+            frequency_value = 0
+
+        rank_value = _parse_int(data.get("rank"))
+        if rank_value is None or rank_value <= 0:
+            rank_value = index
+
+        session.add(
+            SpeechesTranscriptsKeyword(
+                speeches_transcripts_id=speech_id,
+                keyword=keyword_value,
+                term=term_value,
+                frequency=frequency_value,
+                rank=rank_value,
+                is_primary=rank_value == 1,
+                analysis_type=analysis_type,
+            )
+        )
+
+
+def _persist_speech_entities(
+    session: Session,
+    speech_id: int,
+    entities: Sequence[Dict[str, Any]],
+    *,
+    analysis_type: str,
+) -> None:
+    if SpeechesTranscriptsEntity is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    _delete_speech_entities(session, speech_id, analysis_type=analysis_type)
+    for data in entities:
+        text_value = str(data.get("text") or "").strip()
+        label_value = str(data.get("label") or "OUTRO").strip().upper()
+        if not text_value:
+            continue
+
+        start_value = _parse_int(data.get("start_char"))
+        end_value = _parse_int(data.get("end_char"))
+
+        session.add(
+            SpeechesTranscriptsEntity(
+                speeches_transcripts_id=speech_id,
+                text=text_value,
+                label=label_value or "OUTRO",
+                start_char=start_value,
+                end_char=end_value,
+                analysis_type=analysis_type,
+            )
+        )
+
+
+def _update_speech_text_analysis(
+    session: Session,
+    record: Any,
+    *,
+    analyzer: Optional[PortugueseSpeechAnalyzer] = None,
+    keyword_limit: int = 15,
+    analyzer_model: Optional[str] = None,
+    analysis_type: str = "spacy",
+) -> None:
+    normalized_type = (analysis_type or "spacy").strip().lower()
+
+    speech_id = getattr(record, "id", None)
+    if speech_id is None:
+        session.flush()
+        speech_id = getattr(record, "id", None)
+    if speech_id is None:
+        logger.debug("Registro de pronunciamento ainda sem ID; análise ignorada.")
+        return
+
+    speech_text = getattr(record, "speech_text", None)
+    if not speech_text:
+        _delete_speech_keywords(session, speech_id, analysis_type=normalized_type)
+        _delete_speech_entities(session, speech_id, analysis_type=normalized_type)
+        return
+
+    keywords: Sequence[Dict[str, Any]] = []
+    entities: Sequence[Dict[str, Any]] = []
+
+    if normalized_type == "spacy":
+        if analyzer is None:
+            analyzer = _get_text_analyzer(model=analyzer_model)
+        if analyzer is None:
+            logger.debug(
+                "Não foi possível carregar o analisador spaCy; análise ignorada para o discurso %s.",
+                speech_id,
+            )
+            return
+        keywords = analyzer.extract_keywords(speech_text, limit=keyword_limit)
+        entities = analyzer.extract_entities(speech_text)
+    elif normalized_type == "chatgpt":
+        if analyze_with_chatgpt is None:
+            logger.warning(
+                "Dependências para ChatGPT não instaladas; análise ignorada para o discurso %s.",
+                speech_id,
+            )
+            return
+
+        try:
+            keywords, entities = analyze_with_chatgpt(
+                speech_text,
+                keyword_limit=keyword_limit,
+                model=analyzer_model,
+            )
+        except Exception as exc:  # pragma: no cover - integrações externas
+            logger.warning(
+                "Falha ao executar análise via ChatGPT para o discurso %s: %s",
+                speech_id,
+                exc,
+            )
+            return
+    else:
+        logger.warning(
+            "Tipo de análise '%s' não suportado; discurso %s não será processado.",
+            normalized_type,
+            speech_id,
+        )
+        return
+
+    _persist_speech_keywords(
+        session,
+        speech_id,
+        keywords,
+        analysis_type=normalized_type,
+    )
+    _persist_speech_entities(
+        session,
+        speech_id,
+        entities,
+        analysis_type=normalized_type,
+    )
+
+    logger.debug(
+        "Análise de texto (%s) atualizada para discurso %s (%s palavras-chave, %s entidades).",
+        normalized_type,
+        speech_id,
+        len(keywords),
+        len(entities),
+    )
+
+
+def update_speech_text_analysis(
+    session: Session,
+    record: Any,
+    *,
+    analyzer: Optional[PortugueseSpeechAnalyzer] = None,
+    keyword_limit: int = 15,
+    analyzer_model: Optional[str] = None,
+    analysis_type: str = "spacy",
+) -> None:
+    """Executa (ou atualiza) a análise de NLP para um pronunciamento específico."""
+    _update_speech_text_analysis(
+        session,
+        record,
+        analyzer=analyzer,
+        keyword_limit=keyword_limit,
+        analyzer_model=analyzer_model,
+        analysis_type=analysis_type,
+    )
+
+
+def rebuild_speech_text_analysis(
+    *,
+    parliamentarian_code: Optional[int] = None,
+    analyzer_model: Optional[str] = None,
+    keyword_limit: int = 15,
+    batch_size: int = 100,
+    limit: Optional[int] = None,
+    analysis_type: str = "spacy",
+) -> None:
+    """Reexecuta a análise de NLP em lote para registros já existentes."""
+    _ensure_db_dependencies()
+
+    if _SESSION_SCOPE is None or SpeechesTranscript is None:
+        raise RuntimeError("Dependências de banco não carregadas.")
+
+    normalized_type = (analysis_type or "spacy").strip().lower()
+
+    analyzer: Optional[PortugueseSpeechAnalyzer] = None
+    if normalized_type == "spacy":
+        analyzer = _get_text_analyzer(model=analyzer_model)
+        if analyzer is None:
+            logger.warning(
+                "Analisador spaCy indisponível; nenhuma atualização foi realizada."
+            )
+            return
+    elif normalized_type == "chatgpt":
+        if analyze_with_chatgpt is None:
+            logger.warning(
+                "Dependências para ChatGPT não instaladas; nenhuma atualização foi realizada."
+            )
+            return
+    else:
+        logger.warning("Tipo de análise '%s' não suportado.", normalized_type)
+        return
+
+    processed = 0
+    with _SESSION_SCOPE() as session:
+        base_query = session.query(SpeechesTranscript.id).order_by(SpeechesTranscript.id)
+        if parliamentarian_code is not None:
+            if Parliamentarian is None:
+                raise RuntimeError("Modelo Parliamentarian não carregado.")
+            base_query = base_query.join(Parliamentarian).filter(
+                Parliamentarian.parliamentarian_code == parliamentarian_code
+            )
+
+        offset = 0
+        while True:
+            effective_limit = batch_size
+            if limit is not None:
+                remaining = limit - processed
+                if remaining <= 0:
+                    break
+                effective_limit = min(effective_limit, remaining)
+
+            id_batch = [row[0] for row in base_query.offset(offset).limit(effective_limit)]
+            if not id_batch:
+                break
+
+            speeches = (
+                session.query(SpeechesTranscript)
+                .filter(SpeechesTranscript.id.in_(id_batch))
+                .order_by(SpeechesTranscript.id)
+                .all()
+            )
+
+            for speech in speeches:
+                update_speech_text_analysis(
+                    session,
+                    speech,
+                    analyzer=analyzer,
+                    keyword_limit=keyword_limit,
+                    analyzer_model=analyzer_model,
+                    analysis_type=normalized_type,
+                )
+                processed += 1
+
+            session.commit()
+            offset += len(id_batch)
+
+    logger.info(
+        "Análise textual reconstruída para %s pronunciamentos (analysis_type=%s).",
+        processed,
+        normalized_type,
+    )
 
 
 def _normalize_text(value: Optional[str]) -> Optional[str]:
@@ -758,6 +1112,7 @@ def speechs_transcipts(
                                 record,
                                 payload.get("referenced_propositions", []),
                             )
+                            update_speech_text_analysis(session, record)
                             total_persisted += 1
 
                     if year_processed == 0:

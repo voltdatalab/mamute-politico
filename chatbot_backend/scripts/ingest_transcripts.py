@@ -32,7 +32,11 @@ def _fetch_batch(offset: int, limit: int) -> Iterable[dict]:
             st.speech_text,
             st.session_number,
             st.type,
-            p.name AS parliamentarian_name
+            st.parliamentarian_id,
+            p.name AS parliamentarian_name,
+            p.party AS parliamentarian_party,
+            p.state_elected AS parliamentarian_state,
+            p.type AS parliamentarian_role
         FROM speeches_transcripts st
         LEFT JOIN parliamentarian p ON p.id = st.parliamentarian_id
         ORDER BY st.updated_at ASC NULLS LAST, st.id ASC

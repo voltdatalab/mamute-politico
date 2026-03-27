@@ -12,9 +12,17 @@ class ChatMessage(BaseModel):
     content: str
 
 
+class ChatFilters(BaseModel):
+    parliamentarian_ids: Optional[List[int]] = None
+    parties: Optional[List[str]] = None
+    states: Optional[List[str]] = None
+    roles: Optional[List[str]] = None
+
+
 class ChatRequest(BaseModel):
     question: str = Field(..., min_length=3)
     history: List[ChatMessage] = Field(default_factory=list)
+    filters: Optional[ChatFilters] = None
 
 
 class ChatResponse(BaseModel):
@@ -26,4 +34,10 @@ class HealthcheckResponse(BaseModel):
     environment: Optional[str] = None
 
 
-__all__ = ["ChatMessage", "ChatRequest", "ChatResponse", "HealthcheckResponse"]
+__all__ = [
+    "ChatMessage",
+    "ChatFilters",
+    "ChatRequest",
+    "ChatResponse",
+    "HealthcheckResponse",
+]

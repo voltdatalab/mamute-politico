@@ -30,6 +30,8 @@ def build_documents(
 
     summary = (row.get("summary") or "").strip()
     speech_text = (row.get("speech_text") or "").strip()
+    speech_id = row.get("id")
+    parliamentarian_id = row.get("parliamentarian_id")
 
     if not summary and not speech_text:
         return []
@@ -44,13 +46,26 @@ def build_documents(
 
     row_id = row.get("id")
     source = f"speeches_transcripts:{row_id}"
+    party = (row.get("parliamentarian_party") or "").upper() or None
+    state = (row.get("parliamentarian_state") or "").upper() or None
+    role_type = (row.get("parliamentarian_role") or "").upper() or None
+
     metadata = {
         "source": source,
         "date": _format_date(row.get("date")),
         "session_number": row.get("session_number"),
         "type": row.get("type"),
         "parliamentarian": row.get("parliamentarian_name"),
+        "speech_id": row_id,
+        "parliamentarian_id": parliamentarian_id,
     }
+
+    if party:
+        metadata["party"] = party
+    if state:
+        metadata["state"] = state
+    if role_type:
+        metadata["role"] = role_type
 
     documents = splitter.create_documents(
         texts=[merged_content],

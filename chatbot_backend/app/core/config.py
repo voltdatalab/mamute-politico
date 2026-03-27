@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """Configurações gerais da aplicação."""
 
     model_config = SettingsConfigDict(
-        env_file=(".env", "@.env"),
+        env_file=(".env", "@.env", "chatbot_backend/.env", "chatbot_backend/@.env"),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -61,6 +61,9 @@ class Settings(BaseSettings):
         alias="SQL_KEYWORD_STOPWORDS",
     )
     sql_frequency_limit: int = Field(default=5, alias="SQL_FREQUENCY_LIMIT")
+    sql_keywords_limit: int = Field(default=8, alias="SQL_KEYWORDS_LIMIT")
+    sql_entities_limit: int = Field(default=6, alias="SQL_ENTITIES_LIMIT")
+    sql_propositions_limit: int = Field(default=6, alias="SQL_PROPOSITIONS_LIMIT")
 
     rerank_top_k: int = Field(default=5, alias="RERANK_TOP_K", ge=1)
 

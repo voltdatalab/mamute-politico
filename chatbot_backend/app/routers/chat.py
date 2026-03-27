@@ -34,7 +34,10 @@ async def stream_chat(request: ChatRequest) -> StreamingResponse:
     """Expõe o fluxo de tokens gerados pelo LLM."""
 
     async def event_generator() -> AsyncIterator[str]:
+        filters = request.filters.model_dump(exclude_none=True) if request.filters else None
         inputs = {"question": request.question, "history": [msg.model_dump() for msg in request.history]}
+        if filters:
+            inputs["filters"] = filters
         try:
             async for chunk in service.stream_response(inputs):
                 yield _sse_event_stream(chunk)
@@ -66,7 +69,12 @@ async def stream_chat(request: ChatRequest) -> StreamingResponse:
 async def query_chat(request: ChatRequest) -> ChatResponse:
     """Executa o fluxo normal sem streaming."""
 
-    answer = await service.invoke(
-        {"question": request.question, "history": [msg.model_dump() for msg in request.history]}
-    )
+    payload = {
+        "question": request.question,
+        "history": [msg.model_dump() for msg in request.history],
+    }
+    if request.filters:
+        payload["filters"] = request.filters.model_dump(exclude_none=True)
+
+    answer = await service.invoke(payload)
     return ChatResponse(answer=answer)

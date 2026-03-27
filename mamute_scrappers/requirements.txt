@@ -13,6 +13,8 @@ PyJWT==2.9.0
 python-dotenv==1.0.1
 requests==2.32.4
 soupsieve==2.7
+spacy==3.7.4
+openai==1.12.0
 SQLAlchemy==2.0.44
 typing_extensions==4.13.2
 urllib3==2.2.3

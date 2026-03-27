@@ -41,6 +41,16 @@ class SpeechesTranscript(Base):
         back_populates="speech",
         cascade="all, delete-orphan",
     )
+    keywords = relationship(
+        "SpeechesTranscriptsKeyword",
+        back_populates="speech",
+        cascade="all, delete-orphan",
+    )
+    entities = relationship(
+        "SpeechesTranscriptsEntity",
+        back_populates="speech",
+        cascade="all, delete-orphan",
+    )
 
 
 __all__ = ["SpeechesTranscript"]

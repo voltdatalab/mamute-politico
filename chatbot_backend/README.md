@@ -25,6 +25,26 @@ Backend construído com FastAPI e LangChain para oferecer um chatbot especializa
 
    Edite o `.env` com suas credenciais de banco e chaves do OpenAI. Os campos `APPLICATION_NAME` (PostgreSQL) e `RERANK_TOP_K` (reranqueador) permitem ajustes de monitoramento e qualidade das respostas.
 
+## Inicializando a coleção vetorial
+
+Com as variáveis `DATABASE_URL` e `PGVECTOR_CONNECTION` apontando para o banco desejado:
+
+```bash
+python -m chatbot_backend.scripts.init_vector_collection
+```
+
+O script garante que as extensões necessárias (`vector`, `pgcrypto`) estejam ativas, cria as tabelas padrão (`langchain_pg_collection`, `langchain_pg_embedding`), configura índices e registra a coleção definida em `PGVECTOR_COLLECTION`. Caso já exista, nada é sobrescrito. Use `--dimension 3072` para informar manualmente a dimensão do vetor (por padrão é detectada via API do OpenAI).
+
+> Observação: se preferir não expor `OPENAI_API_KEY` nesse momento, utilize o parâmetro `--dimension` para evitar a chamada à API de embeddings.
+>
+> Limite de índices: o índice IVFFLAT não é criado automaticamente quando a dimensão do embedding excede 2000 (limitação do pgvector). Para embeddings maiores, considere usar um modelo menor (`text-embedding-3-small`, 1536 dimensões) ou criar manualmente uma estratégia alternativa (por exemplo, HNSW quando disponível).
+
+Caso o banco já tenha um esquema anterior (ex.: tabelas criadas com outra estrutura), rode com `--reset` para remover e recriar:
+
+```bash
+python -m chatbot_backend.scripts.init_vector_collection --reset --dimension 3072
+```
+
 2. Crie um ambiente virtual e instale as dependências:
 
    ```bash
@@ -43,6 +63,8 @@ python -m chatbot_backend.scripts.ingest_transcripts --batch-size 200
 ```
 
 O script lê as notas diretamente da tabela `speeches_transcripts`, cria chunks com `RecursiveCharacterTextSplitter` e adiciona documentos ao índice definido em `PGVECTOR_COLLECTION`.
+
+Cada chunk recebe metadados `speech_id`, `parliamentarian_id`, `date`, `session_number` e `type`, permitindo rastreamento e filtros posteriores no JSONB (`cmetadata`) armazenado no PostgreSQL.
 
 ## Sincronização contínua
 
@@ -82,13 +104,41 @@ data: {"type":"done"}
 
 No front-end basta consumir o endpoint com `EventSource` (ou fetch streaming) para reconstruir o texto.
 
+Exemplo de requisição com filtros (limitando a partidos específicos):
+
+```bash
+curl -N \
+  -H "Content-Type: application/json" \
+  -d '{
+        "question": "Quais parlamentares discutiram a reforma tributária?",
+        "filters": {
+          "parties": ["UNIÃO", "PT"]
+        }
+      }' \
+  http://localhost:8001/chatbot/stream
+```
+
+Campos aceitos dentro de `filters`: `parliamentarian_ids` (lista de IDs numéricos), `parties` (siglas), `states` (UFs) e `roles` (tipos de parlamentares). Todos são opcionais; se nenhum filtro for enviado, a busca considera todo o conjunto disponível.
+
 ## Personalizações
 
 - Ajuste `RETRIEVER_K` e `RETRIEVER_SCORE_THRESHOLD` para calibrar a quantidade de chunks trazidos do vetor.
 - Ajuste `RERANK_TOP_K` para definir quantos chunks reranqueados alimentam o prompt final; o reranqueador usa o próprio modelo GPT para priorizar trechos mais relevantes.
 - Modifique `SQL_CONTEXT_LIMIT` e a lista de stopwords em `SQL_KEYWORD_STOPWORDS` para adaptar as consultas SQL acessórias.
 - Controle o volume de estatísticas agregadas retornadas com `SQL_FREQUENCY_LIMIT`; perguntas sobre “quantidade”, “frequência” ou “quantas vezes” ativam uma consulta de contagem por parlamentar.
+- Ajuste `SQL_KEYWORDS_LIMIT`, `SQL_ENTITIES_LIMIT` e `SQL_PROPOSITIONS_LIMIT` para calibrar quantos resultados são trazidos das tabelas de palavras-chave, entidades nomeadas e proposições associadas.
 - O prompt base está em `app/services/prompts.py`.
+- A coleção vetorial possui índice dedicado em `(cmetadata->>'parliamentarian_id')::bigint`, permitindo buscas eficientes por parlamentar específico.
+
+## Passo a passo sugerido
+
+1. Configure o `.env` com as credenciais de banco e do OpenAI.
+2. Crie e ative um ambiente virtual, instalando `pip install -r requirements.txt`.
+3. Rode `python -m chatbot_backend.scripts.init_vector_collection` para preparar a coleção vetorial.
+4. Execute `python -m chatbot_backend.scripts.ingest_transcripts` para popular o índice inicial.
+5. Agende `python -m chatbot_backend.scripts.sync_transcripts` (cron/job) para manter o índice atualizado.
+6. Suba a API com `uvicorn chatbot_backend.app.main:app --reload --port 8001`.
+7. Consuma `/chatbot/query` ou `/chatbot/stream` a partir do front-end.
 
 ## Observabilidade
 
