@@ -1,0 +1,11 @@
+:8080 {
+	root * /srv
+	encode gzip zstd
+
+	# Strip /app prefix before serving static files.
+	handle_path /app* {
+		try_files {path} /index.html
+		file_server
+	}
+}
+
