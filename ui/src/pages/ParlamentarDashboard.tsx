@@ -1,0 +1,182 @@
+import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Header } from '@/components/layout/Header';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ParlamentarInfo } from '@/components/dashboard/ParlamentarInfo';
+import { WordCloud } from '@/components/dashboard/WordCloud';
+import { ProposicoesList } from '@/components/dashboard/ProposicoesList';
+import { ProposicoesTable } from '@/components/dashboard/ProposicoesTable';
+import { VotacoesTable } from '@/components/dashboard/VotacoesTable';
+import { TaquigraficasTable } from '@/components/dashboard/TaquigraficasTable';
+import { getParliamentarian } from '@/api/endpoints';
+import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
+import { ApiError } from '@/api/client';
+import { ArrowLeft, Cloud, FileText, Vote, Loader2 } from 'lucide-react';
+
+const ParlamentarDashboard = () => {
+  const { id } = useParams<{ id: string }>();
+  const numericId = id != null ? Number(id) : NaN;
+  const isIdValid = Number.isInteger(numericId) && numericId > 0;
+
+  const { data: raw, isLoading, isError, error } = useQuery({
+    queryKey: ['parliamentarian', id],
+    queryFn: () => getParliamentarian(numericId),
+    enabled: isIdValid,
+  });
+
+  const parlamentar = raw != null ? mapParliamentarianOutToParlamentar(raw) : null;
+  const parliamentarianCode =
+    raw?.parliamentarian_code != null && raw.parliamentarian_code > 0
+      ? raw.parliamentarian_code
+      : numericId;
+
+  if (!isIdValid) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container py-8">
+          <div className="text-center py-16">
+            <h1 className="text-2xl font-bold mb-4">Parlamentar não encontrado</h1>
+            <Link to="/selecao">
+              <Button>Voltar à seleção</Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container py-8 flex items-center justify-center gap-2 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Carregando...</span>
+        </main>
+      </div>
+    );
+  }
+
+  if (isError || !parlamentar) {
+    const notFound = error instanceof ApiError && error.status === 404;
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container py-8">
+          <div className="text-center py-16">
+            <h1 className="text-2xl font-bold mb-4">
+              {notFound ? 'Parlamentar não encontrado' : 'Falha ao carregar'}
+            </h1>
+            {!notFound && error instanceof Error && (
+              <p className="text-muted-foreground mb-4">{error.message}</p>
+            )}
+            <Link to="/selecao">
+              <Button>Voltar à seleção</Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <main className="container py-8 space-y-6">
+        {/* Back button */}
+        <Link to="/selecao">
+          <Button variant="ghost" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+        </Link>
+
+        {/* Top Row - Info, Word Cloud, Recent Projects */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <ParlamentarInfo parlamentar={parlamentar} />
+          
+          <Card variant="highlight">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Cloud className="h-5 w-5" />
+                Temas dos Discursos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WordCloud parliamentarianId={parliamentarianCode} />
+            </CardContent>
+          </Card>
+          
+          <Card variant="accent">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Projetos Recentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-[250px]">
+              <ProposicoesList limit={3} parliamentarianId={id} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bottom Row - Tabs for Propositions, Votes and Stenographic Notes */}
+        <Tabs defaultValue="proposicoes" className="w-full">
+          <TabsList className="grid w-full max-w-xl grid-cols-3">
+            <TabsTrigger value="proposicoes" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Proposições
+            </TabsTrigger>
+            <TabsTrigger value="votacoes" className="gap-2">
+              <Vote className="h-4 w-4" />
+              Votações
+            </TabsTrigger>
+            <TabsTrigger value="taquigraficas" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Taquigráficas
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="proposicoes" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Proposições do Parlamentar</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProposicoesTable parliamentarianId={id} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="votacoes" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Histórico de Votações</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[500px]">
+                <VotacoesTable parliamentarianId={numericId} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="taquigraficas" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Notas Taquigráficas</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[500px]">
+                <TaquigraficasTable parliamentarianId={numericId} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+};
+
+export default ParlamentarDashboard;
