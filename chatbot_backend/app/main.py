@@ -32,9 +32,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.include_router(chat.router)
+    app.include_router(chat.router, prefix="/chat")
 
-    @app.get("/health", response_model=HealthcheckResponse, tags=["infra"])
+    @app.get("/chat/health", response_model=HealthcheckResponse, tags=["infra"])
     async def healthcheck() -> HealthcheckResponse:
         """Verifica o status básico da aplicação."""
 
