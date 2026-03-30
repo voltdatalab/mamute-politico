@@ -16,7 +16,7 @@ services:
   ui:
     build:
       context: ../../ui
-      dockerfile: environments/production/Dockerfile
+      dockerfile: Dockerfile
     networks:
       - frontend
     restart: unless-stopped
