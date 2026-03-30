@@ -9,5 +9,6 @@ pushd $scriptDir
 echo "Current directory: $(pwd)" && \
 echo "Initializing Mamute Politico UI Development" && \
 docker compose -f docker-compose.yml up --build -d && \
+cd ../../ui && \
 npm run dev
 popd

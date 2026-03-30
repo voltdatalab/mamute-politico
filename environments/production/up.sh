@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+# set -e
 
 # Force execution from this script directory.
 scriptDir=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
