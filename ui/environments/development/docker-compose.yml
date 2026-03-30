@@ -1,0 +1,93 @@
+name: mamute-politico-ui-dev
+
+services:
+
+  mamute-politico-api:
+    build:
+      context: ../../../api
+      dockerfile: Dockerfile
+    image: mamute-politico-api:latest
+    container_name: mamute-politico-api
+    volumes:
+      - ../../../api/.env:/app/.env
+    networks:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+  mamute-politico-chatbot:
+    build:
+      context: ../../../chatbot_backend
+      dockerfile: Dockerfile
+    image: mamute-politico-chatbot:latest
+    container_name: mamute-politico-chatbot
+    volumes:
+      - ../../../chatbot_backend/.env:/app/.env
+    networks:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - frontend
+    restart: unless-stopped
+
+  ghost-db:
+    container_name: ghost-db
+    image: mysql:8.0
+    environment:
+      # TODO: Remove hardcoded values
+      MYSQL_ROOT_PASSWORD: ${GHOST_DB_PASSWORD:-mamute_ghost_dev}
+    volumes:
+      - ghost_db_data:/var/lib/mysql
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  ghost:
+    image: ghost:latest
+    container_name: ghost
+    environment:
+      url: ${PUBLIC_URL:-http://localhost}
+      NODE_ENV: development
+      database__client: mysql
+      database__connection__host: ghost-db
+      database__connection__user: root
+      # TODO: Remove hardcoded values
+      database__connection__password: ${GHOST_DB_PASSWORD:-mamute_ghost_dev}
+      database__connection__database: ghost
+    volumes:
+      - ghost_content:/var/lib/ghost/content
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      ghost-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  frontend:
+    name: mamute-politico-ui-dev-frontend
+  backend:
+    name: mamute-politico-ui-dev-backend
+
+volumes:
+  caddy_data:
+  caddy_config:
+  ghost_content:
+  ghost_db_data:

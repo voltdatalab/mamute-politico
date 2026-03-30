@@ -1,0 +1,25 @@
+:80 {
+	@appBare path_regexp ^/app$
+	redir @appBare /app/ 308
+
+	@appPaths path /app*
+	handle @appPaths {
+		reverse_proxy host.docker.internal:8080
+	}
+
+	@apiPaths path /api*
+	handle @apiPaths {
+		reverse_proxy mamute-politico-api:8000
+	}
+
+	@chatPaths path /chat*
+	handle @chatPaths {
+		reverse_proxy mamute-politico-chatbot:8000
+	}
+
+	handle {
+		reverse_proxy ghost:2368 {
+			header_up X-Forwarded-Proto https
+		}
+	}
+}
