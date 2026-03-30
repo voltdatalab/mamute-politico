@@ -15,7 +15,7 @@ services:
 
   ui:
     build:
-      context: ../..
+      context: ../../ui
       dockerfile: environments/production/Dockerfile
     networks:
       - frontend
@@ -23,12 +23,12 @@ services:
 
   mamute-politico-chatbot:
     build:
-      context: ../../../api/chatbot_backend
+      context: ../../chatbot_backend
       dockerfile: Dockerfile
     image: mamute-politico-chatbot:latest
     container_name: mamute-politico-chatbot
     volumes:
-      - ../../../api/chatbot_backend/.env:/app/.env
+      - ../../chatbot_backend/.env:/app/.env
     networks:
       - frontend
     restart: unless-stopped

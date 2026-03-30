@@ -4,12 +4,12 @@ services:
 
   mamute-politico-api:
     build:
-      context: ../../../api
+      context: ../../api
       dockerfile: Dockerfile
     image: mamute-politico-api:latest
     container_name: mamute-politico-api
     volumes:
-      - ../../../api/.env:/app/.env
+      - ../../api/.env:/app/.env
     networks:
       - backend
       - frontend
@@ -17,12 +17,12 @@ services:
 
   mamute-politico-chatbot:
     build:
-      context: ../../../chatbot_backend
+      context: ../../chatbot_backend
       dockerfile: Dockerfile
     image: mamute-politico-chatbot:latest
     container_name: mamute-politico-chatbot
     volumes:
-      - ../../../chatbot_backend/.env:/app/.env
+      - ../../chatbot_backend/.env:/app/.env
     networks:
       - backend
       - frontend
