@@ -1,53 +1,44 @@
-name: mamute-politico-ui-dev
+name: mamute-politico-ui-prod
 
 services:
-
-  mamute-politico-api:
-    build:
-      context: ../../../api
-      dockerfile: Dockerfile
-    image: mamute-politico-api:latest
-    container_name: mamute-politico-api
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "${CADDY_HTTP_PORT:-80}:80"
     volumes:
-      - ../../../api/.env:/app/.env
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     networks:
-      - backend
+      - frontend
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ../../ui
+      dockerfile: environments/production/Dockerfile
+    networks:
       - frontend
     restart: unless-stopped
 
   mamute-politico-chatbot:
     build:
-      context: ../../../chatbot_backend
+      context: ../../chatbot_backend
       dockerfile: Dockerfile
     image: mamute-politico-chatbot:latest
     container_name: mamute-politico-chatbot
     volumes:
-      - ../../../chatbot_backend/.env:/app/.env
-    networks:
-      - backend
-      - frontend
-    restart: unless-stopped
-
-  caddy:
-    image: caddy:2-alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - ../../chatbot_backend/.env:/app/.env
     networks:
       - frontend
     restart: unless-stopped
 
   ghost-db:
-    container_name: ghost-db
     image: mysql:8.0
     environment:
       # TODO: Remove hardcoded values
-      MYSQL_ROOT_PASSWORD: ${GHOST_DB_PASSWORD:-mamute_ghost_dev}
+      MYSQL_ROOT_PASSWORD: ${GHOST_DB_PASSWORD:-change_me}
+      MYSQL_DATABASE: ghost
     volumes:
       - ghost_db_data:/var/lib/mysql
     networks:
@@ -60,15 +51,14 @@ services:
 
   ghost:
     image: ghost:latest
-    container_name: ghost
     environment:
       url: ${PUBLIC_URL:-http://localhost}
-      NODE_ENV: development
+      NODE_ENV: production
       database__client: mysql
       database__connection__host: ghost-db
       database__connection__user: root
       # TODO: Remove hardcoded values
-      database__connection__password: ${GHOST_DB_PASSWORD:-mamute_ghost_dev}
+      database__connection__password: ${GHOST_DB_PASSWORD:-change_me}
       database__connection__database: ghost
     volumes:
       - ghost_content:/var/lib/ghost/content
@@ -82,12 +72,13 @@ services:
 
 networks:
   frontend:
-    name: mamute-politico-ui-dev-frontend
+    name: mamute-politico-ui-prod-frontend
   backend:
-    name: mamute-politico-ui-dev-backend
+    name: mamute-politico-ui-prod-backend
 
 volumes:
   caddy_data:
   caddy_config:
   ghost_content:
   ghost_db_data:
+
