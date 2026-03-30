@@ -87,9 +87,9 @@ uvicorn chatbot_backend.app.main:app --reload --host 0.0.0.0 --port 8001
 
 Endpoints principais:
 
-- `POST /chatbot/stream` – responde em streaming via Server-Sent Events (`text/event-stream`).
-- `POST /chatbot/query` – retorna a resposta completa sem streaming.
-- `GET /health` – verificação simples de saúde.
+- `POST /chat/chatbot/stream` – responde em streaming via Server-Sent Events (`text/event-stream`).
+- `POST /chat/chatbot/query` – retorna a resposta completa sem streaming.
+- `GET /chat/health` – verificação simples de saúde.
 
 ### Formato do streaming
 
@@ -116,7 +116,7 @@ curl -N \
           "parties": ["UNIÃO", "PT"]
         }
       }' \
-  http://localhost:8001/chatbot/stream
+  http://localhost:8001/chat/chatbot/stream
 ```
 
 Campos aceitos dentro de `filters`: `parliamentarian_ids` (lista de IDs numéricos), `parties` (siglas), `states` (UFs) e `roles` (tipos de parlamentares). Todos são opcionais; se nenhum filtro for enviado, a busca considera todo o conjunto disponível.
@@ -138,7 +138,7 @@ Campos aceitos dentro de `filters`: `parliamentarian_ids` (lista de IDs numéric
 4. Execute `python -m chatbot_backend.scripts.ingest_transcripts` para popular o índice inicial.
 5. Agende `python -m chatbot_backend.scripts.sync_transcripts` (cron/job) para manter o índice atualizado.
 6. Suba a API com `uvicorn chatbot_backend.app.main:app --reload --port 8001`.
-7. Consuma `/chatbot/query` ou `/chatbot/stream` a partir do front-end.
+7. Consuma `/chat/chatbot/query` ou `/chat/chatbot/stream` a partir do front-end (no stack com Caddy em `:80`, use `http://localhost/chat/...`).
 
 ## Observabilidade
 
@@ -146,7 +146,7 @@ Caso utilize LangSmith/LangChain tracing, habilite `LANGCHAIN_TRACING_V2=true` e
 
 ## Testes recomendados
 
-- Verifique o endpoint `POST /chatbot/query` com uma pergunta conhecida para validar a recuperação.
+- Verifique o endpoint `POST /chat/chatbot/query` com uma pergunta conhecida para validar a recuperação.
 - Monitore o banco para garantir que o índice vetorial está sendo populado corretamente.
-- Consuma `POST /chatbot/stream` via curl (`curl -N`) e observe o fluxo de tokens.
+- Consuma `POST /chat/chatbot/stream` via curl (`curl -N`) e observe o fluxo de tokens.
 

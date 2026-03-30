@@ -61,6 +61,7 @@ def get_public_key() -> Any:
         response = requests.get(settings["jwks_url"], timeout=5)
         response.raise_for_status()
     except RequestException as exc:
+        print(f"Erro ao obter a chave pública do Ghost Members: {exc}")
         raise HTTPException(
             status_code=503,
             detail="Falha ao obter a chave pública do Ghost Members.",
