@@ -1,5 +1,6 @@
 import { publicKey } from "./publicKey";
 
+// TODO: Use VITE_API_BASE_URL?
 export const AUTH_API_ROOT =
   (import.meta.env.VITE_AUTH_API_ROOT as string | undefined) ??
   "http://localhost";
