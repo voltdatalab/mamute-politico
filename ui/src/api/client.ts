@@ -9,11 +9,6 @@ import { JWT_TOKEN_KEY } from '@/components/auth/config';
 /** Ghost Members JWT: from localStorage (same key as auth flow) then env fallback. Used for all API requests. */
 const getToken = (): string | undefined => {
 
-  const envToken = import.meta.env.VITE_GHOST_MEMBER_TOKEN;
-  if (envToken && typeof envToken === 'string') {
-    return envToken;
-  };
-
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(JWT_TOKEN_KEY);
     if (stored) return stored;
