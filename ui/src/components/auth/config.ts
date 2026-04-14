@@ -1,9 +1,7 @@
 import { publicKey } from "./publicKey";
 
-// TODO: Use VITE_API_BASE_URL?
 export const AUTH_API_ROOT =
-  (import.meta.env.VITE_AUTH_API_ROOT as string | undefined) ??
-  "http://localhost";
+  (import.meta.env.VITE_BASE_URL as string | undefined) ?? "http://localhost";
 export const TOKEN_ENDPOINT = `${AUTH_API_ROOT}/members/api/session/`;
 export const WELL_KNOWN_ENDPOINT = `${AUTH_API_ROOT}/members/.well-known/jwks.json`;
 

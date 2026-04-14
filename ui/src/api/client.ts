@@ -1,6 +1,8 @@
 const getBaseUrl = (): string => {
-  const url = import.meta.env.VITE_API_BASE_URL;
-  if (url && typeof url === 'string') return url.replace(/\/$/, '');
+  const root = import.meta.env.VITE_BASE_URL;
+  if (root && typeof root === 'string') {
+    return `${root.replace(/\/$/, '')}/api`;
+  }
   return 'http://127.0.0.1:8000/api';
 };
 
