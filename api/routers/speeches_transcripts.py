@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date as date_type, datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -27,7 +27,7 @@ class SpeechesTranscriptOut(BaseModel):
 
     id: int
     parliamentarian_id: int
-    date: Optional[date] = None
+    date: Optional[date_type] = None
     session_number: Optional[str] = None
     type: Optional[str] = None  # noqa: A003 - manter nome da coluna
     speech_link: Optional[str] = None
@@ -51,10 +51,10 @@ def list_speeches_transcripts(
     parliamentarian_id: Optional[int] = Query(
         None, description="Filtra pelo parlamentar responsável pelo discurso."
     ),
-    date_from: Optional[date] = Query(
+    date_from: Optional[date_type] = Query(
         None, description="Filtra discursos ocorridos a partir desta data (inclusive)."
     ),
-    date_to: Optional[date] = Query(
+    date_to: Optional[date_type] = Query(
         None, description="Filtra discursos ocorridos até esta data (inclusive)."
     ),
 ) -> List[SpeechesTranscript]:
