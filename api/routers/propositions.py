@@ -20,6 +20,7 @@ except (ImportError, ValueError):
     from dependencies import get_db
 
 router = APIRouter(prefix="/propositions", tags=["propositions"])
+SENADO_PROPOSITION_BASE_URL = "https://www25.senado.leg.br/web/atividade/materias/-/materia"
 
 
 class PropositionOut(BaseModel):
@@ -29,6 +30,7 @@ class PropositionOut(BaseModel):
     proposition_code: Optional[int] = None
     title: Optional[str] = None
     link: Optional[str] = None
+    link_xml: Optional[str] = None
     proposition_acronym: Optional[str] = None
     proposition_number: Optional[int] = None
     presentation_year: Optional[int] = None
@@ -47,6 +49,39 @@ class PropositionOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+def _build_proposition_link(proposition: Proposition) -> Optional[str]:
+    if proposition.proposition_code is not None:
+        return f"{SENADO_PROPOSITION_BASE_URL}/{proposition.proposition_code}"
+    if isinstance(proposition.link, str) and proposition.link:
+        return proposition.link
+    return None
+
+
+def _serialize_proposition(proposition: Proposition) -> PropositionOut:
+    computed_link = _build_proposition_link(proposition)
+    return PropositionOut(
+        id=proposition.id,
+        proposition_code=proposition.proposition_code,
+        title=proposition.title,
+        link=computed_link,
+        link_xml=proposition.link,
+        proposition_acronym=proposition.proposition_acronym,
+        proposition_number=proposition.proposition_number,
+        presentation_year=proposition.presentation_year,
+        agency_id=proposition.agency_id,
+        proposition_type_id=proposition.proposition_type_id,
+        proposition_status_id=proposition.proposition_status_id,
+        current_status=proposition.current_status,
+        proposition_description=proposition.proposition_description,
+        presentation_date=proposition.presentation_date,
+        presentation_month=proposition.presentation_month,
+        summary=proposition.summary,
+        details=proposition.details,
+        created_at=proposition.created_at,
+        updated_at=proposition.updated_at,
+    )
+
+
 @router.get("/", response_model=List[PropositionOut])
 def list_propositions(
     *,
@@ -57,7 +92,7 @@ def list_propositions(
     acronym: Optional[str] = Query(
         None, description="Filtra pela sigla da proposição (ex: PEC, PL, etc)."
     ),
-) -> List[Proposition]:
+) -> List[PropositionOut]:
     """Retorna uma lista paginada de proposições."""
     stmt = select(Proposition).offset(offset).limit(limit)
 
@@ -67,26 +102,23 @@ def list_propositions(
         stmt = stmt.where(Proposition.proposition_acronym.ilike(f"%{acronym}%"))
 
     result = db.execute(stmt)
-    return result.scalars().all()
+    propositions = result.scalars().all()
+    return [_serialize_proposition(proposition) for proposition in propositions]
 
 
 @router.get("/{proposition_id}", response_model=PropositionOut)
 def get_proposition(
     proposition_id: int,
     db: Session = Depends(get_db),
-) -> Proposition:
+) -> PropositionOut:
     """Recupera detalhes de uma proposição específica."""
     stmt = select(Proposition).where(Proposition.id == proposition_id)
     result = db.execute(stmt).scalar_one_or_none()
 
     if result is None:
-
-        # print(result)
-        print(f"Proposição não encontrada: {proposition_id}")
-        input('asdasda testando breakpoint')
         raise HTTPException(status_code=404, detail="Proposição não encontrada.")
 
-    return result
+    return _serialize_proposition(result)
 
 
 __all__ = ["router"]
