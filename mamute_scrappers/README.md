@@ -64,6 +64,14 @@ python -m mamute_scrappers.scripts.rebuild_speech_text_analysis --help
 python -m mamute_scrappers.scripts.create_users
 ```
 
+## Cronjob (a cada 2 minutos)
+
+Para agendar a sincronização automática com o Ghost a cada 2 minutos, adicione no `crontab`:
+
+```bash
+*/2 * * * * cd /home/jmallone/Downloads/mamute-politico && /home/jmallone/Downloads/mamute-politico/.venv/bin/python -m mamute_scrappers.scripts.create_users >> /home/jmallone/Downloads/mamute-politico/mamute_scrappers/.logs/scripts/create_users.log 2>&1
+```
+
 ## Observações
 
 - Use `--help` nos comandos para ver todos os parâmetros disponíveis.
