@@ -37,9 +37,10 @@ export interface Proposicao {
 export interface Votacao {
   id: string;
   proposicao: string;
+  proposicaoLink?: string;
   data: string;
   voto: 'Sim' | 'Não' | 'Abstenção' | 'Obstrução' | 'Ausente';
-  resultado: 'Aprovado' | 'Rejeitado' | 'Outro';
+  descricao: string;
 }
 
 export interface Discurso {
