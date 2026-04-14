@@ -1,4 +1,4 @@
-/** Client for Mamute Político chatbot (FastAPI); do not use the main API `request()` helper (different base, JWT). */
+/** Client for Mamute Político chatbot (FastAPI); same-origin POST to `/chat/chatbot/stream` (proxy routes /chat to the chatbot). Do not use the main API `request()` helper (different base, JWT). */
 
 export interface ChatMessagePayload {
   role: 'user' | 'assistant';
@@ -26,16 +26,11 @@ type SsePayload =
   | { type: 'error'; message: string }
   | { type: 'cancel' };
 
-function getChatbotOrigin(): string {
-  const url = import.meta.env.VITE_CHATBOT_BASE_URL;
-  if (url && typeof url === 'string') return url.replace(/\/$/, '');
-  return '';
-}
+/** Relative URL; browser resolves against the page origin. */
+export const CHATBOT_STREAM_PATH = '/chat/chatbot/stream';
 
 export function getChatbotStreamUrl(): string {
-  const origin = getChatbotOrigin();
-  const path = '/chat/chatbot/stream';
-  return origin ? `${origin}${path}` : path;
+  return CHATBOT_STREAM_PATH;
 }
 
 export interface StreamChatOptions extends StreamChatBody {
