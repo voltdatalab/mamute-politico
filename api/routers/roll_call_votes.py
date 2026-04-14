@@ -30,6 +30,7 @@ class RollCallVoteOut(BaseModel):
     id: int
     parliamentarian_id: int
     proposition_id: int
+    proposition_title: Optional[str] = None
     vote: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
@@ -68,6 +69,7 @@ def _serialize_roll_call_vote(vote: RollCallVote) -> RollCallVoteOut:
         id=vote.id,
         parliamentarian_id=vote.parliamentarian_id,
         proposition_id=vote.proposition_id,
+        proposition_title=vote.proposition.title if vote.proposition else None,
         vote=vote.vote,
         description=vote.description,
         link=vote.link,
