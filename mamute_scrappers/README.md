@@ -64,12 +64,35 @@ python -m mamute_scrappers.scripts.rebuild_speech_text_analysis --help
 python -m mamute_scrappers.scripts.create_users
 ```
 
-## Cronjob (a cada 2 minutos)
+## Cronjobs recomendados
 
-Para agendar a sincronização automática com o Ghost a cada 2 minutos, adicione no `crontab`:
+Exemplo de configuração para atualização contínua de usuários, projetos, trâmites e dados auxiliares:
 
-```bash
-*/2 * * * * cd /home/jmallone/Downloads/mamute-politico && /home/jmallone/Downloads/mamute-politico/.venv/bin/python -m mamute_scrappers.scripts.create_users >> /home/jmallone/Downloads/mamute-politico/mamute_scrappers/.logs/scripts/create_users.log 2>&1
+```cron
+##########################
+# MAMUTE POLITICO
+##########################
+PROJECT_ROOT=/home/jmallone/Downloads/mamute-politico
+PYTHON_BIN=/home/jmallone/Downloads/mamute-politico/.venv/bin/python
+LOG_DIR=/home/jmallone/Downloads/mamute-politico/mamute_scrappers/.logs
+
+# Sync Ghost -> projetos (a cada 2 min)
+*/2 * * * *   cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.scripts.create_users >> $LOG_DIR/scripts/create_users.log 2>&1
+
+# Novas proposições/projetos (a cada 6h)
+0 */6 * * *   cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.proposition >> $LOG_DIR/crawlers/propositions.log 2>&1
+
+# Atualização de trâmites/status (diário às 03h)
+0 3 * * *     cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.proposition_status >> $LOG_DIR/crawlers/proposition_status.log 2>&1
+
+# Tipos de proposição (diário às 04h)
+0 4 * * *     cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.proposition_type >> $LOG_DIR/crawlers/proposition_type.log 2>&1
+
+# Votações nominais (a cada 3h)
+0 */3 * * *   cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.roll_call_votes >> $LOG_DIR/crawlers/roll_call_votes.log 2>&1
+
+# Discursos/taquigrafias (a cada 2h)
+0 */2 * * *   cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.speechs_transcipts >> $LOG_DIR/crawlers/speechs_transcripts.log 2>&1
 ```
 
 ## Observações
