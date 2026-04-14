@@ -72,9 +72,9 @@ Exemplo de configuração para atualização contínua de usuários, projetos, t
 ##########################
 # MAMUTE POLITICO
 ##########################
-PROJECT_ROOT=/home/jmallone/Downloads/mamute-politico
-PYTHON_BIN=/home/jmallone/Downloads/mamute-politico/.venv/bin/python
-LOG_DIR=/home/jmallone/Downloads/mamute-politico/mamute_scrappers/.logs
+PROJECT_ROOT=mamute-politico
+PYTHON_BIN=mamute-politico/.venv/bin/python
+LOG_DIR=mamute-politico/mamute_scrappers/.logs
 
 # Sync Ghost -> projetos (a cada 2 min)
 */2 * * * *   cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.scripts.create_users >> $LOG_DIR/scripts/create_users.log 2>&1
@@ -93,6 +93,9 @@ LOG_DIR=/home/jmallone/Downloads/mamute-politico/mamute_scrappers/.logs
 
 # Discursos/taquigrafias (a cada 2h)
 0 */2 * * *   cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.senado_crawler.speechs_transcipts >> $LOG_DIR/crawlers/speechs_transcripts.log 2>&1
+
+# Parlamentares da Câmara (diário às 05h30)
+30 5 * * *    cd $PROJECT_ROOT && $PYTHON_BIN -m mamute_scrappers.camara_crawler.parliamentarian >> $LOG_DIR/crawlers/camara_parliamentarians.log 2>&1
 ```
 
 ## Observações
