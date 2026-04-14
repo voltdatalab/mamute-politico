@@ -113,7 +113,7 @@ export function listSpeechesTranscripts(
   if (params.date_from) sp.set('date_from', params.date_from);
   if (params.date_to) sp.set('date_to', params.date_to);
   const q = sp.toString();
-  return request<SpeechesTranscriptOut[]>(`/speeches-transcripts${q ? `?${q}` : ''}`);
+  return request<SpeechesTranscriptOut[]>(`/speeches-transcripts/${q ? `?${q}` : ''}`);
 }
 
 export function getSpeechesTranscript(id: number): Promise<SpeechesTranscriptOut> {
