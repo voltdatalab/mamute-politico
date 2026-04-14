@@ -33,6 +33,7 @@ class RollCallVoteOut(BaseModel):
     vote: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
+    proposition_votes_link: Optional[str] = None
     date_vote: Optional[date] = None
     created_at: datetime
     updated_at: datetime
@@ -59,6 +60,10 @@ def _extract_date_vote(proposition: Optional[Proposition]) -> Optional[date]:
 
 
 def _serialize_roll_call_vote(vote: RollCallVote) -> RollCallVoteOut:
+    proposition_votes_link: Optional[str] = None
+    if vote.proposition and isinstance(vote.proposition.link, str) and vote.proposition.link:
+        proposition_votes_link = f"{vote.proposition.link.rstrip('/')}/votacoes"
+
     return RollCallVoteOut(
         id=vote.id,
         parliamentarian_id=vote.parliamentarian_id,
@@ -66,6 +71,7 @@ def _serialize_roll_call_vote(vote: RollCallVote) -> RollCallVoteOut:
         vote=vote.vote,
         description=vote.description,
         link=vote.link,
+        proposition_votes_link=proposition_votes_link,
         date_vote=_extract_date_vote(vote.proposition),
         created_at=vote.created_at,
         updated_at=vote.updated_at,
@@ -73,6 +79,7 @@ def _serialize_roll_call_vote(vote: RollCallVote) -> RollCallVoteOut:
 
 
 @router.get("/", response_model=List[RollCallVoteOut])
+@router.get("/votacoes", response_model=List[RollCallVoteOut])
 def list_roll_call_votes(
     *,
     db: Session = Depends(get_db),
@@ -92,7 +99,6 @@ def list_roll_call_votes(
         .offset(offset)
         .limit(limit)
     )
-
     if proposition_id is not None:
         stmt = stmt.where(RollCallVote.proposition_id == proposition_id)
     if parliamentarian_id is not None:
@@ -104,6 +110,7 @@ def list_roll_call_votes(
 
 
 @router.get("/{vote_id}", response_model=RollCallVoteOut)
+@router.get("/votacoes/{vote_id}", response_model=RollCallVoteOut)
 def get_roll_call_vote(
     vote_id: int,
     db: Session = Depends(get_db),
