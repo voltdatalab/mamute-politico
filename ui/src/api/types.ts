@@ -53,9 +53,12 @@ export interface RollCallVoteOut {
   id: number;
   parliamentarian_id: number;
   proposition_id: number;
+  proposition_title?: string | null;
   vote?: string | null;
   description?: string | null;
   link?: string | null;
+  proposition_votes_link?: string | null;
+  date_vote?: string | null;
   created_at: string;
   updated_at: string;
 }

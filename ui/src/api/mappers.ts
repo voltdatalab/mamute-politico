@@ -86,12 +86,14 @@ export function mapPropositionOutToProposicao(o: PropositionOut): Proposicao {
 }
 
 export function mapRollCallVoteOutToVotacao(o: RollCallVoteOut): Votacao {
+  const propositionLabel = o.proposition_title?.trim() || `Proposição #${o.proposition_id}`;
   return {
     id: String(o.id),
-    proposicao: `Proposição #${o.proposition_id}`,
-    data: o.created_at?.slice(0, 10) ?? '',
+    proposicao: propositionLabel,
+    proposicaoLink: o.proposition_votes_link ?? undefined,
+    data: o.date_vote?.slice(0, 10) ?? o.created_at?.slice(0, 10) ?? '',
     voto: votoFromApi(o.vote),
-    resultado: 'Outro',
+    descricao: o.description?.trim() || '—',
   };
 }
 

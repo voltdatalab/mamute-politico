@@ -61,17 +61,6 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
     }
   };
 
-  const getResultadoBadge = (resultado: string) => {
-    switch (resultado) {
-      case 'Aprovado':
-        return 'success';
-      case 'Rejeitado':
-        return 'destructive';
-      default:
-        return 'secondary';
-    }
-  };
-
   if (isLoading) {
     return (
       <ScrollArea className="h-full">
@@ -98,17 +87,29 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Proposição</TableHead>
+            <TableHead>Votação</TableHead>
             <TableHead>Data</TableHead>
             <TableHead>Voto</TableHead>
-            <TableHead>Resultado</TableHead>
+            <TableHead>Descrição</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {votacoes.map((votacao) => (
             <TableRow key={votacao.id}>
               <TableCell className="font-medium text-sm max-w-[200px] truncate">
-                {votacao.proposicao}
+                {votacao.proposicaoLink ? (
+                  <a
+                    href={votacao.proposicaoLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                    title={votacao.proposicao}
+                  >
+                    {votacao.proposicao}
+                  </a>
+                ) : (
+                  votacao.proposicao
+                )}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {votacao.data ? new Date(votacao.data).toLocaleDateString('pt-BR') : '—'}
@@ -122,9 +123,7 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
                 </div>
               </TableCell>
               <TableCell>
-                <Badge variant={getResultadoBadge(votacao.resultado) as 'success' | 'destructive' | 'secondary'} className="text-[10px]">
-                  {votacao.resultado}
-                </Badge>
+                <span className="text-sm text-muted-foreground">{votacao.descricao || '—'}</span>
               </TableCell>
             </TableRow>
           ))}
