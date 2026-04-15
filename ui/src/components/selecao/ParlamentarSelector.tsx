@@ -48,7 +48,7 @@ export function ParlamentarSelector({
     queryKey: ['parliamentarians', partidoFilter],
     queryFn: () =>
       listParliamentarians({
-        limit: 500,
+        limit: 1000,
         offset: 0,
         party: partidoFilter !== 'todos' ? partidoFilter : undefined,
       }),
