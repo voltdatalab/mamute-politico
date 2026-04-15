@@ -70,7 +70,7 @@ function ChecklistStep({
       <Box marginTop={1} flexDirection="column">
         {options.map((option, index) => {
           const focused = index === cursor;
-          const mark = selected[option.id] ? "x" : " ";
+          const mark = selected[option.id] ? "✓" : " ";
           return (
             <Text key={option.id} color={focused ? "green" : undefined}>
               {focused ? ">" : " "} [{mark}] {option.label}
