@@ -23,7 +23,7 @@ _PROMPT = ChatPromptTemplate.from_messages(
             (
                 "Você é um assistente que ranqueia trechos conforme a pertinência "
                 "à pergunta informada. Responda exclusivamente em JSON seguindo o "
-                "formato: {\"ranking\": [{\"index\": <int>, \"score\": <float>}]}.\n"
+                "formato: {{\"ranking\": [{{\"index\": <int>, \"score\": <float>}}]}}.\n"
                 "O índice deve usar base 1 (primeiro trecho = 1). O score deve estar "
                 "entre 0 e 1. Ordene por score decrescente e inclua apenas trechos "
                 "realmente relevantes."
@@ -53,14 +53,19 @@ class LLMReranker:
         )
 
     async def arerank(
-        self, question: str, documents: Sequence[Document], top_k: int
+        self,
+        question: str,
+        documents: Sequence[Document],
+        top_k: int,
+        request_id: str = "n/a",
     ) -> List[Document]:
         """Retorna os documentos mais relevantes segundo o LLM."""
 
         started_at = perf_counter()
         if len(documents) <= 1 or top_k <= 0:
             logger.info(
-                "🏅 Reranker skipped | docs=%s | top_k=%s",
+                "🏅 Reranker skipped | request_id=%s | docs=%s | top_k=%s",
+                request_id,
                 len(documents),
                 top_k,
             )
@@ -79,7 +84,8 @@ class LLMReranker:
             ranking = self._parse_ranking(content, len(documents))
         except Exception as exc:
             logger.exception(
-                "❌ Reranker failed, fallback to original order | docs=%s | top_k=%s | error=%s",
+                "❌ Reranker failed, fallback to original order | request_id=%s | docs=%s | top_k=%s | error=%s",
+                request_id,
                 len(documents),
                 top_k,
                 exc,
@@ -88,7 +94,8 @@ class LLMReranker:
 
         if not ranking:
             logger.info(
-                "⚠️ Reranker returned empty ranking, using fallback | docs=%s | top_k=%s | elapsed_ms=%.2f",
+                "⚠️ Reranker returned empty ranking, using fallback | request_id=%s | docs=%s | top_k=%s | elapsed_ms=%.2f",
+                request_id,
                 len(documents),
                 top_k,
                 (perf_counter() - started_at) * 1000,
@@ -108,7 +115,8 @@ class LLMReranker:
 
         result = ordered_docs[:top_k]
         logger.info(
-            "✅ Reranker finished | docs_in=%s | docs_out=%s | elapsed_ms=%.2f",
+            "✅ Reranker finished | request_id=%s | docs_in=%s | docs_out=%s | elapsed_ms=%.2f",
+            request_id,
             len(documents),
             len(result),
             (perf_counter() - started_at) * 1000,

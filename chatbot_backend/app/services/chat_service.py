@@ -176,7 +176,10 @@ class ChatbotService:
         )
         rerank_started = perf_counter()
         reranked = await self.reranker.arerank(
-            question, documents, settings.rerank_top_k
+            question,
+            documents,
+            settings.rerank_top_k,
+            request_id=request_id,
         )
         logger.info(
             "🏅 Rerank finished | request_id=%s | input_docs=%s | output_docs=%s | elapsed_ms=%.2f",
