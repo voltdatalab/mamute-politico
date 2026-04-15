@@ -5,7 +5,7 @@ set -euo pipefail
 script_dir=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
 image_name="mamute-env-tools:local"
 
-echo "Building tools image..."
+echo "Construindo imagem das ferramentas..."
 docker build -t "$image_name" "$script_dir"
 
 run_args=(--rm -v "$script_dir:/workspace/tools")
