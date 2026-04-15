@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 import re
+from time import perf_counter
 from typing import Dict, List, Mapping, Sequence
 
 from sqlalchemy import text
@@ -11,6 +13,7 @@ from ..core.config import get_settings
 from ..core.database import get_session
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 _word_pattern = re.compile(r"[A-Za-zÀ-ÿ]{2,}")
 
@@ -246,12 +249,22 @@ def _execute_query(query: str, params: Dict[str, object]) -> List[Mapping[str, o
 
 
 def fetch_sql_context(
-    question: str, filters: Dict[str, List[object]] | None = None
+    question: str,
+    filters: Dict[str, List[object]] | None = None,
+    request_id: str = "n/a",
 ) -> str:
     """Executa consultas simples para enriquecer o contexto do LLM."""
 
-    keyword_clauses, pattern_params = _build_keyword_clauses(_extract_keywords(question))
+    started_at = perf_counter()
+    keywords = _extract_keywords(question)
+    keyword_clauses, pattern_params = _build_keyword_clauses(keywords)
     filter_clause, filter_params = _build_filter_clause(filters)
+    logger.info(
+        "🧮 SQL context started | request_id=%s | keywords=%s | has_filters=%s",
+        request_id,
+        len(keywords),
+        bool(filter_clause),
+    )
 
     if keyword_clauses:
         where_clause = " WHERE " + " OR ".join(keyword_clauses)
@@ -272,6 +285,11 @@ def fetch_sql_context(
     )
     context_params = {"limit": settings.sql_context_limit, **base_params}
     context_rows = _execute_query(context_query, context_params)
+    logger.info(
+        "🧮 SQL context main query done | request_id=%s | rows=%s",
+        request_id,
+        len(context_rows),
+    )
 
     if not context_rows and keyword_clauses:
         fallback_query = (
@@ -282,6 +300,11 @@ def fetch_sql_context(
         context_rows = _execute_query(
             fallback_query,
             {"limit": settings.sql_context_limit, **filter_params},
+        )
+        logger.info(
+            "🧮 SQL context fallback query done | request_id=%s | rows=%s",
+            request_id,
+            len(context_rows),
         )
 
     frequency_rows: List[Mapping[str, object]] = []
@@ -363,7 +386,18 @@ def fetch_sql_context(
     propositions_text = _format_proposition_rows(propositions_rows)
     if propositions_text:
         sections.append(propositions_text)
-    return "\n\n".join(sections).strip()
+    output = "\n\n".join(sections).strip()
+    logger.info(
+        "✅ SQL context finished | request_id=%s | context_chars=%s | frequency_rows=%s | keyword_rows=%s | entity_rows=%s | proposition_rows=%s | elapsed_ms=%.2f",
+        request_id,
+        len(output),
+        len(frequency_rows),
+        len(keyword_rows),
+        len(entities_rows),
+        len(propositions_rows),
+        (perf_counter() - started_at) * 1000,
+    )
+    return output
 
 
 __all__ = ["fetch_sql_context"]

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+from time import perf_counter
 from typing import Any, AsyncIterator, Dict, Iterable, List, Sequence
 
 from langchain.callbacks.base import AsyncCallbackHandler
@@ -19,6 +21,7 @@ from .sql_context import fetch_sql_context
 from .vector_store import get_retriever
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 class JSONTokenStreamingHandler(AsyncCallbackHandler):
@@ -152,14 +155,35 @@ class ChatbotService:
     async def _retrieve_and_rerank(self, inputs: Dict[str, Any]) -> str:
         """Recupera documentos, executa reranking e prepara o contexto."""
 
+        request_id = str(inputs.get("request_id") or "n/a")
+        stage_started = perf_counter()
         question = inputs["question"]
         normalized_filters = inputs.get("filters")
         filter_payload = self._build_retriever_filter(normalized_filters)
         search_kwargs = {"filter": filter_payload} if filter_payload else None
+        logger.info(
+            "🔍 Retrieval started | request_id=%s | has_vector_filter=%s",
+            request_id,
+            bool(filter_payload),
+        )
         retriever = get_retriever(search_kwargs=search_kwargs)
         documents = await retriever.ainvoke(question)
+        logger.info(
+            "📄 Retrieval finished | request_id=%s | documents=%s | elapsed_ms=%.2f",
+            request_id,
+            len(documents),
+            (perf_counter() - stage_started) * 1000,
+        )
+        rerank_started = perf_counter()
         reranked = await self.reranker.arerank(
             question, documents, settings.rerank_top_k
+        )
+        logger.info(
+            "🏅 Rerank finished | request_id=%s | input_docs=%s | output_docs=%s | elapsed_ms=%.2f",
+            request_id,
+            len(documents),
+            len(reranked),
+            (perf_counter() - rerank_started) * 1000,
         )
         return self._format_documents(reranked)
 
@@ -177,7 +201,11 @@ class ChatbotService:
         retriever_chain = RunnableLambda(self._retrieve_and_rerank)
 
         sql_chain = RunnableLambda(
-            lambda x: fetch_sql_context(x["question"], x.get("filters"))
+            lambda x: fetch_sql_context(
+                x["question"],
+                x.get("filters"),
+                request_id=str(x.get("request_id") or "n/a"),
+            )
         )
 
         history_chain = RunnableLambda(
@@ -194,15 +222,30 @@ class ChatbotService:
         return assembler | self.prompt | llm
 
     async def stream_response(
-        self, inputs: Dict[str, Any]
+        self, inputs: Dict[str, Any], request_id: str | None = None
     ) -> AsyncIterator[Dict[str, Any]]:
         """Executa o chain e produz eventos incrementais."""
 
+        effective_request_id = request_id or "n/a"
+        started_at = perf_counter()
         normalized_filters = self._normalize_filters(inputs.get("filters"))
         if normalized_filters:
-            inputs = {**inputs, "filters": normalized_filters}
+            inputs = {
+                **inputs,
+                "filters": normalized_filters,
+                "request_id": effective_request_id,
+            }
         else:
-            inputs = {k: v for k, v in inputs.items() if k != "filters"}
+            inputs = {
+                **{k: v for k, v in inputs.items() if k != "filters"},
+                "request_id": effective_request_id,
+            }
+        logger.info(
+            "🚀 Stream pipeline started | request_id=%s | history_messages=%s | has_filters=%s",
+            effective_request_id,
+            len(inputs.get("history", [])),
+            "filters" in inputs,
+        )
         iterator_handler = AsyncIteratorCallbackHandler()
         json_handler = JSONTokenStreamingHandler(iterator_handler)
         chain = self._build_chain()
@@ -220,23 +263,60 @@ class ChatbotService:
             async for token in iterator_handler.aiter():
                 yield {"type": "token", "value": token}
         except asyncio.CancelledError:
+            logger.warning(
+                "⚠️ Stream pipeline cancelled | request_id=%s",
+                effective_request_id,
+            )
             task.cancel()
             raise
         finally:
-            await task
+            try:
+                await task
+            except Exception as exc:
+                logger.exception(
+                    "❌ Stream chain task failed | request_id=%s | error=%s",
+                    effective_request_id,
+                    exc,
+                )
+                raise
 
+        logger.info(
+            "✅ Stream pipeline finished | request_id=%s | elapsed_ms=%.2f",
+            effective_request_id,
+            (perf_counter() - started_at) * 1000,
+        )
         yield {"type": "end"}
 
-    async def invoke(self, inputs: Dict[str, Any]) -> str:
+    async def invoke(self, inputs: Dict[str, Any], request_id: str | None = None) -> str:
         """Executa o chain de forma síncrona (sem streaming)."""
 
+        effective_request_id = request_id or "n/a"
+        started_at = perf_counter()
         normalized_filters = self._normalize_filters(inputs.get("filters"))
         if normalized_filters:
-            inputs = {**inputs, "filters": normalized_filters}
+            inputs = {
+                **inputs,
+                "filters": normalized_filters,
+                "request_id": effective_request_id,
+            }
         else:
-            inputs = {k: v for k, v in inputs.items() if k != "filters"}
+            inputs = {
+                **{k: v for k, v in inputs.items() if k != "filters"},
+                "request_id": effective_request_id,
+            }
+        logger.info(
+            "🚀 Query pipeline started | request_id=%s | history_messages=%s | has_filters=%s",
+            effective_request_id,
+            len(inputs.get("history", [])),
+            "filters" in inputs,
+        )
         chain = self._build_chain()
         result = await chain.ainvoke(inputs)
+        logger.info(
+            "✅ Query pipeline finished | request_id=%s | elapsed_ms=%.2f",
+            effective_request_id,
+            (perf_counter() - started_at) * 1000,
+        )
         if isinstance(result, str):
             return result
         if isinstance(result, BaseMessage):
