@@ -192,7 +192,6 @@ function buildEnvOutput(state: FormState): string {
 }
 
 function SummaryStep({state, onFinish}: {state: FormState; onFinish: () => void}): React.JSX.Element {
-  const output = useMemo(() => buildEnvOutput(state), [state]);
   const filesToCreate = useMemo(() => {
     const items = ["environments/tools/.env"];
     if (state.pieces.reverse_proxy || state.pieces.ghost || state.pieces.ui) {
@@ -224,13 +223,6 @@ function SummaryStep({state, onFinish}: {state: FormState; onFinish: () => void}
       {filesToCreate.map((f) => (
         <Text key={f}>- {f}</Text>
       ))}
-
-      <Box marginTop={1} flexDirection="column">
-        <Text bold>Conteúdo do tools/.env:</Text>
-        {output.split("\n").map((line) => (
-          <Text key={line}>{line}</Text>
-        ))}
-      </Box>
 
       <Box marginTop={1} flexDirection="column">
         {state.pieces.ui && <Text>ui/.env: defina VITE_BASE_URL={state.publicBaseUrl || "<url-publica>"}</Text>}
@@ -397,7 +389,9 @@ export async function runSetup(): Promise<void> {
 
   const output = buildEnvOutput(result.values);
   console.log("Conteúdo sugerido para environments/tools/.env:");
+  console.log("--------");
   console.log(output);
+  console.log("--------");
   console.log("");
   console.log("Crie/atualize estes arquivos com base nas opções selecionadas:");
   console.log("- environments/tools/.env");
