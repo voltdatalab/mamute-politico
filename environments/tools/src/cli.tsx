@@ -24,8 +24,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.error(`Unknown mode: ${mode}`);
-  console.error("Valid modes: setup, status, up, down");
+  console.error(`Modo desconhecido: ${mode}`);
+  console.error("Modos válidos: setup, status, up, down");
   process.exitCode = 1;
 }
 

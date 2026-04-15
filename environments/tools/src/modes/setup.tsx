@@ -19,9 +19,9 @@ type SetupResult = {
 
 const pieceLabels: Array<{id: PieceId; label: string}> = [
   {id: "ui", label: "UI"},
-  {id: "reverse_proxy", label: "Reverse proxy (Caddy)"},
+  {id: "reverse_proxy", label: "Proxy reverso (Caddy)"},
   {id: "api", label: "API"},
-  {id: "chatbot_backend", label: "Chatbot backend"},
+  {id: "chatbot_backend", label: "Backend do chatbot"},
   {id: "ghost", label: "Ghost"}
 ];
 
@@ -66,7 +66,7 @@ function ChecklistStep({
   return (
     <Box flexDirection="column">
       <Text bold>{title}</Text>
-      <Text dimColor>Use arrows, space to toggle, Enter to continue.</Text>
+      <Text dimColor>Use as setas, espaço para marcar e Enter para continuar.</Text>
       <Box marginTop={1} flexDirection="column">
         {options.map((option, index) => {
           const focused = index === cursor;
@@ -118,7 +118,7 @@ function ChoiceStep({
   return (
     <Box flexDirection="column">
       <Text bold>{title}</Text>
-      <Text dimColor>Use arrows and Enter.</Text>
+      <Text dimColor>Use as setas e Enter.</Text>
       <Box marginTop={1} flexDirection="column">
         {options.map((option) => (
           <Text key={option.id} color={option.id === value ? "green" : undefined}>
@@ -166,7 +166,7 @@ function InputStep({
   return (
     <Box flexDirection="column">
       <Text bold>{title}</Text>
-      <Text dimColor>Type value and press Enter.</Text>
+      <Text dimColor>Digite o valor e pressione Enter.</Text>
       <Box marginTop={1}>
         <Text color="cyan">{value.length > 0 ? value : placeholder}</Text>
       </Box>
@@ -218,36 +218,36 @@ function SummaryStep({state, onFinish}: {state: FormState; onFinish: () => void}
   return (
     <Box flexDirection="column">
       <Text bold color="green">
-        Setup complete
+        Configuração concluída
       </Text>
-      <Text>Recommended files to create/update:</Text>
+      <Text>Arquivos recomendados para criar/atualizar:</Text>
       {filesToCreate.map((f) => (
         <Text key={f}>- {f}</Text>
       ))}
 
       <Box marginTop={1} flexDirection="column">
-        <Text bold>tools/.env contents:</Text>
+        <Text bold>Conteúdo do tools/.env:</Text>
         {output.split("\n").map((line) => (
           <Text key={line}>{line}</Text>
         ))}
       </Box>
 
       <Box marginTop={1} flexDirection="column">
-        {state.pieces.ui && <Text>ui/.env: set VITE_BASE_URL={state.publicBaseUrl || "<public-url>"}</Text>}
+        {state.pieces.ui && <Text>ui/.env: defina VITE_BASE_URL={state.publicBaseUrl || "<url-publica>"}</Text>}
         {state.pieces.api && state.apiMode === "all_together" && (
-          <Text>api/.env: create from api/.env.example and fill DATABASE_URL + Ghost auth vars.</Text>
+          <Text>api/.env: crie a partir de api/.env.example e preencha DATABASE_URL + variáveis de auth do Ghost.</Text>
         )}
         {state.pieces.chatbot_backend && state.chatbotMode === "all_together" && (
           <Text>
-            chatbot_backend/.env: create from chatbot_backend/.env.example and fill OPENAI/DATABASE vars.
+            chatbot_backend/.env: crie a partir de chatbot_backend/.env.example e preencha variáveis de OPENAI/BANCO.
           </Text>
         )}
         {(state.pieces.reverse_proxy || state.pieces.ghost || state.pieces.ui) && (
-          <Text>environments/production/.env: create from environments/production/.env.example.</Text>
+          <Text>environments/production/.env: crie a partir de environments/production/.env.example.</Text>
         )}
       </Box>
       <Box marginTop={1}>
-        <Text dimColor>Press Enter (or f) to finish.</Text>
+        <Text dimColor>Pressione Enter (ou f) para finalizar.</Text>
       </Box>
     </Box>
   );
@@ -294,7 +294,7 @@ export async function runSetup(): Promise<void> {
       if (current === "select_pieces") {
         return (
           <ChecklistStep
-            title="Select pieces to configure"
+            title="Selecione os componentes para configurar"
             options={pieceLabels}
             selected={state.pieces}
             cursor={cursor}
@@ -313,11 +313,11 @@ export async function runSetup(): Promise<void> {
       if (current === "api_mode") {
         return (
           <ChoiceStep
-            title="API mode"
+            title="Modo da API"
             value={state.apiMode === "remote" ? "remote" : "all_together"}
             options={[
-              {id: "all_together", label: "Run together (default)"},
-              {id: "remote", label: "Use remote API"}
+              {id: "all_together", label: "Executar junto (padrão)"},
+              {id: "remote", label: "Usar API remota"}
             ]}
             onChange={(v) => setState((prev) => ({...prev, apiMode: v}))}
             onSubmit={() => setStep((s) => s + 1)}
@@ -328,7 +328,7 @@ export async function runSetup(): Promise<void> {
       if (current === "api_remote_url") {
         return (
           <InputStep
-            title="Remote API base URL"
+            title="URL base da API remota"
             value={state.remoteApiBaseUrl}
             placeholder="https://api.example.com"
             onChange={(v) => setState((prev) => ({...prev, remoteApiBaseUrl: v}))}
@@ -340,11 +340,11 @@ export async function runSetup(): Promise<void> {
       if (current === "chatbot_mode") {
         return (
           <ChoiceStep
-            title="Chatbot backend mode"
+            title="Modo do backend do chatbot"
             value={state.chatbotMode === "remote" ? "remote" : "all_together"}
             options={[
-              {id: "all_together", label: "Run together (default)"},
-              {id: "remote", label: "Use remote chatbot backend"}
+              {id: "all_together", label: "Executar junto (padrão)"},
+              {id: "remote", label: "Usar backend remoto do chatbot"}
             ]}
             onChange={(v) => setState((prev) => ({...prev, chatbotMode: v}))}
             onSubmit={() => setStep((s) => s + 1)}
@@ -355,7 +355,7 @@ export async function runSetup(): Promise<void> {
       if (current === "chatbot_remote_url") {
         return (
           <InputStep
-            title="Remote chatbot base URL"
+            title="URL base do chatbot remoto"
             value={state.remoteChatbotBaseUrl}
             placeholder="https://chat.example.com"
             onChange={(v) => setState((prev) => ({...prev, remoteChatbotBaseUrl: v}))}
@@ -367,7 +367,7 @@ export async function runSetup(): Promise<void> {
       if (current === "public_base_url") {
         return (
           <InputStep
-            title="Public base URL (used by UI/Caddy/Ghost checks)"
+            title="URL base pública (usada nas validações de UI/Caddy/Ghost)"
             value={state.publicBaseUrl}
             placeholder="http://localhost"
             onChange={(v) => setState((prev) => ({...prev, publicBaseUrl: v}))}
@@ -391,15 +391,15 @@ export async function runSetup(): Promise<void> {
   });
 
   if (result.cancelled) {
-    console.log("Setup cancelled.");
+    console.log("Configuração cancelada.");
     return;
   }
 
   const output = buildEnvOutput(result.values);
-  console.log("Suggested environments/tools/.env content:");
+  console.log("Conteúdo sugerido para environments/tools/.env:");
   console.log(output);
   console.log("");
-  console.log("Create/update these files based on your selected options:");
+  console.log("Crie/atualize estes arquivos com base nas opções selecionadas:");
   console.log("- environments/tools/.env");
   if (result.values.pieces.reverse_proxy || result.values.pieces.ghost || result.values.pieces.ui) {
     console.log("- environments/production/.env");

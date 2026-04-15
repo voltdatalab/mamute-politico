@@ -24,7 +24,7 @@ export function loadToolsEnv(): ToolsEnv {
   const parsed = toolsEnvSchema.safeParse(loadRawEnvFile());
   if (!parsed.success) {
     const details = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
-    throw new Error(`Invalid tools/.env: ${details}`);
+    throw new Error(`tools/.env inválido: ${details}`);
   }
 
   return parsed.data;
