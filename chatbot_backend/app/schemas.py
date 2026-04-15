@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -32,6 +32,7 @@ class ChatResponse(BaseModel):
 class HealthcheckResponse(BaseModel):
     status: str = "ok"
     environment: Optional[str] = None
+    databases: Optional[Dict[str, str]] = None
 
 
 __all__ = [

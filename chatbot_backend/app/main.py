@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from contextlib import suppress
 
+from fastapi import FastAPI
+from fastapi import HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
+
+from .core.database import engine
 from .core.config import get_settings
 from .routers import chat
 from .schemas import HealthcheckResponse
@@ -36,9 +42,44 @@ def create_app() -> FastAPI:
 
     @app.get("/chat/health", response_model=HealthcheckResponse, tags=["infra"])
     async def healthcheck() -> HealthcheckResponse:
-        """Verifica o status básico da aplicação."""
+        """Verifica o status da API e conectividade com ambos os bancos."""
 
-        return HealthcheckResponse(status="ok", environment=settings.environment)
+        db_status = {"mamute_db": "error", "vector_db": "error"}
+
+        try:
+            with engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+            db_status["mamute_db"] = "ok"
+
+            vector_engine = create_engine(
+                settings.pgvector_connection,
+                pool_pre_ping=True,
+                future=True,
+            )
+            try:
+                with vector_engine.connect() as connection:
+                    connection.execute(text("SELECT 1"))
+                db_status["vector_db"] = "ok"
+            finally:
+                with suppress(Exception):
+                    vector_engine.dispose()
+
+        except SQLAlchemyError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "status": "error",
+                    "environment": settings.environment,
+                    "databases": db_status,
+                    "reason": str(exc),
+                },
+            ) from exc
+
+        return HealthcheckResponse(
+            status="ok",
+            environment=settings.environment,
+            databases=db_status,
+        )
 
     return app
 
