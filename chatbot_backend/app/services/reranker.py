@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import logging
+from time import perf_counter
 from typing import Iterable, List, Sequence
 
 from langchain_core.documents import Document
@@ -12,6 +14,7 @@ from langchain_openai import ChatOpenAI
 from ..core.config import get_settings
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 _PROMPT = ChatPromptTemplate.from_messages(
     [
@@ -54,7 +57,13 @@ class LLMReranker:
     ) -> List[Document]:
         """Retorna os documentos mais relevantes segundo o LLM."""
 
+        started_at = perf_counter()
         if len(documents) <= 1 or top_k <= 0:
+            logger.info(
+                "🏅 Reranker skipped | docs=%s | top_k=%s",
+                len(documents),
+                top_k,
+            )
             return list(documents)
 
         serialized_docs = self._serialize_documents(documents)
@@ -68,10 +77,22 @@ class LLMReranker:
             )
             content = getattr(response, "content", None) or ""
             ranking = self._parse_ranking(content, len(documents))
-        except Exception:
+        except Exception as exc:
+            logger.exception(
+                "❌ Reranker failed, fallback to original order | docs=%s | top_k=%s | error=%s",
+                len(documents),
+                top_k,
+                exc,
+            )
             ranking = []
 
         if not ranking:
+            logger.info(
+                "⚠️ Reranker returned empty ranking, using fallback | docs=%s | top_k=%s | elapsed_ms=%.2f",
+                len(documents),
+                top_k,
+                (perf_counter() - started_at) * 1000,
+            )
             return list(documents)[:top_k]
 
         ordered_docs: List[Document] = []
@@ -85,7 +106,14 @@ class LLMReranker:
             if idx not in seen:
                 ordered_docs.append(doc)
 
-        return ordered_docs[:top_k]
+        result = ordered_docs[:top_k]
+        logger.info(
+            "✅ Reranker finished | docs_in=%s | docs_out=%s | elapsed_ms=%.2f",
+            len(documents),
+            len(result),
+            (perf_counter() - started_at) * 1000,
+        )
+        return result
 
     @staticmethod
     def _serialize_documents(documents: Sequence[Document]) -> str:
