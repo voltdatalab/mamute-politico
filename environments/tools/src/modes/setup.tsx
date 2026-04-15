@@ -191,7 +191,7 @@ function buildEnvOutput(state: FormState): string {
   return lines.join("\n");
 }
 
-function SummaryStep({state}: {state: FormState}): React.JSX.Element {
+function SummaryStep({state, onFinish}: {state: FormState; onFinish: () => void}): React.JSX.Element {
   const output = useMemo(() => buildEnvOutput(state), [state]);
   const filesToCreate = useMemo(() => {
     const items = ["environments/tools/.env"];
@@ -209,6 +209,11 @@ function SummaryStep({state}: {state: FormState}): React.JSX.Element {
     }
     return items;
   }, [state]);
+  useInput((input, key) => {
+    if (key.return || input.toLowerCase() === "f") {
+      onFinish();
+    }
+  });
 
   return (
     <Box flexDirection="column">
@@ -240,6 +245,9 @@ function SummaryStep({state}: {state: FormState}): React.JSX.Element {
         {(state.pieces.reverse_proxy || state.pieces.ghost || state.pieces.ui) && (
           <Text>environments/production/.env: create from environments/production/.env.example.</Text>
         )}
+      </Box>
+      <Box marginTop={1}>
+        <Text dimColor>Press Enter (or f) to finish.</Text>
       </Box>
     </Box>
   );
@@ -368,9 +376,15 @@ export async function runSetup(): Promise<void> {
         );
       }
 
-      resolve({values: state, cancelled: false});
-      exit();
-      return <Text>Finishing setup...</Text>;
+      return (
+        <SummaryStep
+          state={state}
+          onFinish={() => {
+            resolve({values: state, cancelled: false});
+            exit();
+          }}
+        />
+      );
     };
 
     render(<App />, {exitOnCtrlC: true});
