@@ -29,4 +29,8 @@ async function main(): Promise<void> {
   process.exitCode = 1;
 }
 
-await main();
+main().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`Erro ao executar ferramenta: ${message}`);
+  process.exitCode = 1;
+});
