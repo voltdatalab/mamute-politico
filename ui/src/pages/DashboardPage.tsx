@@ -18,8 +18,8 @@ import {
   Loader2,
 } from 'lucide-react';
 
-const projectIdEnv = import.meta.env.VITE_PROJECT_ID;
-const projectId = projectIdEnv != null && projectIdEnv !== '' ? Number(projectIdEnv) : undefined;
+// TODO: Remove this once we have a project ID
+const projectId = undefined;
 
 const DashboardPage = () => {
   const favoritesQuery = useQuery({
@@ -115,7 +115,7 @@ const DashboardPage = () => {
               ))}
               {monitorados.length === 0 && !isLoadingMonitorados && (
                 <p className="text-sm text-muted-foreground py-4">
-                  Nenhum parlamentar monitorado. Defina VITE_PROJECT_ID para usar favoritos do projeto ou acesse a seleção.
+                  Nenhum parlamentar monitorado.
                 </p>
               )}
             </div>
