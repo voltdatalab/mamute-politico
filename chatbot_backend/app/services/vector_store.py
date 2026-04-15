@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+import logging
 from typing import Optional
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
@@ -13,6 +14,7 @@ from langchain_openai import OpenAIEmbeddings
 from ..core.config import get_settings
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def _with_application_name(url: str) -> str:
@@ -39,12 +41,32 @@ def get_embeddings() -> OpenAIEmbeddings:
 def get_vector_store() -> PGVector:
     """Cria (ou reutiliza) a conexão com o índice vetorial."""
 
-    return PGVector(
-        connection_string=_with_application_name(settings.pgvector_connection),
+    connection_string = _with_application_name(settings.pgvector_connection)
+    parsed = urlparse(connection_string)
+
+    logger.info(
+        "🔎 Connecting to Vector DB | host=%s | port=%s | database=%s | collection=%s | application_name=%s",
+        parsed.hostname or "unknown",
+        parsed.port or "default",
+        parsed.path.lstrip("/") or "unknown",
+        settings.pgvector_collection_name,
+        settings.application_name,
+    )
+
+    vector_store = PGVector(
+        connection_string=connection_string,
         embedding_function=get_embeddings(),
         collection_name=settings.pgvector_collection_name,
         use_jsonb=True,
     )
+
+    logger.info(
+        "✅ Vector DB connected | collection=%s | embedding_model=%s",
+        settings.pgvector_collection_name,
+        settings.openai_embeddings_model,
+    )
+
+    return vector_store
 
 
 def get_retriever(
