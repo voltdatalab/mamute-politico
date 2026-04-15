@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 try:
@@ -58,15 +58,30 @@ class ParliamentarianOut(BaseModel):
 def list_parliamentarians(
     *,
     db: Session = Depends(get_db),
-    limit: int = Query(100, ge=1, le=500),
+    limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     party: Optional[str] = Query(default=None, description="Filtrar por partido"),
+    type: Optional[List[Literal["deputado", "senado"]]] = Query(
+        default=None,
+        description="Filtrar por tipo de parlamentar: deputado, senado (pode repetir para ambos).",
+    ),
 ) -> List[Parliamentarian]:
     """Retorna uma lista paginada de parlamentares."""
     stmt = select(Parliamentarian).offset(offset).limit(limit)
 
     if party:
         stmt = stmt.where(Parliamentarian.party.ilike(f"%{party}%"))
+
+    if type:
+        normalized_types = set(type)
+        type_filters = []
+        if "deputado" in normalized_types:
+            type_filters.append(Parliamentarian.type.ilike("%Deput%"))
+        if "senado" in normalized_types:
+            # Banco pode armazenar "senador" ou "senado".
+            type_filters.append(Parliamentarian.type.ilike("%Senad%"))
+        if type_filters:
+            stmt = stmt.where(or_(*type_filters))
 
     result = db.execute(stmt)
     return result.scalars().all()

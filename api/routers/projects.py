@@ -65,7 +65,7 @@ def _ensure_parliamentarian_exists(db: Session, parliamentarian_id: int) -> Parl
 def list_project_favorites(
     project_id: int,
     db: Session = Depends(get_db),
-    limit: int = Query(100, ge=1, le=500),
+    limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
 ) -> List[ProjetosParliamentarian]:
     """Retorna os parlamentares marcados como favoritos por um projeto específico."""

@@ -44,13 +44,20 @@ export function ParlamentarSelector({
   const [ufFilter, setUfFilter] = useState<string>('todos');
   const [legislaturaFilter, setLegislaturaFilter] = useState<string>('todos');
 
+  const typeFilter = useMemo<Array<'deputado' | 'senado'>>(() => {
+    if (casaSelecionada === 'camara') return ['deputado'];
+    if (casaSelecionada === 'senado') return ['senado'];
+    return ['deputado', 'senado'];
+  }, [casaSelecionada]);
+
   const { data: rawList, isLoading, isError, error } = useQuery({
-    queryKey: ['parliamentarians', partidoFilter],
+    queryKey: ['parliamentarians', partidoFilter, typeFilter.join(',')],
     queryFn: () =>
       listParliamentarians({
         limit: 1000,
         offset: 0,
         party: partidoFilter !== 'todos' ? partidoFilter : undefined,
+        type: typeFilter,
       }),
   });
 
@@ -61,11 +68,6 @@ export function ParlamentarSelector({
 
   const parlamentaresDisponiveis = useMemo(() => {
     return allParlamentares.filter((p) => {
-      // Filter by casa (API has no casa; we default to camara, so only "ambas" or "camara" show all)
-      if (casaSelecionada !== 'ambas' && p.casa !== casaSelecionada) {
-        return false;
-      }
-
       // Filter by search term
       if (searchTerm && !p.nome.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
@@ -93,7 +95,7 @@ export function ParlamentarSelector({
 
       return true;
     });
-  }, [allParlamentares, casaSelecionada, searchTerm, partidoFilter, ufFilter, legislaturaFilter, parlamentaresSelecionados]);
+  }, [allParlamentares, searchTerm, partidoFilter, ufFilter, legislaturaFilter, parlamentaresSelecionados]);
 
   const partidosOptions = useMemo(() => {
     const siglas = new Set((rawList ?? []).map((p) => p.party).filter(Boolean) as string[]);

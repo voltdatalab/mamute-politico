@@ -14,6 +14,7 @@ export interface ListParliamentariansParams {
   limit?: number;
   offset?: number;
   party?: string;
+  type?: Array<'deputado' | 'senado'>;
 }
 
 export function listParliamentarians(
@@ -23,6 +24,9 @@ export function listParliamentarians(
   if (params.limit != null) sp.set('limit', String(params.limit));
   if (params.offset != null) sp.set('offset', String(params.offset));
   if (params.party) sp.set('party', params.party);
+  if (params.type?.length) {
+    params.type.forEach((t) => sp.append('type', t));
+  }
   const q = sp.toString();
   return request<ParliamentarianOut[]>(`/parliamentarians/${q ? `?${q}` : ''}`);
 }
