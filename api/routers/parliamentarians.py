@@ -58,7 +58,7 @@ class ParliamentarianOut(BaseModel):
 def list_parliamentarians(
     *,
     db: Session = Depends(get_db),
-    limit: int = Query(100, ge=1, le=500),
+    limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     party: Optional[str] = Query(default=None, description="Filtrar por partido"),
 ) -> List[Parliamentarian]:

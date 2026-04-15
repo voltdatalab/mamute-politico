@@ -46,7 +46,7 @@ class SpeechesTranscriptOut(BaseModel):
 def list_speeches_transcripts(
     *,
     db: Session = Depends(get_db),
-    limit: int = Query(100, ge=1, le=500),
+    limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     parliamentarian_id: Optional[int] = Query(
         None, description="Filtra pelo parlamentar responsável pelo discurso."
