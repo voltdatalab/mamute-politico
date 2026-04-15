@@ -10,11 +10,9 @@ COPY . .
 # .env is dockerignored; Vite inlines VITE_* at build time — pass via --build-arg.
 ARG VITE_BASE_URL
 ARG VITE_GHOST_JWKS
-ARG VITE_PROJECT_ID
 
 ENV VITE_BASE_URL=$VITE_BASE_URL \
-    VITE_GHOST_JWKS=$VITE_GHOST_JWKS \
-    VITE_PROJECT_ID=$VITE_PROJECT_ID
+    VITE_GHOST_JWKS=$VITE_GHOST_JWKS
 
 RUN npm run build
 
