@@ -13,3 +13,12 @@ export type SetupResult = {
   values: FormState;
   cancelled: boolean;
 };
+
+export type SetupStepId =
+  | "select_pieces"
+  | "api_mode"
+  | "api_remote_url"
+  | "chatbot_mode"
+  | "chatbot_remote_url"
+  | "public_base_url"
+  | "summary";

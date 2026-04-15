@@ -1,12 +1,9 @@
 import React, {useState} from "react";
 import {render, useApp, useInput} from "ink";
-import {ChecklistStep} from "./setup/ChecklistStep.js";
-import {ChoiceStep} from "./setup/ChoiceStep.js";
-import {InputStep} from "./setup/InputStep.js";
-import {SummaryStep} from "./setup/SummaryStep.js";
-import {pieceLabels} from "./setup/constants.js";
 import type {FormState, SetupResult} from "./setup/types.js";
 import {buildEnvOutput} from "./setup/utils.js";
+import {SetupStepView} from "./setup/SetupStepView.js";
+import {getCurrentStep} from "./setup/stepFlow.js";
 
 export async function runSetup(): Promise<void> {
   const result = await new Promise<SetupResult>((resolve) => {
@@ -28,16 +25,12 @@ export async function runSetup(): Promise<void> {
         remoteChatbotBaseUrl: "",
         publicBaseUrl: "http://localhost"
       });
-      const steps = [
-        "select_pieces",
-        ...(state.pieces.api ? ["api_mode"] : []),
-        ...(state.pieces.api && state.apiMode === "remote" ? ["api_remote_url"] : []),
-        ...(state.pieces.chatbot_backend ? ["chatbot_mode"] : []),
-        ...(state.pieces.chatbot_backend && state.chatbotMode === "remote" ? ["chatbot_remote_url"] : []),
-        "public_base_url",
-        "summary"
-      ] as const;
-      const current = steps[Math.min(step, steps.length - 1)];
+      const current = getCurrentStep(state, step);
+      const nextStep = () => setStep((s: number) => s + 1);
+      const finish = () => {
+        resolve({values: state, cancelled: false});
+        exit();
+      };
 
       useInput((input: string, key: {ctrl?: boolean}) => {
         if (input === "q" || input === "Q" || (key.ctrl && input === "c")) {
@@ -46,98 +39,15 @@ export async function runSetup(): Promise<void> {
         }
       });
 
-      if (current === "select_pieces") {
-        return (
-          <ChecklistStep
-            title="Selecione os componentes para configurar"
-            options={pieceLabels}
-            selected={state.pieces}
-            cursor={cursor}
-            onCursor={setCursor}
-            onToggle={(id) =>
-              setState((prev: FormState) => ({
-                ...prev,
-                pieces: {...prev.pieces, [id]: !prev.pieces[id]}
-              }))
-            }
-            onSubmit={() => setStep((s: number) => s + 1)}
-          />
-        );
-      }
-
-      if (current === "api_mode") {
-        return (
-          <ChoiceStep
-            title="Modo da API"
-            value={state.apiMode === "remote" ? "remote" : "all_together"}
-            options={[
-              {id: "all_together", label: "Executar junto (padrão)"},
-              {id: "remote", label: "Usar API remota"}
-            ]}
-            onChange={(v) => setState((prev: FormState) => ({...prev, apiMode: v}))}
-            onSubmit={() => setStep((s: number) => s + 1)}
-          />
-        );
-      }
-
-      if (current === "api_remote_url") {
-        return (
-          <InputStep
-            title="URL base da API remota"
-            value={state.remoteApiBaseUrl}
-            placeholder="https://api.example.com"
-            onChange={(v) => setState((prev: FormState) => ({...prev, remoteApiBaseUrl: v}))}
-            onSubmit={() => setStep((s: number) => s + 1)}
-          />
-        );
-      }
-
-      if (current === "chatbot_mode") {
-        return (
-          <ChoiceStep
-            title="Modo do backend do chatbot"
-            value={state.chatbotMode === "remote" ? "remote" : "all_together"}
-            options={[
-              {id: "all_together", label: "Executar junto (padrão)"},
-              {id: "remote", label: "Usar backend remoto do chatbot"}
-            ]}
-            onChange={(v) => setState((prev: FormState) => ({...prev, chatbotMode: v}))}
-            onSubmit={() => setStep((s: number) => s + 1)}
-          />
-        );
-      }
-
-      if (current === "chatbot_remote_url") {
-        return (
-          <InputStep
-            title="URL base do chatbot remoto"
-            value={state.remoteChatbotBaseUrl}
-            placeholder="https://chat.example.com"
-            onChange={(v) => setState((prev: FormState) => ({...prev, remoteChatbotBaseUrl: v}))}
-            onSubmit={() => setStep((s: number) => s + 1)}
-          />
-        );
-      }
-
-      if (current === "public_base_url") {
-        return (
-          <InputStep
-            title="URL base pública (usada nas validações de UI/Caddy/Ghost)"
-            value={state.publicBaseUrl}
-            placeholder="http://localhost"
-            onChange={(v) => setState((prev: FormState) => ({...prev, publicBaseUrl: v}))}
-            onSubmit={() => setStep((s: number) => s + 1)}
-          />
-        );
-      }
-
       return (
-        <SummaryStep
+        <SetupStepView
+          current={current}
           state={state}
-          onFinish={() => {
-            resolve({values: state, cancelled: false});
-            exit();
-          }}
+          cursor={cursor}
+          setCursor={setCursor}
+          setState={(updater) => setState(updater)}
+          nextStep={nextStep}
+          finish={finish}
         />
       );
     };
