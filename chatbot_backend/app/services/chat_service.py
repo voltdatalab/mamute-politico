@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from contextlib import suppress
 import logging
 from time import perf_counter
 from typing import Any, AsyncIterator, Dict, Iterable, List, Sequence
@@ -261,6 +262,7 @@ class ChatbotService:
                 },
             )
         )
+        task_error: Exception | None = None
 
         try:
             async for token in iterator_handler.aiter():
@@ -273,15 +275,23 @@ class ChatbotService:
             task.cancel()
             raise
         finally:
+            # Ensure aiter() waiters are always released, including disconnects.
+            iterator_handler.done.set()
+            if not task.done():
+                task.cancel()
             try:
-                await task
+                with suppress(asyncio.CancelledError):
+                    await task
             except Exception as exc:
-                logger.exception(
-                    "❌ Stream chain task failed | request_id=%s | error=%s",
-                    effective_request_id,
-                    exc,
-                )
-                raise
+                task_error = exc
+
+        if task_error is not None:
+            logger.exception(
+                "❌ Stream chain task failed | request_id=%s | error=%s",
+                effective_request_id,
+                task_error,
+            )
+            raise task_error
 
         logger.info(
             "✅ Stream pipeline finished | request_id=%s | elapsed_ms=%.2f",
