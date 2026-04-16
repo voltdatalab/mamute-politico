@@ -1,6 +1,20 @@
 name: mamute-politico-ui-prod
 
 services:
+
+  mamute-politico-api:
+    build:
+      context: ../../api
+      dockerfile: Dockerfile
+    image: mamute-politico-api:latest
+    container_name: mamute-politico-api
+    volumes:
+      - ../../api/.env:/app/.env
+    networks:
+      - backend
+      - frontend
+    restart: unless-stopped
+
   caddy:
     image: caddy:2-alpine
     ports:
