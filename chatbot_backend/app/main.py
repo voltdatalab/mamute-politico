@@ -28,6 +28,9 @@ def create_app() -> FastAPI:
             "PostgreSQL (pgvector) e consultas SQL diretas às notas taquigráficas."
         ),
         version="0.1.0",
+        docs_url="/chat/docs",
+        openapi_url="/chat/openapi.json",
+        redoc_url="/chat/redoc",        
     )
 
     app.add_middleware(
