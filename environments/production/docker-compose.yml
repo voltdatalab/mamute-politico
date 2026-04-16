@@ -24,6 +24,7 @@ services:
     volumes:
       - ../../chatbot_backend/.env:/app/.env
     networks:
+      - backend
       - frontend
     restart: unless-stopped
 
@@ -63,8 +64,7 @@ services:
       database__client: mysql
       database__connection__host: ghost-db
       database__connection__user: root
-      # TODO: Remove hardcoded values
-      database__connection__password: ${GHOST_DB_PASSWORD:-change_me}
+      database__connection__password: ${GHOST_DB_PASSWORD}
       database__connection__database: ghost
     volumes:
       - ghost_content:/var/lib/ghost/content
@@ -95,4 +95,3 @@ volumes:
   caddy_config:
   ghost_content:
   ghost_db_data:
-
