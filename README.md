@@ -4,6 +4,8 @@ Monorepo do projeto Mamute Político (Correio Sabiá), com coleta de dados legis
 
 ## Programas do repositório
 
+![Diagrama de arquitetura](environments/architecture.svg)
+
 - `mamute_scrappers` (coleta e sincronização de dados): [`mamute_scrappers/README.md`](mamute_scrappers/README.md)
 - `api` (API FastAPI de dados legislativos): [`api/README.md`](api/README.md)
 - `chatbot_backend` (chatbot com RAG + pgvector): [`chatbot_backend/README.md`](chatbot_backend/README.md)
