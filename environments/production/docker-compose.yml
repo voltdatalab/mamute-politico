@@ -15,26 +15,6 @@ services:
       - frontend
     restart: unless-stopped
 
-  caddy:
-    image: caddy:2-alpine
-    ports:
-      - "${CADDY_HTTP_PORT:-80}:80"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - frontend
-    restart: unless-stopped
-
-  ui:
-    build:
-      context: ../../ui
-      dockerfile: Dockerfile
-    networks:
-      - frontend
-    restart: unless-stopped
-
   mamute-politico-chatbot:
     build:
       context: ../../chatbot_backend
@@ -43,6 +23,18 @@ services:
     container_name: mamute-politico-chatbot
     volumes:
       - ../../chatbot_backend/.env:/app/.env
+    networks:
+      - frontend
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "${CADDY_HTTP_PORT:-80}:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     networks:
       - frontend
     restart: unless-stopped
@@ -82,6 +74,14 @@ services:
     depends_on:
       ghost-db:
         condition: service_healthy
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ../../ui
+      dockerfile: Dockerfile
+    networks:
+      - frontend
     restart: unless-stopped
 
 networks:
