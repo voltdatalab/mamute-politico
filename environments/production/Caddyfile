@@ -6,6 +6,10 @@
 	handle @appPaths {
 		reverse_proxy ui:8080
 	}
+	@apiPaths path /api*
+	handle @apiPaths {
+		reverse_proxy mamute-politico-api:8000
+	}
 
 	@chatPaths path /chat*
 	handle @chatPaths {
@@ -18,4 +22,3 @@
 		}
 	}
 }
-
