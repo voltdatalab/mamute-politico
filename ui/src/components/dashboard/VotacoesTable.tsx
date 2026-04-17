@@ -97,19 +97,21 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
           {votacoes.map((votacao) => (
             <TableRow key={votacao.id}>
               <TableCell className="font-medium text-sm max-w-[200px] truncate">
-                {votacao.proposicaoLink ? (
-                  <a
-                    href={votacao.proposicaoLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                    title={votacao.proposicao}
-                  >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="truncate" title={votacao.proposicao}>
                     {votacao.proposicao}
-                  </a>
-                ) : (
-                  votacao.proposicao
-                )}
+                  </span>
+                  {votacao.proposicaoLink && (
+                    <a
+                      href={votacao.proposicaoLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 text-primary hover:underline"
+                    >
+                      Link
+                    </a>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {votacao.data ? new Date(votacao.data).toLocaleDateString('pt-BR') : '—'}
