@@ -244,7 +244,7 @@ const PesquisaIAPage = () => {
           </div>
 
           <div className="lg:col-span-3">
-            <Card className="h-[calc(100vh-200px)] flex flex-col">
+            <Card className="flex flex-col">
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2">
                   <MessageSquare className="h-5 w-5 text-primary" />
