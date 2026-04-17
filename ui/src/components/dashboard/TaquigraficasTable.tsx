@@ -69,6 +69,7 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
             <TableHead>Data</TableHead>
             <TableHead>Sessão</TableHead>
             <TableHead>Tipo</TableHead>
+            <TableHead>Link</TableHead>
             <TableHead>Resumo</TableHead>
             <TableHead>Análise</TableHead>
           </TableRow>
@@ -82,6 +83,20 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
               </TableCell>
               <TableCell className="text-sm">{speech.session_number ?? '—'}</TableCell>
               <TableCell className="text-sm">{speech.type ?? '—'}</TableCell>
+              <TableCell className="text-sm">
+                {speech.speech_link ? (
+                  <a
+                    href={speech.speech_link}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="text-primary hover:underline"
+                  >
+                    Abrir
+                  </a>
+                ) : (
+                  '—'
+                )}
+              </TableCell>
               <TableCell className="text-sm text-muted-foreground max-w-[360px] truncate">
                 {speech.summary ?? speech.speech_text ?? '—'}
               </TableCell>
