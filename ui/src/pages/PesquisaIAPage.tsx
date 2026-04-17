@@ -178,8 +178,7 @@ const PesquisaIAPage = () => {
     setInput(question);
   };
 
-  const canSend =
-    input.trim().length >= MIN_QUESTION_LEN && !isLoading;
+  const canSend = input.trim().length >= MIN_QUESTION_LEN;
 
   return (
     <div className="min-h-screen bg-background">
@@ -234,7 +233,6 @@ const PesquisaIAPage = () => {
                       key={index}
                       type="button"
                       onClick={() => handleExampleClick(question)}
-                      disabled={isLoading}
                       className="w-full text-left p-3 rounded-lg text-sm bg-muted/50 hover:bg-muted transition-colors disabled:opacity-50"
                     >
                       {question}
@@ -336,7 +334,6 @@ const PesquisaIAPage = () => {
                       onChange={(e) => setInput(e.target.value)}
                       placeholder="Digite sua pergunta sobre dados legislativos..."
                       className="flex-1"
-                      disabled={isLoading}
                       minLength={MIN_QUESTION_LEN}
                     />
                     <Button type="submit" disabled={!canSend}>
