@@ -95,23 +95,30 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
         </TableHeader>
         <TableBody>
           {votacoes.map((votacao) => (
-            <TableRow key={votacao.id}>
-              <TableCell className="font-medium text-sm max-w-[200px] truncate">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="truncate" title={votacao.proposicao}>
-                    {votacao.proposicao}
-                  </span>
-                  {votacao.proposicaoLink && (
-                    <a
-                      href={votacao.proposicaoLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 text-primary hover:underline"
-                    >
-                      Link
-                    </a>
-                  )}
-                </div>
+            <TableRow
+              key={votacao.id}
+              role={votacao.proposicaoLink ? 'link' : undefined}
+              tabIndex={votacao.proposicaoLink ? 0 : -1}
+              onClick={() => {
+                if (!votacao.proposicaoLink) return;
+                window.open(votacao.proposicaoLink, '_blank', 'noopener,noreferrer');
+              }}
+              onKeyDown={(e) => {
+                if (!votacao.proposicaoLink) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  window.open(votacao.proposicaoLink, '_blank', 'noopener,noreferrer');
+                }
+              }}
+              className={[
+                'hover:bg-muted/50',
+                votacao.proposicaoLink
+                  ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+                  : 'cursor-default',
+              ].join(' ')}
+            >
+              <TableCell className="font-medium text-sm max-w-[200px] truncate" title={votacao.proposicao}>
+                {votacao.proposicao}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {votacao.data ? new Date(votacao.data).toLocaleDateString('pt-BR') : '—'}

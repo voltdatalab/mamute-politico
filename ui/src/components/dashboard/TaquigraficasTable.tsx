@@ -74,26 +74,35 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
         </TableHeader>
         <TableBody>
           {(speeches ?? []).map((speech) => (
-            <TableRow key={speech.id}>
+            <TableRow
+              key={speech.id}
+              role={speech.speech_link ? 'link' : undefined}
+              tabIndex={speech.speech_link ? 0 : -1}
+              onClick={() => {
+                if (!speech.speech_link) return;
+                window.open(speech.speech_link, '_blank', 'noopener,noreferrer');
+              }}
+              onKeyDown={(e) => {
+                if (!speech.speech_link) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  window.open(speech.speech_link, '_blank', 'noopener,noreferrer');
+                }
+              }}
+              className={[
+                'hover:bg-muted/50',
+                speech.speech_link
+                  ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+                  : 'cursor-default',
+              ].join(' ')}
+            >
               <TableCell className="text-sm text-muted-foreground">
                 {speech.date ? new Date(speech.date).toLocaleDateString('pt-BR') : '—'}
               </TableCell>
               <TableCell className="text-sm">{speech.session_number ?? '—'}</TableCell>
               <TableCell className="text-sm">{speech.type ?? '—'}</TableCell>
               <TableCell className="text-sm text-muted-foreground max-w-[360px] truncate">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="truncate">{speech.summary ?? speech.speech_text ?? '—'}</span>
-                  {speech.speech_link && (
-                    <a
-                      href={speech.speech_link}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="shrink-0 text-primary hover:underline"
-                    >
-                      Link
-                    </a>
-                  )}
-                </div>
+                {speech.summary ?? speech.speech_text ?? '—'}
               </TableCell>
               <TableCell>
                 {analysisQueries.some((q) => q.isLoading) ? (
