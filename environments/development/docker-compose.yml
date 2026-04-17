@@ -28,6 +28,18 @@ services:
       - frontend
     restart: unless-stopped
 
+  mamute-politico-scrappers:
+    build:
+      context: ../../mamute_scrappers
+      dockerfile: Dockerfile
+    image: mamute-politico-scrappers:latest
+    container_name: dev-mamute-politico-scrappers
+    volumes:
+      - ../../mamute_scrappers/.env:/app/.env
+    networks:
+      - backend
+    restart: unless-stopped
+
   caddy:
     image: caddy:2-alpine
     ports:

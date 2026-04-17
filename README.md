@@ -14,19 +14,21 @@ Monorepo do projeto Mamute Político (Correio Sabiá), com coleta de dados legis
 
 ## Stack Docker em produção
 
-O ficheiro [`environments/production/docker-compose.yml`](environments/production/docker-compose.yml) define o compose **`mamute-politico-ui-prod`** com os seguintes serviços:
+O ficheiro [`environments/production/docker-compose.yml`](environments/production/docker-compose.yml) define o compose **`prod-mamute-politico`** com os seguintes serviços:
 
 | Serviço | Função |
 |---------|--------|
 | **`caddy`** | Proxy reverso na porta `CADDY_HTTP_PORT` (por omissão 80). Monta o [`Caddyfile`](environments/production/Caddyfile) e volumes de dados/configuração do Caddy. |
 | **`ui`** | Imagem construída a partir de [`ui/Dockerfile`](ui/Dockerfile) (build estático do front). O Caddy encaminha o tráfego com prefixo `/app` para o contentor `ui:8080`. |
+| **`mamute-politico-api`** | API FastAPI de dados legislativos (build em `api`), com `api/.env` montado em `/app/.env`. O Caddy encaminha `/api*` para a porta 8000 deste serviço. |
 | **`mamute-politico-chatbot`** | Backend do chatbot (build em `chatbot_backend`), com `chatbot_backend/.env` montado em `/app/.env`. O Caddy encaminha `/chat*` para a porta 8000 deste serviço. |
+| **`mamute-politico-scrappers`** | Scheduler de coleta/sincronização (build em `mamute_scrappers`), com `mamute_scrappers/.env` montado em `/app/.env` e rotinas via cron. |
 | **`ghost-db`** | MySQL 8 para a base de dados do Ghost. Palavra-passe root e nome da BD vêm de variáveis (ver [`environments/production/.env.example`](environments/production/.env.example)). |
 | **`ghost`** | Ghost em produção; `url` definida por `PUBLIC_URL`; liga-se ao MySQL em `ghost-db`. Conteúdo persistente em volume `ghost_content`. |
 
 **Redes:** `frontend` agrega Caddy, UI, chatbot e Ghost (face ao utilizador). `backend` isola o MySQL; o Ghost está em `frontend` e `backend` para falar com a base de dados.
 
-**Nota:** este compose de **produção não inclui o serviço `api`** (FastAPI de dados). O [`Caddyfile` de produção](environments/production/Caddyfile) também **não** define rota `/api*` — apenas `/app*`, `/chat*` e o restante para o Ghost. Ou seja, a API de dados deve ser exposta por outro deploy (outro compose, Kubernetes, etc.) ou o compose/Caddy precisam de ser estendidos. Já o compose de [**desenvolvimento**](environments/development/docker-compose.yml) inclui `mamute-politico-api` e o [Caddy de dev](environments/development/Caddyfile) encaminha `/api*` para esse serviço.
+**Nota:** os composes de **produção** e **desenvolvimento** incluem o serviço `mamute-politico-api`, e os Caddyfiles de ambos ambientes encaminham `/api*` para esse serviço.
 
 ## Inicialização rápida (local)
 
