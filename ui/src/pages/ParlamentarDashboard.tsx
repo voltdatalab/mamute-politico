@@ -118,7 +118,7 @@ const ParlamentarDashboard = () => {
                 Projetos Recentes
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-[250px]">
+            <CardContent className="">
               <ProposicoesList limit={3} parliamentarianId={id} />
             </CardContent>
           </Card>
