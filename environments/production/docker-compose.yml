@@ -1,6 +1,55 @@
-name: mamute-politico-ui-prod
+name: prod-mamute-politico
 
 services:
+
+  mamute-politico-api:
+    build:
+      context: ../../api
+      dockerfile: Dockerfile
+    image: mamute-politico-api:latest
+    container_name: prod-mamute-politico-api
+    volumes:
+      - ../../api/.env:/app/.env
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      pgvector-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mamute-politico-chatbot:
+    build:
+      context: ../../chatbot_backend
+      dockerfile: Dockerfile
+    image: mamute-politico-chatbot:latest
+    container_name: prod-mamute-politico-chatbot
+
+    volumes:
+      - ../../chatbot_backend/.env:/app/.env
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      pgvector-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mamute-politico-scrappers:
+    build:
+      context: ../../mamute_scrappers
+      dockerfile: Dockerfile
+    image: mamute-politico-scrappers:latest
+    container_name: prod-mamute-politico-scrappers
+    volumes:
+      - ../../mamute_scrappers/.env:/app/.env
+    networks:
+      - backend
+    depends_on:
+      pgvector-db:
+        condition: service_healthy
+    restart: unless-stopped
+
   caddy:
     image: caddy:2-alpine
     ports:
@@ -13,27 +62,8 @@ services:
       - frontend
     restart: unless-stopped
 
-  ui:
-    build:
-      context: ../../ui
-      dockerfile: Dockerfile
-    networks:
-      - frontend
-    restart: unless-stopped
-
-  mamute-politico-chatbot:
-    build:
-      context: ../../chatbot_backend
-      dockerfile: Dockerfile
-    image: mamute-politico-chatbot:latest
-    container_name: mamute-politico-chatbot
-    volumes:
-      - ../../chatbot_backend/.env:/app/.env
-    networks:
-      - frontend
-    restart: unless-stopped
-
   ghost-db:
+    container_name: prod-mamute-politico-ghost-db
     image: mysql:8.0
     environment:
       # TODO: Remove hardcoded values
@@ -50,6 +80,7 @@ services:
     restart: unless-stopped
 
   ghost:
+    container_name: prod-mamute-politico-ghost
     image: ghost:latest
     environment:
       url: ${PUBLIC_URL:-http://localhost}
@@ -57,8 +88,7 @@ services:
       database__client: mysql
       database__connection__host: ghost-db
       database__connection__user: root
-      # TODO: Remove hardcoded values
-      database__connection__password: ${GHOST_DB_PASSWORD:-change_me}
+      database__connection__password: ${GHOST_DB_PASSWORD}
       database__connection__database: ghost
     volumes:
       - ghost_content:/var/lib/ghost/content
@@ -68,6 +98,32 @@ services:
     depends_on:
       ghost-db:
         condition: service_healthy
+    restart: unless-stopped
+
+  ui:
+    container_name: prod-mamute-politico-ui
+    build:
+      context: ../../ui
+      dockerfile: Dockerfile
+    networks:
+      - frontend
+    restart: unless-stopped
+
+  pgvector-db:
+    container_name: prod-mamute-politico-pgvector-db
+    image: pgvector/pgvector:pg18-trixie
+    environment:
+      POSTGRES_DB: ${PGVECTOR_DB_NAME:-mamute_vectors_prod}
+      POSTGRES_USER: ${PGVECTOR_DB_USER:-mamute}
+      POSTGRES_PASSWORD: ${PGVECTOR_DB_PASSWORD:-change_me}
+    volumes:
+      - pgvector_db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGVECTOR_DB_USER:-mamute} -d ${PGVECTOR_DB_NAME:-mamute_vectors_prod}"]
+      interval: 5s
+      retries: 10
     restart: unless-stopped
 
 networks:
@@ -81,4 +137,4 @@ volumes:
   caddy_config:
   ghost_content:
   ghost_db_data:
-
+  pgvector_db_data:

@@ -1,4 +1,4 @@
-export type PieceId = "ui" | "reverse_proxy" | "api" | "chatbot_backend" | "ghost";
+export type PieceId = "app_stack" | "scrappers" | "database";
 
 export type FormState = {
   pieces: Record<PieceId, boolean>;

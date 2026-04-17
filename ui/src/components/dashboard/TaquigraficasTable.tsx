@@ -93,12 +93,12 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
                   </div>
                 ) : analysisBySpeechId.get(speech.id) ? (
                   <div className="flex flex-wrap items-center gap-1">
-                    <Badge variant="secondary" className="text-[10px]">
+                    {/* <Badge variant="secondary" className="text-[10px]">
                       KW: {analysisBySpeechId.get(speech.id)?.keywords.length ?? 0}
                     </Badge>
                     <Badge variant="secondary" className="text-[10px]">
                       ENT: {analysisBySpeechId.get(speech.id)?.entities.length ?? 0}
-                    </Badge>
+                    </Badge> */}
                     {(analysisBySpeechId.get(speech.id)?.keywords[0]?.term ??
                       analysisBySpeechId.get(speech.id)?.keywords[0]?.keyword) && (
                       <Badge variant="info" className="text-[10px]">

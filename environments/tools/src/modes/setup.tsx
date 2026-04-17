@@ -13,11 +13,9 @@ export async function runSetup(): Promise<void> {
       const [cursor, setCursor] = useState(0);
       const [state, setState] = useState<FormState>({
         pieces: {
-          ui: true,
-          reverse_proxy: true,
-          api: true,
-          chatbot_backend: true,
-          ghost: true
+          app_stack: true,
+          scrappers: true,
+          database: true
         },
         apiMode: "all_together",
         remoteApiBaseUrl: "",
@@ -68,16 +66,19 @@ export async function runSetup(): Promise<void> {
   console.log("");
   console.log("Crie/atualize estes arquivos com base nas opções selecionadas:");
   console.log("- environments/tools/.env");
-  if (result.values.pieces.reverse_proxy || result.values.pieces.ghost || result.values.pieces.ui) {
+  if (result.values.pieces.app_stack || result.values.pieces.database) {
     console.log("- environments/production/.env");
   }
-  if (result.values.pieces.ui) {
+  if (result.values.pieces.app_stack) {
     console.log("- ui/.env");
   }
-  if (result.values.pieces.api && result.values.apiMode === "all_together") {
+  if (result.values.pieces.app_stack && result.values.apiMode === "all_together") {
     console.log("- api/.env");
   }
-  if (result.values.pieces.chatbot_backend && result.values.chatbotMode === "all_together") {
+  if (result.values.pieces.app_stack && result.values.chatbotMode === "all_together") {
     console.log("- chatbot_backend/.env");
+  }
+  if (result.values.pieces.scrappers) {
+    console.log("- mamute_scrappers/.env");
   }
 }

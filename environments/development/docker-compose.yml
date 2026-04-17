@@ -1,4 +1,4 @@
-name: mamute-politico-ui-dev
+name: dev-mamute-politico
 
 services:
 
@@ -7,12 +7,15 @@ services:
       context: ../../api
       dockerfile: Dockerfile
     image: mamute-politico-api:latest
-    container_name: mamute-politico-api
+    container_name: dev-mamute-politico-api
     volumes:
       - ../../api/.env:/app/.env
     networks:
       - backend
       - frontend
+    depends_on:
+      pgvector-db:
+        condition: service_healthy
     restart: unless-stopped
 
   mamute-politico-chatbot:
@@ -20,18 +23,36 @@ services:
       context: ../../chatbot_backend
       dockerfile: Dockerfile
     image: mamute-politico-chatbot:latest
-    container_name: mamute-politico-chatbot
+    container_name: dev-mamute-politico-chatbot
     volumes:
       - ../../chatbot_backend/.env:/app/.env
     networks:
       - backend
       - frontend
+    depends_on:
+      pgvector-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mamute-politico-scrappers:
+    build:
+      context: ../../mamute_scrappers
+      dockerfile: Dockerfile
+    image: mamute-politico-scrappers:latest
+    container_name: dev-mamute-politico-scrappers
+    volumes:
+      - ../../mamute_scrappers/.env:/app/.env
+    networks:
+      - backend
+    depends_on:
+      pgvector-db:
+        condition: service_healthy
     restart: unless-stopped
 
   caddy:
     image: caddy:2-alpine
     ports:
-      - "80:80"
+      - "${CADDY_HTTP_PORT:-80}:80"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -43,7 +64,7 @@ services:
     restart: unless-stopped
 
   ghost-db:
-    container_name: ghost-db
+    container_name: dev-mamute-politico-ghost-db
     image: mysql:8.0
     environment:
       # TODO: Remove hardcoded values
@@ -60,15 +81,14 @@ services:
 
   ghost:
     image: ghost:latest
-    container_name: ghost
+    container_name: dev-mamute-politico-ghost
     environment:
       url: ${PUBLIC_URL:-http://localhost}
       NODE_ENV: development
       database__client: mysql
       database__connection__host: ghost-db
       database__connection__user: root
-      # TODO: Remove hardcoded values
-      database__connection__password: ${GHOST_DB_PASSWORD:-mamute_ghost_dev}
+      database__connection__password: ${GHOST_DB_PASSWORD}
       database__connection__database: ghost
     volumes:
       - ghost_content:/var/lib/ghost/content
@@ -78,6 +98,23 @@ services:
     depends_on:
       ghost-db:
         condition: service_healthy
+    restart: unless-stopped
+
+  pgvector-db:
+    container_name: dev-mamute-politico-pgvector-db
+    image: pgvector/pgvector:pg18-trixie
+    environment:
+      POSTGRES_DB: ${PGVECTOR_DB_NAME:-mamute_vectors_dev}
+      POSTGRES_USER: ${PGVECTOR_DB_USER:-mamute}
+      POSTGRES_PASSWORD: ${PGVECTOR_DB_PASSWORD:-mamute_pgvector_dev}
+    volumes:
+      - pgvector_db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGVECTOR_DB_USER:-mamute} -d ${PGVECTOR_DB_NAME:-mamute_vectors_dev}"]
+      interval: 5s
+      retries: 10
     restart: unless-stopped
 
 networks:
@@ -91,3 +128,4 @@ volumes:
   caddy_config:
   ghost_content:
   ghost_db_data:
+  pgvector_db_data:

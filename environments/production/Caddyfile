@@ -4,18 +4,22 @@
 
 	@appPaths path /app*
 	handle @appPaths {
-		reverse_proxy ui:8080
+		reverse_proxy prod-mamute-politico-ui:8080
+	}
+	
+	@apiPaths path /api*
+	handle @apiPaths {
+		reverse_proxy prod-mamute-politico-api:8000
 	}
 
 	@chatPaths path /chat*
 	handle @chatPaths {
-		reverse_proxy mamute-politico-chatbot:8000
+		reverse_proxy prod-mamute-politico-chatbot:8000
 	}
 
 	handle {
-		reverse_proxy ghost:2368 {
+		reverse_proxy prod-mamute-politico-ghost:2368 {
 			header_up X-Forwarded-Proto https
 		}
 	}
 }
-

@@ -57,9 +57,9 @@ function evaluateConnections(env: ToolsEnv): StatusMessage[] {
 
   add(messages, "PASS", "environments/tools/.env encontrado");
 
-  if (env.ACTIVE_REVERSE_PROXY) {
+  if (env.ACTIVE_APP_STACK) {
     if (!env.PUBLIC_BASE_URL) {
-      add(messages, "FAIL", "PUBLIC_BASE_URL é obrigatório quando ACTIVE_REVERSE_PROXY=true");
+      add(messages, "FAIL", "PUBLIC_BASE_URL é obrigatório quando ACTIVE_APP_STACK=true");
     } else {
       add(messages, "PASS", `PUBLIC_BASE_URL configurado: ${env.PUBLIC_BASE_URL}`);
       messages.push(httpProbe(env.PUBLIC_BASE_URL));
@@ -79,12 +79,12 @@ function evaluateConnections(env: ToolsEnv): StatusMessage[] {
     }
   }
 
-  if (env.ACTIVE_UI) {
+  if (env.ACTIVE_APP_STACK) {
     const uiChecks = requiredEnvKeys("ui/.env", ["VITE_BASE_URL"]);
     messages.push(...uiChecks);
   }
 
-  if (env.ACTIVE_API) {
+  if (env.ACTIVE_APP_STACK) {
     if (env.API_MODE === "remote") {
       if (!env.REMOTE_API_BASE_URL) {
         add(messages, "FAIL", "REMOTE_API_BASE_URL é obrigatório quando API_MODE=remote");
@@ -109,7 +109,7 @@ function evaluateConnections(env: ToolsEnv): StatusMessage[] {
     }
   }
 
-  if (env.ACTIVE_CHATBOT) {
+  if (env.ACTIVE_APP_STACK) {
     if (env.CHATBOT_MODE === "remote") {
       if (!env.REMOTE_CHATBOT_BASE_URL) {
         add(messages, "FAIL", "REMOTE_CHATBOT_BASE_URL é obrigatório quando CHATBOT_MODE=remote");
@@ -124,8 +124,20 @@ function evaluateConnections(env: ToolsEnv): StatusMessage[] {
     }
   }
 
-  if (env.ACTIVE_GHOST) {
+  if (env.ACTIVE_APP_STACK) {
     messages.push(...requiredEnvKeys("environments/production/.env", ["PUBLIC_URL", "GHOST_DB_PASSWORD"]));
+  }
+
+  if (env.ACTIVE_SCRAPPERS) {
+    if (!fileExists("mamute_scrappers/.env")) {
+      add(messages, "WARN", "mamute_scrappers/.env não encontrado");
+    } else {
+      add(messages, "PASS", "mamute_scrappers/.env encontrado");
+    }
+  }
+
+  if (env.ACTIVE_DATABASE) {
+    messages.push(...requiredEnvKeys("environments/production/.env", ["PGVECTOR_DB_PASSWORD"]));
   }
 
   return messages;
@@ -133,11 +145,13 @@ function evaluateConnections(env: ToolsEnv): StatusMessage[] {
 
 function printPieces(env: ToolsEnv): void {
   console.log("Componentes ativos:");
-  console.log(`- ui: ${env.ACTIVE_UI}`);
-  console.log(`- proxy-reverso(caddy): ${env.ACTIVE_REVERSE_PROXY}`);
-  console.log(`- api: ${env.ACTIVE_API} (${env.API_MODE})`);
-  console.log(`- chatbot_backend: ${env.ACTIVE_CHATBOT} (${env.CHATBOT_MODE})`);
-  console.log(`- ghost: ${env.ACTIVE_GHOST}`);
+  console.log(`- app_stack (proxy, ghost, ui, api, chatbot): ${env.ACTIVE_APP_STACK}`);
+  console.log(`- scrappers: ${env.ACTIVE_SCRAPPERS}`);
+  console.log(`- banco_de_dados (pgvector-db): ${env.ACTIVE_DATABASE}`);
+  if (env.ACTIVE_APP_STACK) {
+    console.log(`  - api_mode: ${env.API_MODE}`);
+    console.log(`  - chatbot_mode: ${env.CHATBOT_MODE}`);
+  }
 }
 
 function levelPrefix(level: StatusMessage["level"]): string {
@@ -165,13 +179,16 @@ export function runStatus(): void {
 
 function collectProductionServices(env: ToolsEnv): string[] {
   const selected = new Set<string>();
-  if (env.ACTIVE_REVERSE_PROXY) selected.add("caddy");
-  if (env.ACTIVE_UI) selected.add("ui");
-  if (env.ACTIVE_CHATBOT && env.CHATBOT_MODE === "all_together") selected.add("mamute-politico-chatbot");
-  if (env.ACTIVE_GHOST) {
+  if (env.ACTIVE_APP_STACK) {
+    selected.add("caddy");
+    selected.add("ui");
     selected.add("ghost");
     selected.add("ghost-db");
+    if (env.API_MODE === "all_together") selected.add("mamute-politico-api");
+    if (env.CHATBOT_MODE === "all_together") selected.add("mamute-politico-chatbot");
   }
+  if (env.ACTIVE_SCRAPPERS) selected.add("mamute-politico-scrappers");
+  if (env.ACTIVE_DATABASE) selected.add("pgvector-db");
   return [...selected];
 }
 
