@@ -65,11 +65,9 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
             <TableHead>Data</TableHead>
             <TableHead>Sessão</TableHead>
             <TableHead>Tipo</TableHead>
-            <TableHead>Link</TableHead>
             <TableHead>Resumo</TableHead>
             <TableHead>Análise</TableHead>
           </TableRow>
@@ -77,28 +75,25 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
         <TableBody>
           {(speeches ?? []).map((speech) => (
             <TableRow key={speech.id}>
-              <TableCell className="font-medium">{speech.id}</TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {speech.date ? new Date(speech.date).toLocaleDateString('pt-BR') : '—'}
               </TableCell>
               <TableCell className="text-sm">{speech.session_number ?? '—'}</TableCell>
               <TableCell className="text-sm">{speech.type ?? '—'}</TableCell>
-              <TableCell className="text-sm">
-                {speech.speech_link ? (
-                  <a
-                    href={speech.speech_link}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="text-primary hover:underline"
-                  >
-                    Abrir
-                  </a>
-                ) : (
-                  '—'
-                )}
-              </TableCell>
               <TableCell className="text-sm text-muted-foreground max-w-[360px] truncate">
-                {speech.summary ?? speech.speech_text ?? '—'}
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="truncate">{speech.summary ?? speech.speech_text ?? '—'}</span>
+                  {speech.speech_link && (
+                    <a
+                      href={speech.speech_link}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="shrink-0 text-primary hover:underline"
+                    >
+                      Link
+                    </a>
+                  )}
+                </div>
               </TableCell>
               <TableCell>
                 {analysisQueries.some((q) => q.isLoading) ? (
