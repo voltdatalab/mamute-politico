@@ -1,4 +1,4 @@
-name: mamute-politico-ui-prod
+name: prod-mamute-politico
 
 services:
 
@@ -7,7 +7,7 @@ services:
       context: ../../api
       dockerfile: Dockerfile
     image: mamute-politico-api:latest
-    container_name: mamute-politico-api
+    container_name: prod-mamute-politico-api
     volumes:
       - ../../api/.env:/app/.env
     networks:
@@ -20,7 +20,8 @@ services:
       context: ../../chatbot_backend
       dockerfile: Dockerfile
     image: mamute-politico-chatbot:latest
-    container_name: mamute-politico-chatbot
+    container_name: prod-mamute-politico-chatbot
+
     volumes:
       - ../../chatbot_backend/.env:/app/.env
     networks:
@@ -41,6 +42,7 @@ services:
     restart: unless-stopped
 
   ghost-db:
+    container_name: prod-mamute-politico-ghost-db
     image: mysql:8.0
     environment:
       # TODO: Remove hardcoded values
@@ -57,6 +59,7 @@ services:
     restart: unless-stopped
 
   ghost:
+    container_name: prod-mamute-politico-ghost
     image: ghost:latest
     environment:
       url: ${PUBLIC_URL:-http://localhost}
@@ -77,6 +80,7 @@ services:
     restart: unless-stopped
 
   ui:
+    container_name: prod-mamute-politico-ui
     build:
       context: ../../ui
       dockerfile: Dockerfile
