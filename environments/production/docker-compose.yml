@@ -13,6 +13,9 @@ services:
     networks:
       - backend
       - frontend
+    depends_on:
+      pgvector-db:
+        condition: service_healthy
     restart: unless-stopped
 
   mamute-politico-chatbot:
@@ -27,6 +30,9 @@ services:
     networks:
       - backend
       - frontend
+    depends_on:
+      pgvector-db:
+        condition: service_healthy
     restart: unless-stopped
 
   mamute-politico-scrappers:
@@ -100,6 +106,23 @@ services:
       - frontend
     restart: unless-stopped
 
+  pgvector-db:
+    container_name: prod-mamute-politico-pgvector-db
+    image: pgvector/pgvector:pg18-trixie
+    environment:
+      POSTGRES_DB: ${PGVECTOR_DB_NAME:-mamute_vectors_prod}
+      POSTGRES_USER: ${PGVECTOR_DB_USER:-mamute}
+      POSTGRES_PASSWORD: ${PGVECTOR_DB_PASSWORD:-change_me}
+    volumes:
+      - pgvector_db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGVECTOR_DB_USER:-mamute} -d ${PGVECTOR_DB_NAME:-mamute_vectors_prod}"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
 networks:
   frontend:
     name: mamute-politico-ui-prod-frontend
@@ -111,3 +134,4 @@ volumes:
   caddy_config:
   ghost_content:
   ghost_db_data:
+  pgvector_db_data:
