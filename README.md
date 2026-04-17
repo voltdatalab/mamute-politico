@@ -12,6 +12,28 @@ Monorepo do projeto Mamute Político (Correio Sabiá), com coleta de dados legis
 - `ui` (interface web React): [`ui/README.md`](ui/README.md)
 - `environments` (Caddy + Docker Compose por ambiente): pasta [`environments/`](environments/) 
 
+## Inicializar a Stack
+
+- Baixe e instale o Docker na máquina.
+- Clone o repositório, rode o script utilitário de configuração e forneça as informações requisitadas pelo script:
+
+```
+cd environments/tools && ./setup.sh
+```
+
+- Rode o script para subir a aplicação
+
+```
+./up.sh
+```
+
+- Para verificar o status, use:
+
+```
+./status.sh
+```
+
+
 ## Stack Docker em produção
 
 O ficheiro [`environments/production/docker-compose.yml`](environments/production/docker-compose.yml) define o compose **`prod-mamute-politico`** com os seguintes serviços:
