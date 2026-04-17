@@ -14,8 +14,8 @@ export async function runSetup(): Promise<void> {
       const [state, setState] = useState<FormState>({
         pieces: {
           app_stack: true,
-          scrappers: false,
-          database: false
+          scrappers: true,
+          database: true
         },
         apiMode: "all_together",
         remoteApiBaseUrl: "",
