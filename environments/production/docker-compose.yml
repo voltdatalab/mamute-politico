@@ -45,6 +45,9 @@ services:
       - ../../mamute_scrappers/.env:/app/.env
     networks:
       - backend
+    depends_on:
+      pgvector-db:
+        condition: service_healthy
     restart: unless-stopped
 
   caddy:
