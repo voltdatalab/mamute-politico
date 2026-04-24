@@ -11,10 +11,7 @@ import {
   Send,
   Bot,
   User,
-  Sparkles,
-  Database,
-  Search,
-  Lightbulb,
+  PlusCircle,
 } from 'lucide-react';
 import {
   streamChat,
@@ -192,57 +189,27 @@ const PesquisaIAPage = () => {
             Combine SQL + processamento de linguagem natural para uma abordagem híbrida.
           </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="space-y-6">
-            <Card variant="primary" className="border-black/10 bg-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  Pesquisa por IA
-                </CardTitle>
-                <CardDescription>
-                  Consulte dados legislativos em linguagem natural
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <Database className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">Banco de Dados</p>
-                    <p className="text-xs text-muted-foreground">
-                      Acesso a proposições, votações e discursos
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <Search className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">Abordagem Híbrida</p>
-                    <p className="text-xs text-muted-foreground">
-                      Combina SQL + processamento de linguagem natural
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
             <Card className="border-black/10 bg-white">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Lightbulb className="h-5 w-5" />
+                <CardTitle className="text-5xl font-extrabold">
                   Perguntas Sugeridas
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {exampleQuestions.map((question, index) => (
                     <button
                       key={index}
                       type="button"
                       onClick={() => handleExampleClick(question)}
-                      className="w-full text-left p-3 rounded-lg text-sm bg-muted/50 hover:bg-muted transition-colors disabled:opacity-50"
+                      className="w-full rounded-[20px] border border-black/10 bg-white p-4 text-left text-[32px] font-semibold leading-tight shadow-md transition-colors hover:bg-muted disabled:opacity-50"
                     >
-                      {question}
+                      <span className="flex items-center justify-between gap-4">
+                        <span>{question}</span>
+                        <PlusCircle className="h-10 w-10 shrink-0 text-success" />
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -250,12 +217,12 @@ const PesquisaIAPage = () => {
             </Card>
           </div>
 
-          <div className="lg:col-span-3">
+          <div>
             <Card className="flex flex-col border-black/10 bg-white">
               <CardHeader className="border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                  Chat com Assistente Legislativo
+                <CardTitle className="text-5xl font-extrabold flex items-center gap-3">
+                  <Bot className="h-14 w-14 text-foreground" />
+                  Chat Bot
                 </CardTitle>
               </CardHeader>
 
@@ -278,9 +245,9 @@ const PesquisaIAPage = () => {
                         )}
 
                         <div
-                          className={`max-w-[80%] p-3 rounded-lg ${
+                          className={`max-w-[80%] p-4 rounded-[20px] ${
                             message.role === 'user'
-                              ? 'bg-primary text-primary-foreground'
+                              ? 'bg-success text-white'
                               : 'bg-muted'
                           }`}
                         >
@@ -343,7 +310,8 @@ const PesquisaIAPage = () => {
                       className="flex-1"
                       minLength={MIN_QUESTION_LEN}
                     />
-                    <Button type="submit" disabled={!canSend}>
+                    <Button type="submit" disabled={!canSend} className="px-8">
+                      ENVIAR
                       <Send className="h-4 w-4" />
                     </Button>
                   </form>
