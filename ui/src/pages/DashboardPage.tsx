@@ -117,9 +117,9 @@ const DashboardPage = () => {
                 </Link>
               ))}
               {monitorados.length === 0 && !isLoadingMonitorados && (
-                <p className="text-sm text-muted-foreground py-4">
+                <div className="w-full rounded-xl border border-dashed border-black/10 bg-muted/30 p-6 text-center text-sm text-muted-foreground">
                   Nenhum parlamentar monitorado.
-                </p>
+                </div>
               )}
             </div>
             )}
