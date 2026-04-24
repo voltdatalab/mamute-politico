@@ -15,18 +15,17 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
   ];
 
   return (
-    <section className="relative min-h-[calc(100vh-64px)] overflow-hidden bg-[#e6c54a]">
+    <section className="relative min-h-[calc(100vh-88px)] overflow-hidden bg-[#e6c54a]">
       <img
         src={congressoSelecao}
         alt="Congresso Nacional"
-        className="absolute bottom-0 left-0 w-full object-cover object-bottom"
-        style={{ height: '60%' }}
+        className="absolute inset-0 h-full w-full object-cover object-bottom"
       />
       <div className="absolute inset-0 bg-[#e6c54a]/0" />
 
-      <div className="relative flex min-h-[calc(100vh-64px)] flex-col py-14 px-6">
+      <div className="relative flex min-h-[calc(100vh-88px)] flex-col py-14 px-6">
         <div className="space-y-3 text-center">
-          <h2 className="text-[48px] font-bold text-[#383838]">
+          <h2 className="text-[56px] font-bold text-[#393939]">
             Selecione a Casa Legislativa
           </h2>
           <p className="mx-auto max-w-2xl text-[18px] font-normal text-[#383838]">
@@ -44,7 +43,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
                 key={option.key}
                 type="button"
                 onClick={() => onSelect(option.key)}
-                className={`rounded-full px-8 py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
+                className={`rounded-[76px] px-8 py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
                   isActive ? 'bg-[#1b76ff] text-white' : 'bg-white text-[#383838] hover:bg-white/90'
                 }`}
               >
@@ -57,7 +56,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
         <div className="mt-auto pt-8">
           <div className="flex items-end justify-between px-2 text-[12px] font-medium text-[#ffffff] [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">
             <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto brightness-0 invert" />
-            <span>© 2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
+            <span>© 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
           </div>
         </div>
       </div>
