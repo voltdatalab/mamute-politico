@@ -40,7 +40,7 @@ const Index = () => {
         <img
           src={congressoIlustrado}
           alt=""
-          className="pointer-events-none absolute bottom-0 right-0 hidden w-[58%] object-contain object-right-bottom lg:block"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
         />
 
         <div className="container relative z-10 grid min-h-[560px] items-center py-8">
