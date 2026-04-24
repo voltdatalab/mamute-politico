@@ -1,170 +1,163 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Bell, FileText, LayoutDashboard, MessageSquare, UserRound, Vote } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import heroImage from '@/assets/figma-hero.png';
+import congressoIlustrado from '@/assets/congresso-ilustrado.png';
 import mammothImage from '@/assets/figma-mamute.png';
+import logoMamute from '@/assets/logo-mamute.png';
 
 const features = [
   {
-    icon: UserRound,
-    title: 'Acompanhamento Personalizado',
+    title: 'ACOMPANHAMENTO\nPERSONALIZADO',
     description: 'Selecione e monitore os parlamentares do seu interesse.',
   },
   {
-    icon: LayoutDashboard,
-    title: 'Dashboard Interativo',
+    title: 'DASHBOARD\nINTERATIVO',
     description: 'Visualize dados, votações e proposições em tempo real.',
   },
   {
-    icon: MessageSquare,
-    title: 'Pesquisa por IA',
+    title: 'PESQUISA POR IA',
     description: 'Consulte informações legislativas em linguagem natural.',
   },
   {
-    icon: Bell,
-    title: 'Notificações',
+    title: 'NOTIFICAÇÕES',
     description: 'Receba alertas sobre movimentações dos parlamentares.',
   },
 ];
 
 const stats = [
-  { label: 'DEPUTADOS/AS', value: '513', icon: UserRound },
-  { label: 'SENADORES/AS', value: '81', icon: UserRound },
-  { label: 'Proposições 2024', value: '4.532', icon: FileText },
-  { label: 'Votações', value: '892', icon: Vote },
+  { label: 'DEPUTADOS/AS', value: '513' },
+  { label: 'SENADORES/AS', value: '81' },
+  { label: 'PROPOSIÇÕES 2024', value: '4.532' },
+  { label: 'VOTAÇÕES', value: '892' },
 ];
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-[#ececec]">
+    <div className="min-h-screen bg-white font-sans">
       <Header />
 
-      <section className="relative overflow-hidden bg-[#e6c54a]">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-[#e6c54a]" style={{ minHeight: '460px' }}>
+        {/* Congress building illustration — right side on large screens */}
         <img
-          src={heroImage}
-          alt="Fundo Congresso Nacional"
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          src={congressoIlustrado}
+          alt=""
+          className="pointer-events-none absolute bottom-0 right-0 hidden h-full w-auto object-contain object-right-bottom lg:block"
+          style={{ maxWidth: '55%' }}
         />
-        <div className="container relative py-10 md:py-12">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <Badge variant="outline" className="border-0 bg-transparent px-0 text-sm font-extrabold italic text-foreground">
-                  TEMPO REAL
-                </Badge>
-                <h1 className="max-w-[760px] text-4xl font-extrabold leading-[0.95] text-foreground md:max-w-[680px] md:text-[84px]">
-                  Acompanhe o Congresso Nacional de perto
-                </h1>
-                <p className="max-w-2xl text-lg leading-snug text-foreground/80 md:max-w-[700px] md:text-[26px] md:leading-[1.12]">
-                  Monitore parlamentares, analise votacoes, acompanhe proposicoes e mantenha-se informado sobre a atividade legislativa brasileira.
-                </p>
-              </div>
 
-              <div className="flex flex-wrap gap-3 pt-1">
-                <Link to="/selecao">
-                  <Button variant="hero" className="h-11 px-8 text-xs uppercase tracking-wide">
-                    COMECAR AGORA
-                  </Button>
-                </Link>
-                <Link to="/dashboard">
-                  <Button variant="outline" className="h-11 border-0 bg-white px-8 text-xs uppercase tracking-wide">
-                    EXPLORAR DASHBOARD
-                  </Button>
-                </Link>
-              </div>
+        <div className="container relative z-10 flex min-h-[460px] items-center py-14">
+          <div className="max-w-[500px] space-y-6">
+            <p className="text-[15px] font-black tracking-widest text-[#383838] uppercase">
+              TEMPO REAL
+            </p>
+            <h1 className="text-[42px] font-bold leading-[1.05] text-[#383838] md:text-[52px]">
+              Acompanhe o Congresso Nacional de perto
+            </h1>
+            <p className="text-[18px] font-normal leading-snug text-[#383838]">
+              Monitore parlamentares, analise votações, acompanhe proposições e mantenha-se informado sobre a atividade legislativa brasileira.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/selecao">
+                <button className="rounded-full bg-[#1b76ff] px-7 py-3 text-[13px] font-bold uppercase tracking-wide text-white transition hover:opacity-90">
+                  COMEÇAR AGORA
+                </button>
+              </Link>
+              <Link to="/dashboard">
+                <button className="rounded-full bg-white px-7 py-3 text-[13px] font-semibold uppercase tracking-wide text-[#4b4b4b] transition hover:opacity-90">
+                  EXPLORAR DASHBOARD
+                </button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="-mt-10 pb-14">
+      {/* Stats Section */}
+      <section className="bg-white py-10">
         <div className="container">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <Card key={stat.label} className="rounded-[20px] border border-black/10 bg-[#f1f1f1] shadow-md">
-                  <CardContent className="flex flex-col items-center gap-2 p-6 text-center">
-                    <div className="rounded-full bg-primary/10 p-3">
-                      <Icon className="h-8 w-8 text-primary" />
-                    </div>
-                    <p className="text-6xl font-extrabold leading-none text-[#787878]">{stat.value}</p>
-                    <p className="text-xs uppercase text-foreground/70">{stat.label}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="flex flex-col items-center gap-2 rounded-[12px] bg-white py-8 px-4 text-center shadow-[0_2px_12px_rgba(0,0,0,0.08)]"
+              >
+                <div className="mb-1">
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="24" cy="24" r="24" fill="#e8f0fe" />
+                    <path d="M24 14C18.477 14 14 18.477 14 24s4.477 10 10 10 10-4.477 10-10-4.477-10-10-10zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6l5.25 3.15.75-1.23-4-2.38V19z" fill="#468fff"/>
+                  </svg>
+                </div>
+                <p className="text-[36px] font-black leading-none text-[#868686]">{stat.value}</p>
+                <p className="text-[14px] font-normal uppercase tracking-wide text-[#000000]">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="pb-20 pt-12">
+      {/* Features Section */}
+      <section className="bg-white py-14">
         <div className="container">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-5xl font-extrabold text-[#0a0a0a] md:text-[64px]">
+          <div className="mb-10 text-center">
+            <h2 className="mb-3 text-[40px] font-bold text-[#090909]">
               Funcionalidades Principais
             </h2>
-            <p className="mx-auto max-w-3xl text-lg text-foreground/80">
-              Ferramentas poderosas para voce acompanhar e analisar a atividade legislativa brasileira de forma simples e eficiente.
+            <p className="mx-auto max-w-2xl text-[20px] font-normal text-[#090909]">
+              Ferramentas poderosas para você acompanhar e analisar a atividade legislativa brasileira de forma <strong>simples e eficiente</strong>.
             </p>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
-            <img src={mammothImage} alt="Mamute ilustracao" className="h-full w-full object-contain" />
-            <div className="grid gap-6 sm:grid-cols-2">
-              {features.map((feature) => {
-                const Icon = feature.icon;
-                return (
-                  <Card key={feature.title} className="min-h-[250px] border-black/10 bg-[#f5f5f5]">
-                    <CardHeader className="items-center pt-8">
-                      <div className="rounded-full bg-primary/10 p-3">
-                        <Icon className="h-8 w-8 text-primary" />
-                      </div>
-                      <CardTitle className="text-center text-lg font-bold uppercase tracking-tight">
-                        {feature.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center text-sm text-foreground/80">
-                      {feature.description}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+          <div className="grid gap-8 lg:grid-cols-2 items-center">
+            <div className="flex justify-center">
+              <img src={mammothImage} alt="Mamute ilustração" className="max-h-[420px] w-auto object-contain" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {features.map((feature) => (
+                <div
+                  key={feature.title}
+                  className="rounded-[12px] bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.08)] flex flex-col items-center text-center gap-4"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f0fe]">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="12" fill="#468fff"/>
+                      <path d="M9.5 16.5l-3.5-3.5 1.41-1.41L9.5 13.67l7.09-7.09L18 8l-8.5 8.5z" fill="white"/>
+                    </svg>
+                  </div>
+                  <h3 className="text-[15px] font-bold uppercase text-[#4b4b4b] whitespace-pre-line leading-tight">
+                    {feature.title}
+                  </h3>
+                  <p className="text-[16px] font-normal text-[#000000]">{feature.description}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="pb-24 pt-14">
+      {/* CTA Section */}
+      <section className="bg-white py-20">
         <div className="container text-center">
-          <h2 className="mb-4 text-6xl font-extrabold text-[#080808] md:text-[72px]">
+          <h2 className="mb-4 text-[48px] font-bold text-[#080808]">
             Pronto para começar?
           </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-foreground/85">
+          <p className="mx-auto mb-8 max-w-2xl text-[18px] font-semibold text-[#080808]">
             Selecione os parlamentares que deseja acompanhar e comece a monitorar suas atividades legislativas agora mesmo.
           </p>
           <Link to="/selecao">
-            <Button variant="hero" className="h-12 px-10 text-sm uppercase">
-              Selecionar Parlamentares
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+            <button className="rounded-full bg-[#468fff] px-8 py-3 text-[15px] font-bold uppercase tracking-wide text-white transition hover:opacity-90">
+              SELECIONAR PARLAMENTARES
+            </button>
           </Link>
         </div>
       </section>
 
-      <footer className="border-t border-black/10 py-8">
-        <div className="container">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex items-center gap-2 text-foreground">
-              <span className="text-base font-extrabold tracking-wide">MAMUTE POLITICO</span>
-            </div>
-            <p className="text-sm text-foreground/75">
-              © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
-            </p>
-          </div>
+      {/* Footer */}
+      <footer className="border-t border-black/10 bg-white py-6">
+        <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
+          <img src={logoMamute} alt="Mamute Político" className="h-8 w-auto" />
+          <p className="text-[12px] font-medium text-[#000000]">
+            © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
+          </p>
         </div>
       </footer>
     </div>

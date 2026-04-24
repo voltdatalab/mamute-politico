@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Crimson Text', 'serif'],
+        sans: ['Avenir Next', 'Avenir', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Gill Sans', 'Avenir Next', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

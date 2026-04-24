@@ -4,45 +4,49 @@
 
 @layer base {
   :root {
-    --background: 0 0% 92%;
-    --foreground: 228 15% 18%;
+    --background: 0 0% 96%;
+    --foreground: 0 0% 22%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 15%;
+    --card-foreground: 0 0% 22%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 15%;
+    --popover-foreground: 0 0% 22%;
 
-    --primary: 217 91% 58%;
+    /* Figma primary blue: #468fff / #1b76ff */
+    --primary: 214 100% 64%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 96%;
-    --secondary-foreground: 225 12% 22%;
+    --secondary-foreground: 0 0% 22%;
 
-    --muted: 0 0% 95%;
-    --muted-foreground: 225 7% 39%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 45 84% 56%;
-    --accent-foreground: 0 0% 100%;
+    /* Figma gold/yellow: #e6c54a */
+    --accent: 45 78% 59%;
+    --accent-foreground: 0 0% 22%;
 
-    --highlight: 45 84% 56%;
-    --highlight-foreground: 228 15% 18%;
+    --highlight: 45 78% 59%;
+    --highlight-foreground: 0 0% 22%;
 
-    --destructive: 0 72% 51%;
+    /* Figma red: #ff0004 */
+    --destructive: 360 100% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 146 63% 36%;
+    /* Figma green: #09e03b */
+    --success: 136 92% 45%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 220 30% 15%;
+    --warning-foreground: 0 0% 22%;
 
     --info: 203 89% 53%;
     --info-foreground: 0 0% 100%;
 
-    --border: 225 14% 86%;
-    --input: 225 14% 86%;
-    --ring: 217 91% 58%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 214 100% 64%;
 
     --radius: 1rem;
 
