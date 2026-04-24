@@ -183,8 +183,8 @@ const PesquisaIAPage = () => {
 
       <main className="container py-8">
         <div className="mb-6">
-          <h1 className="text-6xl font-extrabold text-[#2a2e39]">Pesquisa IA</h1>
-          <p className="mt-3 max-w-4xl text-2xl text-foreground/85">
+          <h1 className="text-5xl font-extrabold text-[#2a2e39] md:text-6xl">Pesquisa IA</h1>
+          <p className="mt-3 max-w-4xl text-lg leading-snug text-foreground/85 md:text-[24px]">
             Consulte dados legislativos em linguagem natural. Acesse um banco de dados com as proposições, votações e discursos.
             Combine SQL + processamento de linguagem natural para uma abordagem híbrida.
           </p>
@@ -193,7 +193,7 @@ const PesquisaIAPage = () => {
           <div>
             <Card className="border-black/10 bg-white">
               <CardHeader className="pb-3">
-                <CardTitle className="text-5xl font-extrabold">
+                <CardTitle className="text-4xl font-extrabold md:text-5xl">
                   Perguntas Sugeridas
                 </CardTitle>
               </CardHeader>
@@ -204,11 +204,11 @@ const PesquisaIAPage = () => {
                       key={index}
                       type="button"
                       onClick={() => handleExampleClick(question)}
-                      className="w-full rounded-[20px] border border-black/10 bg-white p-4 text-left text-[32px] font-semibold leading-tight shadow-md transition-colors hover:bg-muted disabled:opacity-50"
+                      className="w-full rounded-[20px] border border-black/10 bg-white p-4 text-left text-[20px] font-semibold leading-tight shadow-md transition-colors hover:bg-muted disabled:opacity-50 md:text-[22px]"
                     >
                       <span className="flex items-center justify-between gap-4">
                         <span>{question}</span>
-                        <PlusCircle className="h-10 w-10 shrink-0 text-success" />
+                        <PlusCircle className="h-9 w-9 shrink-0 text-success" />
                       </span>
                     </button>
                   ))}
@@ -220,8 +220,8 @@ const PesquisaIAPage = () => {
           <div>
             <Card className="flex flex-col border-black/10 bg-white">
               <CardHeader className="border-b">
-                <CardTitle className="text-5xl font-extrabold flex items-center gap-3">
-                  <Bot className="h-14 w-14 text-foreground" />
+                <CardTitle className="text-4xl font-extrabold flex items-center gap-3 md:text-5xl">
+                  <Bot className="h-12 w-12 text-foreground" />
                   Chat Bot
                 </CardTitle>
               </CardHeader>
@@ -267,7 +267,7 @@ const PesquisaIAPage = () => {
                               />
                             </div>
                           ) : (
-                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                            <p className="text-base whitespace-pre-wrap">{message.content}</p>
                           )}
                           <p
                             className={`text-xs mt-2 ${

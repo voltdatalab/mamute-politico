@@ -48,29 +48,29 @@ const Index = () => {
           alt="Fundo Congresso Nacional"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover"
         />
-        <div className="container relative py-12 md:py-16">
+        <div className="container relative py-10 md:py-14">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div className="space-y-6">
               <div className="space-y-3">
                 <Badge variant="outline" className="border-0 bg-transparent px-0 text-sm font-extrabold italic text-foreground">
                   TEMPO REAL
                 </Badge>
-                <h1 className="max-w-xl text-4xl font-extrabold leading-tight text-foreground md:text-6xl">
+                <h1 className="max-w-xl text-5xl font-extrabold leading-[0.95] text-foreground md:text-[86px]">
                   Acompanhe o Congresso Nacional de perto
                 </h1>
-                <p className="max-w-xl text-base text-foreground/80 md:text-lg">
+                <p className="max-w-xl text-lg leading-snug text-foreground/80 md:text-[29px] md:leading-[1.1]">
                   Monitore parlamentares, analise votacoes, acompanhe proposicoes e mantenha-se informado sobre a atividade legislativa brasileira.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-4">
                 <Link to="/selecao">
-                  <Button variant="hero" className="h-10 px-8 text-xs uppercase tracking-wide">
+                  <Button variant="hero" className="h-11 px-8 text-xs uppercase tracking-wide">
                     COMECAR AGORA
                   </Button>
                 </Link>
                 <Link to="/dashboard">
-                  <Button variant="outline" className="h-10 border-0 bg-white px-8 text-xs uppercase tracking-wide">
+                  <Button variant="outline" className="h-11 border-0 bg-white px-8 text-xs uppercase tracking-wide">
                     EXPLORAR DASHBOARD
                   </Button>
                 </Link>
@@ -80,7 +80,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="-mt-12 pb-14">
+      <section className="-mt-10 pb-14">
         <div className="container">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => {
@@ -91,7 +91,7 @@ const Index = () => {
                     <div className="rounded-full bg-primary/10 p-3">
                       <Icon className="h-8 w-8 text-primary" />
                     </div>
-                    <p className="text-5xl font-extrabold text-[#787878]">{stat.value}</p>
+                    <p className="text-6xl font-extrabold leading-none text-[#787878]">{stat.value}</p>
                     <p className="text-xs uppercase text-foreground/70">{stat.label}</p>
                   </CardContent>
                 </Card>
@@ -101,10 +101,10 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="pb-20 pt-8">
+      <section className="pb-20 pt-12">
         <div className="container">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-4xl font-extrabold text-[#0a0a0a] md:text-5xl">
+            <h2 className="mb-4 text-5xl font-extrabold text-[#0a0a0a] md:text-[64px]">
               Funcionalidades Principais
             </h2>
             <p className="mx-auto max-w-3xl text-lg text-foreground/80">
@@ -138,9 +138,9 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="pb-20 pt-8">
+      <section className="pb-24 pt-14">
         <div className="container text-center">
-          <h2 className="mb-4 text-5xl font-extrabold text-[#080808]">
+          <h2 className="mb-4 text-6xl font-extrabold text-[#080808] md:text-[72px]">
             Pronto para começar?
           </h2>
           <p className="mx-auto mb-8 max-w-2xl text-lg text-foreground/85">
@@ -159,9 +159,9 @@ const Index = () => {
         <div className="container">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2 text-foreground">
-              <span className="text-sm font-extrabold tracking-wide">MAMUTE POLITICO</span>
+              <span className="text-base font-extrabold tracking-wide">MAMUTE POLITICO</span>
             </div>
-            <p className="text-xs text-foreground/75">
+            <p className="text-sm text-foreground/75">
               © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
             </p>
           </div>

@@ -62,16 +62,16 @@ const DashboardPage = () => {
     <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_72%,#3d825b_72%,#3d825b_100%)]">
       <Header />
       
-      <main className="container relative py-8 space-y-6">
+      <main className="container relative py-10 space-y-6">
         <img src={heroImage} alt="" className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover opacity-20" />
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-5xl font-extrabold text-[#1f2b44]">Dashboard Geral</h1>
-            <p className="text-[#273349]">
+            <h1 className="text-6xl font-extrabold leading-none text-[#1f2b44] md:text-[74px]">Dashboard Geral</h1>
+            <p className="mt-1 text-lg text-[#273349] md:text-[28px] md:leading-tight">
               Acompanhe a atividade dos parlamentares monitorados
             </p>
           </div>
-          <Badge variant="accent" className="gap-2 px-4 py-2">
+          <Badge variant="accent" className="gap-2 px-5 py-2 text-sm md:text-xs">
             <Users className="h-4 w-4" />
             {monitorados.length} parlamentares monitorados
           </Badge>
@@ -130,7 +130,7 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Timeline - Takes 2 columns */}
           <div className="lg:col-span-2">
-            <Card className="h-[600px] border-black/10 bg-white">
+            <Card className="h-[560px] border-black/10 bg-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
@@ -145,7 +145,7 @@ const DashboardPage = () => {
 
           {/* Recent Activity */}
           <div className="space-y-6">
-            <Card className="h-[290px] border-black/10 bg-white">
+            <Card className="h-[270px] border-black/10 bg-white">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-accent" />
@@ -157,7 +157,7 @@ const DashboardPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="h-[290px] border-black/10 bg-white">
+            <Card className="h-[270px] border-black/10 bg-white">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-success" />
@@ -201,9 +201,9 @@ const DashboardPage = () => {
             <VotacoesTable />
           </CardContent>
         </Card>
-        <div className="flex items-end justify-between py-6 text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">
-          <span className="font-semibold">MAMUTE POLITICO</span>
-          <img src={mammothImage} alt="" className="h-40 opacity-95" />
+        <div className="flex items-end justify-between py-5 text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">
+          <span className="text-lg font-semibold">MAMUTE POLITICO</span>
+          <img src={mammothImage} alt="" className="h-36 opacity-95" />
           <span className="text-sm">© 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
         </div>
       </main>
