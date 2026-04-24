@@ -2,8 +2,6 @@
 @import "@fontsource/inter/500.css";
 @import "@fontsource/inter/600.css";
 @import "@fontsource/inter/700.css";
-@import "@fontsource/montserrat/600.css";
-@import "@fontsource/montserrat/700.css";
 
 @tailwind base;
 @tailwind components;
@@ -132,7 +130,7 @@
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Montserrat', 'Gill Sans', 'Avenir Next', 'Inter', system-ui, sans-serif;
+    font-family: 'Gill Sans', 'Avenir Next', 'Inter', system-ui, sans-serif;
   }
 }
 
