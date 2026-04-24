@@ -59,7 +59,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
           )}
           <div className="flex items-center justify-between px-2 text-sm font-semibold text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">
             <span>MAMUTE POLITICO</span>
-            <span>© 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
+            <span>© 2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
           </div>
         </div>
       </div>
