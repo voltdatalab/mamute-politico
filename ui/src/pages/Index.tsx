@@ -6,7 +6,8 @@ import logoMamute from '@/assets/logo-mamute.png';
 import iconDeputados from '@/assets/icon-deputados.svg';
 import iconSenadores from '@/assets/icon-senadores.svg';
 import iconProposicoes from '@/assets/icon-proposicoes.svg';
-import { CheckCircle2, Vote } from 'lucide-react';
+import iconVotacoes from '@/assets/icon-votacoes.svg';
+import { CheckCircle2 } from 'lucide-react';
 
 const TempoRealIcon = () => (
   <svg viewBox="0 0 41 29" aria-hidden="true" className="h-[18px] w-[26px]">
@@ -44,7 +45,7 @@ const stats = [
   { label: 'DEPUTADOS/AS', value: '513', iconSrc: iconDeputados, iconAlt: 'Ícone de deputados' },
   { label: 'SENADORES/AS', value: '81', iconSrc: iconSenadores, iconAlt: 'Ícone de senadores' },
   { label: 'PROPOSIÇÕES 2024', value: '4.532', iconSrc: iconProposicoes, iconAlt: 'Ícone de proposições' },
-  { label: 'VOTAÇÕES', value: '892', iconLucide: Vote, iconAlt: 'Ícone de votações' },
+  { label: 'VOTAÇÕES', value: '892', iconSrc: iconVotacoes, iconAlt: 'Ícone de votações' },
 ];
 
 const Index = () => {
@@ -89,12 +90,10 @@ const Index = () => {
             {stats.map((stat) => (
               <div key={stat.label} className="mp-card flex h-[285px] flex-col items-center justify-center gap-3 bg-white p-4 text-center">
                 {stat.iconSrc ? (
-                  <img src={stat.iconSrc} alt={stat.iconAlt} className="h-14 w-14 object-contain" />
-                ) : stat.iconLucide ? (
-                  <stat.iconLucide className="h-14 w-14 text-[#1b76ff]" aria-hidden="true" />
+                  <img src={stat.iconSrc} alt={stat.iconAlt} className="h-28 w-28 object-contain" />
                 ) : null}
-                <p className="text-[48px] font-extrabold leading-none text-[#878787]">{stat.value}</p>
-                <p className="text-[14px] font-normal uppercase tracking-wide text-black">{stat.label}</p>
+                <p className="text-[36px] font-extrabold leading-none text-[#878787]">{stat.value}</p>
+                <p className="text-[14px] font-normal uppercase tracking-normal text-black">{stat.label}</p>
               </div>
             ))}
           </div>
