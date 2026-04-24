@@ -10,7 +10,7 @@ interface ParlamentarInfoProps {
 
 export function ParlamentarInfo({ parlamentar }: ParlamentarInfoProps) {
   return (
-    <Card variant="primary">
+    <Card variant="primary" className="border-black/10 bg-[#f5f5f5]">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">Dados Cadastrais</CardTitle>
       </CardHeader>
@@ -23,7 +23,7 @@ export function ParlamentarInfo({ parlamentar }: ParlamentarInfoProps) {
           
           <div className="flex-1 space-y-3">
             <div>
-              <h3 className="font-display text-xl font-bold">{parlamentar.nome}</h3>
+              <h3 className="text-2xl font-extrabold">{parlamentar.nome}</h3>
               {(parlamentar.nome !== parlamentar.nomeCompleto) ? <p className="text-sm text-muted-foreground">{parlamentar.nomeCompleto}</p> : null}
             </div>
             

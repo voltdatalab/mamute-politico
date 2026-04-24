@@ -4,9 +4,8 @@
 
 @layer base {
   :root {
-    /* Brazilian Civic Design System */
-    --background: 210 20% 98%;
-    --foreground: 220 30% 15%;
+    --background: 0 0% 92%;
+    --foreground: 228 15% 18%;
 
     --card: 0 0% 100%;
     --card-foreground: 220 30% 15%;
@@ -14,46 +13,39 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 30% 15%;
 
-    /* Deep navy blue - trust & authority */
-    --primary: 220 60% 25%;
+    --primary: 217 91% 58%;
     --primary-foreground: 0 0% 100%;
 
-    /* Soft gray-blue */
-    --secondary: 210 25% 93%;
-    --secondary-foreground: 220 30% 20%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 225 12% 22%;
 
-    /* Muted tones */
-    --muted: 210 20% 96%;
-    --muted-foreground: 220 15% 45%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 225 7% 39%;
 
-    /* Brazilian green accent */
-    --accent: 152 55% 35%;
+    --accent: 45 84% 56%;
     --accent-foreground: 0 0% 100%;
 
-    /* Gold/yellow for highlights */
-    --highlight: 45 90% 50%;
-    --highlight-foreground: 220 30% 15%;
+    --highlight: 45 84% 56%;
+    --highlight-foreground: 228 15% 18%;
 
-    /* Status colors */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 55% 35%;
+    --success: 146 63% 36%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 220 30% 15%;
 
-    --info: 200 80% 50%;
+    --info: 203 89% 53%;
     --info-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 220 60% 25%;
+    --border: 225 14% 86%;
+    --input: 225 14% 86%;
+    --ring: 217 91% 58%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    /* Sidebar */
     --sidebar-background: 220 30% 18%;
     --sidebar-foreground: 210 20% 95%;
     --sidebar-primary: 45 90% 55%;
@@ -63,17 +55,15 @@
     --sidebar-border: 220 30% 25%;
     --sidebar-ring: 45 90% 55%;
 
-    /* Custom gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(220 60% 25%) 0%, hsl(220 50% 35%) 50%, hsl(152 55% 35%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(45 90% 50%) 0%, hsl(38 92% 55%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(45 84% 56%) 0%, hsl(45 82% 52%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 96%) 100%);
+    --gradient-gold: linear-gradient(180deg, hsl(45 84% 56%) 0%, hsl(45 82% 52%) 100%);
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(220 30% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(220 30% 15% / 0.1), 0 2px 4px -2px hsl(220 30% 15% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(220 30% 15% / 0.1), 0 4px 6px -4px hsl(220 30% 15% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(220 30% 15% / 0.1), 0 8px 10px -6px hsl(220 30% 15% / 0.1);
-    --shadow-glow: 0 0 20px hsl(45 90% 50% / 0.3);
+    --shadow-sm: 0 1px 2px 0 hsl(225 15% 15% / 0.08);
+    --shadow-md: 0 2px 8px hsl(225 15% 15% / 0.1);
+    --shadow-lg: 0 4px 16px hsl(225 15% 15% / 0.12);
+    --shadow-xl: 0 8px 24px hsl(225 15% 15% / 0.14);
+    --shadow-glow: 0 0 20px hsl(45 84% 56% / 0.3);
   }
 
   .dark {
@@ -126,11 +116,11 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Avenir Next', 'Avenir', 'Inter', system-ui, sans-serif;
   }
 
-  h1, h2, h3 {
-    font-family: 'Crimson Text', serif;
+  h1, h2, h3, h4 {
+    font-family: 'Gill Sans', 'Avenir Next', 'Inter', system-ui, sans-serif;
   }
 }
 

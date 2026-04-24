@@ -181,13 +181,20 @@ const PesquisaIAPage = () => {
   const canSend = input.trim().length >= MIN_QUESTION_LEN;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom,#f3f3f3_0%,#f3f3f3_72%,#1577ff_72%,#1577ff_100%)]">
       <Header />
 
       <main className="container py-8">
+        <div className="mb-6">
+          <h1 className="text-6xl font-extrabold text-[#2a2e39]">Pesquisa IA</h1>
+          <p className="mt-3 max-w-4xl text-2xl text-foreground/85">
+            Consulte dados legislativos em linguagem natural. Acesse um banco de dados com as proposições, votações e discursos.
+            Combine SQL + processamento de linguagem natural para uma abordagem híbrida.
+          </p>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="space-y-6">
-            <Card variant="primary">
+            <Card variant="primary" className="border-black/10 bg-white">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
@@ -219,7 +226,7 @@ const PesquisaIAPage = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-black/10 bg-white">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Lightbulb className="h-5 w-5" />
@@ -244,7 +251,7 @@ const PesquisaIAPage = () => {
           </div>
 
           <div className="lg:col-span-3">
-            <Card className="flex flex-col">
+            <Card className="flex flex-col border-black/10 bg-white">
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2">
                   <MessageSquare className="h-5 w-5 text-primary" />

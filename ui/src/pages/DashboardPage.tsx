@@ -17,6 +17,8 @@ import {
   TrendingUp,
   Loader2,
 } from 'lucide-react';
+import heroImage from '@/assets/figma-hero.png';
+import mammothImage from '@/assets/figma-mamute.png';
 
 // TODO: Remove this once we have a project ID
 const projectId = undefined;
@@ -57,14 +59,15 @@ const DashboardPage = () => {
       : fallbackListQuery.isLoading;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_72%,#3d825b_72%,#3d825b_100%)]">
       <Header />
       
-      <main className="container py-8 space-y-6">
+      <main className="container relative py-8 space-y-6">
+        <img src={heroImage} alt="" className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover opacity-20" />
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-3xl font-bold">Dashboard Geral</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-5xl font-extrabold text-[#1f2b44]">Dashboard Geral</h1>
+            <p className="text-[#273349]">
               Acompanhe a atividade dos parlamentares monitorados
             </p>
           </div>
@@ -75,7 +78,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Monitored Parliamentarians */}
-        <Card>
+        <Card className="border-black/10 bg-white">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
@@ -127,7 +130,7 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Timeline - Takes 2 columns */}
           <div className="lg:col-span-2">
-            <Card className="h-[600px]">
+            <Card className="h-[600px] border-black/10 bg-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
@@ -142,7 +145,7 @@ const DashboardPage = () => {
 
           {/* Recent Activity */}
           <div className="space-y-6">
-            <Card className="h-[290px]">
+            <Card className="h-[290px] border-black/10 bg-white">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-accent" />
@@ -154,7 +157,7 @@ const DashboardPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="h-[290px]">
+            <Card className="h-[290px] border-black/10 bg-white">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-success" />
@@ -187,7 +190,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Voting History */}
-        <Card>
+        <Card className="border-black/10 bg-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Vote className="h-5 w-5 text-primary" />
@@ -198,6 +201,11 @@ const DashboardPage = () => {
             <VotacoesTable />
           </CardContent>
         </Card>
+        <div className="flex items-end justify-between py-6 text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">
+          <span className="font-semibold">MAMUTE POLITICO</span>
+          <img src={mammothImage} alt="" className="h-40 opacity-95" />
+          <span className="text-sm">© 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
+        </div>
       </main>
     </div>
   );

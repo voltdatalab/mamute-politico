@@ -120,12 +120,12 @@ export function ParlamentarSelector({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Available Parliamentarians */}
-      <Card variant="default" className="h-[600px] flex flex-col">
+      <Card variant="default" className="flex h-[640px] flex-col border-black/10 bg-[#f5f5f5]">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">Parlamentares Disponíveis</CardTitle>
+            <CardTitle className="text-2xl font-extrabold">Parlamentares Disponiveis</CardTitle>
             <Badge variant="secondary">{parlamentaresDisponiveis.length}</Badge>
           </div>
           
@@ -296,10 +296,10 @@ export function ParlamentarSelector({
       </Card>
 
       {/* Selected Parliamentarians */}
-      <Card variant="accent" className="h-[600px] flex flex-col">
+      <Card variant="accent" className="flex h-[640px] flex-col border-black/10 bg-[#f5f5f5]">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">Parlamentares Monitorados</CardTitle>
+            <CardTitle className="text-2xl font-extrabold">Parlamentares Monitorados</CardTitle>
             <Badge variant="accent">{parlamentaresSelecionados.length}</Badge>
           </div>
           <p className="text-sm text-muted-foreground">

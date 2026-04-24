@@ -34,7 +34,7 @@ const ParlamentarDashboard = () => {
 
   if (!isIdValid) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
         <Header />
         <main className="container py-8">
           <div className="text-center py-16">
@@ -50,7 +50,7 @@ const ParlamentarDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
         <Header />
         <main className="container py-8 flex items-center justify-center gap-2 text-muted-foreground">
           <Loader2 className="h-6 w-6 animate-spin" />
@@ -63,7 +63,7 @@ const ParlamentarDashboard = () => {
   if (isError || !parlamentar) {
     const notFound = error instanceof ApiError && error.status === 404;
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
         <Header />
         <main className="container py-8">
           <div className="text-center py-16">
@@ -83,13 +83,13 @@ const ParlamentarDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
       <Header />
       
       <main className="container py-8 space-y-6">
         {/* Back button */}
         <Link to="/selecao">
-          <Button variant="ghost" className="gap-2">
+          <Button variant="outline" className="gap-2 bg-white">
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
@@ -142,7 +142,7 @@ const ParlamentarDashboard = () => {
           </TabsList>
           
           <TabsContent value="proposicoes" className="mt-6">
-            <Card>
+            <Card className="border-black/10 bg-white">
               <CardHeader>
                 <CardTitle>Proposições do Parlamentar</CardTitle>
               </CardHeader>
@@ -153,7 +153,7 @@ const ParlamentarDashboard = () => {
           </TabsContent>
           
           <TabsContent value="votacoes" className="mt-6">
-            <Card>
+            <Card className="border-black/10 bg-white">
               <CardHeader>
                 <CardTitle>Histórico de Votações</CardTitle>
               </CardHeader>
@@ -164,7 +164,7 @@ const ParlamentarDashboard = () => {
           </TabsContent>
 
           <TabsContent value="taquigraficas" className="mt-6">
-            <Card>
+            <Card className="border-black/10 bg-white">
               <CardHeader>
                 <CardTitle>Notas Taquigráficas</CardTitle>
               </CardHeader>

@@ -1,9 +1,6 @@
-import { useState } from 'react';
 import { CasaLegislativa } from '@/types/parlamentar';
 import { Badge } from '@/components/ui/badge';
-// Foto do Congresso Nacional: Agência Senado / Senado Federal
-// Fonte: https://www12.senado.leg.br/fotos/fotodestaque/?id-52722654292
-import congressoImage from '@/assets/congresso-nacional.jpg';
+import congressoImage from '@/assets/figma-hero.png';
 
 interface CongressoSelectorProps {
   onSelect: (casa: CasaLegislativa) => void;
@@ -11,133 +8,61 @@ interface CongressoSelectorProps {
 }
 
 export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps) {
-  const [hovered, setHovered] = useState<CasaLegislativa | null>(null);
-
-  const getHighlightClass = (area: CasaLegislativa) => {
-    if (selected === area || hovered === area) {
-      return 'opacity-100 scale-105';
-    }
-    if (selected === 'ambas' || hovered === 'ambas') {
-      return 'opacity-100';
-    }
-    return 'opacity-70';
-  };
+  const options: Array<{ key: CasaLegislativa; label: string; subtitle: string }> = [
+    { key: 'senado', label: 'Senado Federal', subtitle: '81 senadores/as' },
+    { key: 'ambas', label: 'Ambas as Casas', subtitle: 'Monitoramento completo' },
+    { key: 'camara', label: 'Camara dos Deputados', subtitle: '513 deputados/as' },
+  ];
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="text-center space-y-2">
-        <h2 className="font-display text-3xl font-bold text-foreground">
+    <section className="relative min-h-[calc(100vh-80px)] overflow-hidden">
+      <img src={congressoImage} alt="Congresso Nacional" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-transparent" />
+
+      <div className="relative flex min-h-[calc(100vh-80px)] flex-col items-center justify-between py-14">
+        <div className="space-y-3 text-center">
+          <h2 className="text-5xl font-extrabold text-[#1f2b44] drop-shadow-[0_1px_0_rgba(255,255,255,0.25)] md:text-6xl">
           Selecione a Casa Legislativa
-        </h2>
-        <p className="text-muted-foreground max-w-md">
-          Escolha qual casa legislativa você deseja acompanhar. Você pode selecionar 
-          a Câmara dos Deputados, o Senado Federal, ou ambas.
-        </p>
-      </div>
-
-      {/* Building Image with Interactive Areas */}
-      <div className="relative w-full max-w-2xl">
-        <img
-          src={congressoImage}
-          alt="Congresso Nacional do Brasil"
-          className="w-full h-auto rounded-lg shadow-lg grayscale"
-        />
-        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-          Foto: Agência Senado
-        </div>
-        
-        {/* Overlay Areas */}
-        <div className="absolute inset-0 flex">
-          {/* Senado - Left dome */}
-          <button
-            className={`absolute left-[10%] top-[20%] w-[25%] h-[50%] rounded-full transition-all duration-300 cursor-pointer ${getHighlightClass('senado')}`}
-            style={{
-              background: hovered === 'senado' || selected === 'senado' 
-                ? 'radial-gradient(circle, hsla(152, 55%, 35%, 0.3) 0%, transparent 70%)' 
-                : 'transparent',
-            }}
-            onMouseEnter={() => setHovered('senado')}
-            onMouseLeave={() => setHovered(null)}
-            onClick={() => onSelect('senado')}
-            aria-label="Selecionar Senado Federal"
-          />
-          
-          {/* Centro - Both */}
-          <button
-            className={`absolute left-[35%] top-[30%] w-[30%] h-[50%] transition-all duration-300 cursor-pointer ${getHighlightClass('ambas')}`}
-            style={{
-              background: hovered === 'ambas' || selected === 'ambas'
-                ? 'radial-gradient(circle, hsla(45, 90%, 50%, 0.3) 0%, transparent 70%)'
-                : 'transparent',
-            }}
-            onMouseEnter={() => setHovered('ambas')}
-            onMouseLeave={() => setHovered(null)}
-            onClick={() => onSelect('ambas')}
-            aria-label="Selecionar Ambas as Casas"
-          />
-          
-          {/* Câmara - Right dome */}
-          <button
-            className={`absolute right-[10%] top-[20%] w-[25%] h-[50%] rounded-full transition-all duration-300 cursor-pointer ${getHighlightClass('camara')}`}
-            style={{
-              background: hovered === 'camara' || selected === 'camara'
-                ? 'radial-gradient(circle, hsla(220, 60%, 25%, 0.3) 0%, transparent 70%)'
-                : 'transparent',
-            }}
-            onMouseEnter={() => setHovered('camara')}
-            onMouseLeave={() => setHovered(null)}
-            onClick={() => onSelect('camara')}
-            aria-label="Selecionar Câmara dos Deputados"
-          />
+          </h2>
+          <p className="mx-auto max-w-2xl text-xl text-[#273349]">
+            Escolha qual casa legislativa voce deseja acompanhar.
+            <br />
+            Voce pode selecionar a Camara dos Deputados, o Senado Federal, ou ambas.
+          </p>
         </div>
 
-        {/* Labels */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-between px-8">
-          <div className="text-center">
-            <Badge 
-              variant={selected === 'senado' || hovered === 'senado' ? 'senado' : 'secondary'}
-              className="text-sm px-4 py-1.5 cursor-pointer transition-all"
-              onClick={() => onSelect('senado')}
-              onMouseEnter={() => setHovered('senado')}
-              onMouseLeave={() => setHovered(null)}
-            >
-              Senado Federal
-            </Badge>
-          </div>
-          <div className="text-center">
-            <Badge 
-              variant={selected === 'ambas' || hovered === 'ambas' ? 'highlight' : 'secondary'}
-              className="text-sm px-4 py-1.5 cursor-pointer transition-all"
-              onClick={() => onSelect('ambas')}
-              onMouseEnter={() => setHovered('ambas')}
-              onMouseLeave={() => setHovered(null)}
-            >
-              Ambas as Casas
-            </Badge>
-          </div>
-          <div className="text-center">
-            <Badge 
-              variant={selected === 'camara' || hovered === 'camara' ? 'camara' : 'secondary'}
-              className="text-sm px-4 py-1.5 cursor-pointer transition-all"
-              onClick={() => onSelect('camara')}
-              onMouseEnter={() => setHovered('camara')}
-              onMouseLeave={() => setHovered(null)}
-            >
-              Câmara dos Deputados
-            </Badge>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {options.map((option) => {
+            const isActive = selected === option.key;
+            return (
+              <button
+                key={option.key}
+                type="button"
+                className={`rounded-full px-8 py-2 text-sm font-semibold uppercase shadow-sm transition ${isActive ? 'bg-primary text-white' : 'bg-white text-foreground hover:bg-white/90'}`}
+                onClick={() => onSelect(option.key)}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="w-full max-w-6xl space-y-6">
+          {selected && (
+            <div className="animate-fade-in text-center">
+              <Badge variant={selected === 'camara' ? 'camara' : selected === 'senado' ? 'senado' : 'highlight'} className="px-6 py-2 text-base">
+                {selected === 'camara' && 'Camara dos Deputados selecionada'}
+                {selected === 'senado' && 'Senado Federal selecionado'}
+                {selected === 'ambas' && 'Ambas as Casas selecionadas'}
+              </Badge>
+            </div>
+          )}
+          <div className="flex items-center justify-between px-2 text-sm font-semibold text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">
+            <span>MAMUTE POLITICO</span>
+            <span>© 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
           </div>
         </div>
       </div>
-
-      {selected && (
-        <div className="animate-fade-in">
-          <Badge variant={selected === 'camara' ? 'camara' : selected === 'senado' ? 'senado' : 'highlight'} className="text-base px-6 py-2">
-            {selected === 'camara' && '📍 Câmara dos Deputados selecionada'}
-            {selected === 'senado' && '📍 Senado Federal selecionado'}
-            {selected === 'ambas' && '📍 Ambas as Casas selecionadas'}
-          </Badge>
-        </div>
-      )}
-    </div>
+    </section>
   );
 }
