@@ -45,21 +45,21 @@ const Index = () => {
 
         <div className="container relative z-10 grid min-h-[560px] items-center py-8">
           <div className="max-w-[610px] space-y-5">
-            <p className="flex items-center gap-2 text-[15px] font-extrabold italic tracking-wide text-[#393939] uppercase">
+            <p className="flex items-center gap-2 text-[15px] font-extrabold italic leading-normal tracking-[0.02em] text-[#393939] uppercase">
               <Landmark className="h-4 w-4" />
               TEMPO REAL
             </p>
-            <h1 className="text-[48px] font-bold leading-[1.05] text-[#393939] md:text-[56px]">
+            <h1 className="text-[48px] font-bold leading-[1.08] text-[#393939]">
               Acompanhe o Congresso Nacional de perto
             </h1>
-            <p className="max-w-[565px] text-[18px] font-normal leading-snug text-[#393939]">
+            <p className="max-w-[565px] text-[18px] font-normal leading-normal text-[#393939]">
               Monitore parlamentares, analise votações, acompanhe proposições e mantenha-se informado sobre a atividade legislativa brasileira.
             </p>
             <div className="flex flex-wrap gap-4 pt-2">
-              <Link to="/selecao" className="mp-pill-blue px-9 py-2 text-[13px] uppercase tracking-wide transition hover:opacity-90">
+              <Link to="/selecao" className="mp-pill-blue inline-flex h-9 items-center px-9 text-[13px] font-bold uppercase leading-normal tracking-normal transition hover:opacity-90">
                   COMEÇAR AGORA
               </Link>
-              <Link to="/dashboard" className="mp-pill-light px-7 py-2 text-[13px] uppercase tracking-wide transition hover:opacity-90">
+              <Link to="/dashboard" className="mp-pill-light inline-flex h-9 items-center px-7 text-[13px] font-semibold uppercase leading-normal tracking-normal text-[#4b4b4b] transition hover:opacity-90">
                   EXPLORAR DASHBOARD
               </Link>
             </div>
