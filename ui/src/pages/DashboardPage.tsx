@@ -77,14 +77,14 @@ const DashboardPage = () => {
               <span>Carregando...</span>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-[27px]">
               {monitorados.map((parlamentar) => (
                 <Link
                   key={parlamentar.id}
                   to={`/parlamentar/${parlamentar.id}`}
-                  className="flex items-center gap-3 rounded-[12px] border border-black/10 bg-white p-3 hover:bg-[#f5f5f5] transition-colors"
+                  className="flex items-center gap-3 rounded-[28px] bg-white px-4 py-3 shadow-[0_4px_4px_rgba(0,0,0,0.25)] hover:opacity-90 transition-opacity min-w-[200px]"
                 >
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-[50px] w-[50px] shrink-0">
                     <AvatarImage src={parlamentar.foto} alt={parlamentar.nome} />
                     <AvatarFallback>{parlamentar.nome[0]}</AvatarFallback>
                   </Avatar>
@@ -92,7 +92,7 @@ const DashboardPage = () => {
                     <p className="font-semibold text-[18px] text-[#383838]">{parlamentar.nome}</p>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`rounded px-1.5 py-0.5 text-[11px] font-bold text-white ${
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white ${
                           parlamentar.casa === 'camara' ? 'bg-[#1b76ff]' : 'bg-[#09e03b]'
                         }`}
                       >
@@ -117,7 +117,7 @@ const DashboardPage = () => {
           {/* Linha do tempo — 2 cols */}
           <div className="mp-card lg:col-span-2 bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Linha do tempo</h2>
-            <div className="h-[460px]">
+            <div className="h-[560px]">
               <Timeline />
             </div>
           </div>
@@ -127,24 +127,26 @@ const DashboardPage = () => {
             {/* Últimos projetos */}
             <div className="mp-card bg-white p-6">
               <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
-              <div className="h-[200px] overflow-hidden">
-                <ProposicoesList limit={3} />
-              </div>
+              <ProposicoesList limit={2} />
             </div>
 
             {/* Estatísticas */}
             <div className="mp-card bg-white p-6">
               <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Estatísticas</h2>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <div className="flex items-start justify-between gap-2">
                 {[
-                  { value: '23', label: 'Projetos essa semana' },
-                  { value: '35%', label: 'Presença média' },
-                  { value: '14', label: 'Votações recentes' },
+                  { value: '23', label: 'Projetos\nessa semana' },
+                  { value: '35%', label: 'Presença\nmédia' },
+                  { value: '14', label: 'Votações\nrecentes' },
                   { value: '12', label: 'Discursos' },
                 ].map((stat) => (
-                  <div key={stat.label} className="text-center">
-                    <p className="text-[18px] font-bold text-[#468fff]">{stat.value}</p>
-                    <p className="text-[13px] text-[#383838]">{stat.label}</p>
+                  <div key={stat.label} className="flex flex-col items-center gap-2">
+                    <div className="w-[49px] h-[49px] flex items-center justify-center rounded-full border border-[#878787]">
+                      <p className="text-[18px] font-bold text-[#468fff]">{stat.value}</p>
+                    </div>
+                    <p className="text-[13px] text-[#383838] text-center leading-tight whitespace-pre-line">
+                      {stat.label}
+                    </p>
                   </div>
                 ))}
               </div>
