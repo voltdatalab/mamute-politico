@@ -60,7 +60,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
     <div className="relative flex h-[185px] items-center bg-[#447b55]">
     <div className="container">
           <div className="flex items-center justify-between px-2 text-[12px] font-medium text-[#ffffff] [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">
-            <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto brightness-0 invert" />
+            <img src={logoMamute} alt="Mamute Político" className="h-[47px] w-auto brightness-0 invert" />
             <span>© 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
           </div>
         </div>
