@@ -1,7 +1,3 @@
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
 
 @tailwind base;
 @tailwind components;
@@ -125,12 +121,12 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', 'Avenir Next', 'Avenir', system-ui, sans-serif;
+    font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
     min-width: 320px;
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Gill Sans', 'Avenir Next', 'Inter', system-ui, sans-serif;
+    font-family: 'Gill Sans', 'Avenir Next', system-ui, sans-serif;
   }
 }
 
