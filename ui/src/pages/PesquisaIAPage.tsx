@@ -151,13 +151,13 @@ const PesquisaIAPage = () => {
   const canSend = input.trim().length >= MIN_QUESTION_LEN;
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #dbae34 0%, #dbae34 30%, #efeeee 30%, #efeeee 72%, #1b76ff 72%, #1b76ff 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #efeeee 0%, #efeeee 72%, #1b76ff 72%, #1b76ff 100%)' }}>
       <Header />
 
       <main className="container py-8">
         {/* Page title */}
         <div className="mb-8">
-          <h1 className="text-[48px] font-bold text-[#383838] md:text-[56px]">Pesquisa IA</h1>
+          <h1 className="text-[56px] font-bold text-[#393939]">Pesquisa IA</h1>
           <p className="mt-2 max-w-4xl text-[18px] font-normal leading-snug text-[#383838]">
             Consulte dados legislativos em linguagem natural. Acesse um banco de dados com as proposições, votações e discursos.
             Combine SQL + processamento de linguagem natural para uma abordagem híbrida.
@@ -166,15 +166,15 @@ const PesquisaIAPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Perguntas sugeridas */}
-          <div className="rounded-[16px] bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Perguntas sugeridas</h2>
+          <div className="mp-card bg-[#efeeee] p-6">
+            <h2 className="mb-4 text-[48px] font-bold text-[#090909]">Perguntas sugeridas</h2>
             <div className="space-y-3">
               {exampleQuestions.map((question, index) => (
                 <button
                   key={index}
                   type="button"
                   onClick={() => setInput(question)}
-                  className="w-full rounded-[12px] border border-black/10 bg-white p-4 text-left shadow-sm transition hover:bg-[#f5f5f5]"
+                  className="mp-card w-full border border-black/10 bg-white p-4 text-left transition hover:bg-[#f5f5f5]"
                 >
                   <span className="flex items-center justify-between gap-4">
                     <span className="text-[15px] font-semibold text-[#383838] leading-tight">
@@ -188,10 +188,10 @@ const PesquisaIAPage = () => {
           </div>
 
           {/* Chat bot */}
-          <div className="flex flex-col rounded-[16px] bg-white shadow-sm">
+          <div className="mp-card flex flex-col bg-[#efeeee]">
             <div className="flex items-center gap-3 border-b px-6 py-4">
               <Bot className="h-8 w-8 text-[#383838]" />
-              <h2 className="text-[32px] font-bold text-[#090909]">Chat Bot</h2>
+              <h2 className="text-[48px] font-bold text-[#090909]">Chat Bot</h2>
             </div>
 
             <ScrollArea className="flex-1 p-4" style={{ height: '360px' }}>
@@ -251,7 +251,7 @@ const PesquisaIAPage = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Digite sua pergunta sobre dados legislativos..."
-                  className="flex-1 rounded-full border-black/10"
+                  className="flex-1 rounded-full border-black/10 bg-[#efeeee]"
                   minLength={MIN_QUESTION_LEN}
                 />
                 <button
@@ -271,7 +271,7 @@ const PesquisaIAPage = () => {
       {/* Footer */}
       <footer className="mt-8 py-6">
         <div className="container flex items-center justify-between">
-          <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto brightness-0 invert" />
+          <img src={logoMamute} alt="Mamute Político" className="h-[47px] w-auto brightness-0 invert" />
           <span className="text-[12px] font-medium text-white">
             © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
           </span>
