@@ -108,7 +108,7 @@ services:
       POSTGRES_USER: ${PGVECTOR_DB_USER:-mamute}
       POSTGRES_PASSWORD: ${PGVECTOR_DB_PASSWORD:-mamute_pgvector_dev}
     volumes:
-      - pgvector_db_data:/var/lib/postgresql/data
+      - pgvector_db_data:/var/lib/postgresql
     networks:
       - backend
     healthcheck:
