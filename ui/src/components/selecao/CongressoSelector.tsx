@@ -9,7 +9,14 @@ interface CongressoSelectorProps {
 }
 
 export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps) {
-  const [imageTransform, setImageTransform] = useState('perspective(1200px) rotateY(0deg) translateX(0px) scale(1.02)');
+  const PERSPECTIVE_PX = 1200;
+  const MAX_ROTATE_Y_DEG = 5;
+  const MAX_TRANSLATE_X_PX = 20;
+  const BACKGROUND_SCALE = 1.02;
+
+  const [imageTransform, setImageTransform] = useState(
+    `perspective(${PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${BACKGROUND_SCALE})`
+  );
 
   const options: Array<{ key: CasaLegislativa; label: string }> = [
     { key: 'senado', label: 'SENADO FEDERAL' },
@@ -22,13 +29,17 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
     const x = (event.clientX - rect.left) / rect.width;
     const centered = (x - 0.5) * 2;
 
-    const rotateY = centered * -5;
-    const translateX = centered * -20;
-    setImageTransform(`perspective(1200px) rotateY(${rotateY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) scale(1.02)`);
+    const rotateY = centered * -MAX_ROTATE_Y_DEG;
+    const translateX = centered * -MAX_TRANSLATE_X_PX;
+    setImageTransform(
+      `perspective(${PERSPECTIVE_PX}px) rotateY(${rotateY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) scale(${BACKGROUND_SCALE})`
+    );
   };
 
   const handleMouseLeave = () => {
-    setImageTransform('perspective(1200px) rotateY(0deg) translateX(0px) scale(1.02)');
+    setImageTransform(
+      `perspective(${PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${BACKGROUND_SCALE})`
+    );
   };
 
   return (
