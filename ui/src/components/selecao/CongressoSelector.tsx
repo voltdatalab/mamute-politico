@@ -1,4 +1,4 @@
-import { useState, type MouseEventHandler } from 'react';
+import { useRef, useState, type MouseEventHandler } from 'react';
 import { CasaLegislativa } from '@/types/parlamentar';
 import congressoSelecao from '@/assets/congresso-selecao.png';
 import logoMamute from '@/assets/logo-mamute.png';
@@ -13,6 +13,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
   const MAX_ROTATE_Y_DEG = 2;
   const MAX_TRANSLATE_X_PX = 20;
   const BACKGROUND_SCALE = 1.02;
+  const buttonRowRef = useRef<HTMLDivElement | null>(null);
 
   const [imageTransform, setImageTransform] = useState(
     `perspective(${PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${BACKGROUND_SCALE})`
@@ -25,9 +26,11 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
   ];
 
   const handleMouseMove: MouseEventHandler<HTMLElement> = (event) => {
-    const rect = event.currentTarget.getBoundingClientRect();
+    const rect =
+      buttonRowRef.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width;
-    const centered = (x - 0.5) * 2;
+    const clampedX = Math.min(1, Math.max(0, x));
+    const centered = (clampedX - 0.5) * 2;
 
     const rotateY = centered * -MAX_ROTATE_Y_DEG;
     const translateX = centered * -MAX_TRANSLATE_X_PX;
@@ -75,7 +78,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
           </p>
         </div>
 
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-3">
+        <div ref={buttonRowRef} className="mt-14 flex flex-wrap items-center justify-center gap-3">
           {options.map((option) => {
             const isActive = selected === option.key;
             const responsiveOrder =
