@@ -3,7 +3,10 @@ import { Header } from '@/components/layout/Header';
 import congressoIlustrado from '@/assets/congresso-ilustrado.png';
 import mammothImage from '@/assets/figma-mamute.png';
 import logoMamute from '@/assets/logo-mamute.png';
-import { CheckCircle2, FileBadge2, UserRound, UsersRound, Vote } from 'lucide-react';
+import iconDeputados from '@/assets/icon-deputados.svg';
+import iconSenadores from '@/assets/icon-senadores.svg';
+import iconProposicoes from '@/assets/icon-proposicoes.svg';
+import { CheckCircle2, Vote } from 'lucide-react';
 
 const TempoRealIcon = () => (
   <svg viewBox="0 0 41 29" aria-hidden="true" className="h-[18px] w-[26px]">
@@ -38,10 +41,10 @@ const features = [
 ];
 
 const stats = [
-  { label: 'DEPUTADOS/AS', value: '513', icon: UserRound },
-  { label: 'SENADORES/AS', value: '81', icon: UsersRound },
-  { label: 'PROPOSIÇÕES 2024', value: '4.532', icon: FileBadge2 },
-  { label: 'VOTAÇÕES', value: '892', icon: Vote },
+  { label: 'DEPUTADOS/AS', value: '513', iconSrc: iconDeputados, iconAlt: 'Ícone de deputados' },
+  { label: 'SENADORES/AS', value: '81', iconSrc: iconSenadores, iconAlt: 'Ícone de senadores' },
+  { label: 'PROPOSIÇÕES 2024', value: '4.532', iconSrc: iconProposicoes, iconAlt: 'Ícone de proposições' },
+  { label: 'VOTAÇÕES', value: '892', iconLucide: Vote, iconAlt: 'Ícone de votações' },
 ];
 
 const Index = () => {
@@ -85,7 +88,11 @@ const Index = () => {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
               <div key={stat.label} className="mp-card flex h-[285px] flex-col items-center justify-center gap-3 bg-white p-4 text-center">
-                <stat.icon className="h-14 w-14 text-[#1b76ff]" />
+                {stat.iconSrc ? (
+                  <img src={stat.iconSrc} alt={stat.iconAlt} className="h-14 w-14 object-contain" />
+                ) : stat.iconLucide ? (
+                  <stat.iconLucide className="h-14 w-14 text-[#1b76ff]" aria-hidden="true" />
+                ) : null}
                 <p className="text-[48px] font-extrabold leading-none text-[#878787]">{stat.value}</p>
                 <p className="text-[14px] font-normal uppercase tracking-wide text-black">{stat.label}</p>
               </div>
