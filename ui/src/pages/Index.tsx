@@ -1,3 +1,4 @@
+import { useRef, useState, type MouseEventHandler } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import congressoIlustrado from '@/assets/congresso-ilustrado.png';
@@ -49,16 +50,55 @@ const stats = [
 ];
 
 const Index = () => {
+  const HERO_PERSPECTIVE_PX = 1200;
+  const HERO_MAX_ROTATE_Y_DEG = 2;
+  const HERO_MAX_TRANSLATE_X_PX = 22;
+  const HERO_SCALE = 1.02;
+  const heroContainerRef = useRef<HTMLElement | null>(null);
+
+  const [heroTransform, setHeroTransform] = useState(
+    `perspective(${HERO_PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${HERO_SCALE})`
+  );
+
+  const handleHeroMouseMove: MouseEventHandler<HTMLElement> = (event) => {
+    const rect = heroContainerRef.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width;
+    const clampedX = Math.min(1, Math.max(0, x));
+    const centered = (clampedX - 0.5) * 2;
+
+    const rotateY = centered * -HERO_MAX_ROTATE_Y_DEG;
+    const translateX = centered * -HERO_MAX_TRANSLATE_X_PX;
+    setHeroTransform(
+      `perspective(${HERO_PERSPECTIVE_PX}px) rotateY(${rotateY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) scale(${HERO_SCALE})`
+    );
+  };
+
+  const handleHeroMouseLeave = () => {
+    setHeroTransform(
+      `perspective(${HERO_PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${HERO_SCALE})`
+    );
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans">
       <Header />
 
-      <section className="relative overflow-hidden bg-[#e6c54a]">
-        <img
-          src={congressoIlustrado}
-          alt=""
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
-        />
+      <section
+        ref={heroContainerRef}
+        className="relative overflow-hidden bg-[#e6c54a]"
+        onMouseMove={handleHeroMouseMove}
+        onMouseLeave={handleHeroMouseLeave}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 h-full w-full transition-transform duration-300 ease-out will-change-transform"
+          style={{ transform: heroTransform, transformOrigin: 'center center' }}
+        >
+          <img
+            src={congressoIlustrado}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+        </div>
 
         <div className="container relative z-10 grid min-h-[560px] items-center py-8">
           <div className="max-w-[610px] space-y-5">
@@ -88,7 +128,10 @@ const Index = () => {
         <div className="container -mt-12">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
-              <div key={stat.label} className="mp-card flex h-[285px] flex-col items-center justify-center gap-3 bg-white p-4 text-center">
+              <div
+                key={stat.label}
+                className="mp-card flex h-[285px] flex-col items-center justify-center gap-3 bg-white p-4 text-center transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_14px_24px_rgba(0,0,0,0.22)]"
+              >
                 {stat.iconSrc ? (
                   <img src={stat.iconSrc} alt={stat.iconAlt} className="h-28 w-28 object-contain" />
                 ) : null}
@@ -117,8 +160,13 @@ const Index = () => {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {features.map((feature) => (
-                <div key={feature.title} className="mp-card flex min-h-[254px] flex-col items-center gap-4 bg-white p-6 text-center">
-                  <img src={iconFuncionalidades} alt="" aria-hidden="true" className="h-16 w-16 object-contain" />
+                <div key={feature.title} className="group mp-card flex min-h-[254px] flex-col items-center gap-4 bg-white p-6 text-center">
+                  <img
+                    src={iconFuncionalidades}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-16 w-16 object-contain transition-transform duration-700 ease-out group-hover:rotate-[360deg]"
+                  />
                   <h3 className="text-[15px] font-bold uppercase text-[#4b4b4b] whitespace-pre-line leading-tight">
                     {feature.title}
                   </h3>
