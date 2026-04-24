@@ -151,36 +151,36 @@ const PesquisaIAPage = () => {
   const canSend = input.trim().length >= MIN_QUESTION_LEN;
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #efeeee 0%, #efeeee 72%, #1b76ff 72%, #1b76ff 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #efeeee 0%, #efeeee 70%, #1b76ff 70%, #1b76ff 100%)' }}>
       <Header />
 
       <main className="container py-8">
         {/* Page title */}
         <div className="mb-8">
-          <h1 className="text-[56px] font-bold text-[#393939]">Pesquisa IA</h1>
+          <h1 className="text-[48px] font-bold text-[#383838]">Pesquisa IA</h1>
           <p className="mt-2 max-w-4xl text-[18px] font-normal leading-snug text-[#383838]">
             Consulte dados legislativos em linguagem natural. Acesse um banco de dados com as proposições, votações e discursos.
             Combine SQL + processamento de linguagem natural para uma abordagem híbrida.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[5fr_7fr]">
           {/* Perguntas sugeridas */}
-          <div className="mp-card bg-[#efeeee] p-6">
-            <h2 className="mb-4 text-[48px] font-bold text-[#090909]">Perguntas sugeridas</h2>
-            <div className="space-y-3">
+          <div className="mp-card flex flex-col bg-white p-8 lg:h-[564px]">
+            <h2 className="mb-5 text-[32px] font-bold leading-none text-[#090909]">Perguntas sugeridas</h2>
+            <div className="flex min-h-0 flex-col gap-[18px] overflow-auto flex-1">
               {exampleQuestions.map((question, index) => (
                 <button
                   key={index}
                   type="button"
                   onClick={() => setInput(question)}
-                  className="mp-card w-full border border-black/10 bg-white p-4 text-left transition hover:bg-[#f5f5f5]"
+                  className="mp-card flex min-h-[98px] w-full items-center border border-black/10 bg-white px-5 text-left transition hover:bg-[#f5f5f5]"
                 >
-                  <span className="flex items-center justify-between gap-4">
+                  <span className="flex w-full items-center justify-between gap-4">
                     <span className="text-[15px] font-semibold text-[#383838] leading-tight">
                       {question}
                     </span>
-                    <PlusCircle className="h-8 w-8 shrink-0 text-[#09e03b]" />
+                    <PlusCircle className="h-9 w-9 shrink-0 text-[#09e03b]" />
                   </span>
                 </button>
               ))}
@@ -188,13 +188,13 @@ const PesquisaIAPage = () => {
           </div>
 
           {/* Chat bot */}
-          <div className="mp-card flex flex-col bg-[#efeeee]">
-            <div className="flex items-center gap-3 border-b px-6 py-4">
-              <Bot className="h-8 w-8 text-[#383838]" />
-              <h2 className="text-[48px] font-bold text-[#090909]">Chat Bot</h2>
+          <div className="mp-card flex flex-col bg-white lg:h-[564px]">
+            <div className="flex items-center gap-4 border-b px-8 py-6">
+              <Bot className="h-12 w-12 shrink-0 text-[#090909]" />
+              <h2 className="text-[32px] font-bold text-[#090909]">Chat Bot</h2>
             </div>
 
-            <ScrollArea className="flex-1 p-4" style={{ height: '360px' }}>
+            <ScrollArea className="min-h-[240px] flex-1 px-8 py-4">
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -203,14 +203,16 @@ const PesquisaIAPage = () => {
                   >
                     {message.role === 'assistant' && (
                       <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback className="bg-[#1b76ff] text-white">
+                        <AvatarFallback className="bg-[#468fff] text-white">
                           <Bot className="h-4 w-4" />
                         </AvatarFallback>
                       </Avatar>
                     )}
                     <div
-                      className={`max-w-[80%] rounded-[16px] p-4 ${
-                        message.role === 'user' ? 'bg-[#09e03b] text-white' : 'bg-[#f5f5f5] text-[#383838]'
+                      className={`rounded-[28px] p-4 ${
+                        message.role === 'user'
+                          ? 'max-w-[65%] bg-[#09e03b] text-white'
+                          : 'max-w-[92%] bg-[#f5f5f5] text-[#383838]'
                       }`}
                     >
                       {message.role === 'assistant' && message.content === '' ? (
@@ -242,16 +244,16 @@ const PesquisaIAPage = () => {
               </div>
             </ScrollArea>
 
-            <div className="border-t p-4">
+            <div className="border-t px-8 py-4">
               <form
                 onSubmit={(e) => { e.preventDefault(); void handleSend(); }}
-                className="flex gap-2"
+                className="flex gap-3"
               >
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Digite sua pergunta sobre dados legislativos..."
-                  className="flex-1 rounded-full border-black/10 bg-[#efeeee]"
+                  className="flex-1 rounded-full border-0 bg-[#efeeee] text-[13px] text-[#7f7b7b] placeholder:text-[#7f7b7b] focus-visible:ring-0"
                   minLength={MIN_QUESTION_LEN}
                 />
                 <button
