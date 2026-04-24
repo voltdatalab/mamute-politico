@@ -16,13 +16,13 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
 
   return (
     <>
-    <section className="relative min-h-[calc(100vh-88px)] overflow-hidden bg-[#e6c54a]">
+    <section className="relative min-h-[calc(800px)] overflow-hidden bg-[#e6c54a]">
       <img
         src={congressoSelecao}
         alt="Congresso Nacional"
         className="absolute inset-0 h-full w-full object-cover object-bottom"
       />
-      <div className="absolute inset-0 bg-[#e6c54a]/0" />
+      <div className="absolute inset-0 bg-[#e6c54a]/0" /> 
 
       <div className="relative flex min-h-[calc(100vh-88px)] flex-col py-14 px-6">
         <div className="space-y-3 text-center">
