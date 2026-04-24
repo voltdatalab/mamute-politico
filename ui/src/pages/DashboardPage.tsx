@@ -55,7 +55,7 @@ const DashboardPage = () => {
         {/* Page header */}
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-[48px] font-bold leading-none text-[#383838] md:text-[56px]">
+            <h1 className="text-[48px] font-bold leading-none text-[#393939]">
               Dashboard Geral
             </h1>
             <p className="mt-1 text-[18px] font-normal text-[#383838]">
@@ -69,7 +69,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Parlamentares monitorados */}
-        <div className="rounded-[16px] bg-white p-6 shadow-sm">
+        <div className="mp-card bg-white p-6">
           <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Parlamentares monitorados</h2>
           {isLoadingMonitorados ? (
             <div className="flex items-center justify-center py-8 gap-2 text-[#383838]/60">
@@ -113,9 +113,9 @@ const DashboardPage = () => {
         </div>
 
         {/* Main grid: Timeline + Últimos projetos + Estatísticas */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Linha do tempo — 2 cols */}
-          <div className="lg:col-span-2 rounded-[16px] bg-white p-6 shadow-sm">
+          <div className="mp-card lg:col-span-2 bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Linha do tempo</h2>
             <div className="h-[460px]">
               <Timeline />
@@ -125,7 +125,7 @@ const DashboardPage = () => {
           {/* Right column */}
           <div className="space-y-6">
             {/* Últimos projetos */}
-            <div className="rounded-[16px] bg-white p-6 shadow-sm">
+            <div className="mp-card bg-white p-6">
               <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
               <div className="h-[200px] overflow-hidden">
                 <ProposicoesList limit={3} />
@@ -133,16 +133,16 @@ const DashboardPage = () => {
             </div>
 
             {/* Estatísticas */}
-            <div className="rounded-[16px] bg-white p-6 shadow-sm">
+            <div className="mp-card bg-white p-6">
               <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Estatísticas</h2>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 {[
                   { value: '23', label: 'Projetos essa semana' },
                   { value: '35%', label: 'Presença média' },
                   { value: '14', label: 'Votações recentes' },
                   { value: '12', label: 'Discursos' },
                 ].map((stat) => (
-                  <div key={stat.label} className="rounded-[8px] bg-[#f5f5f5] p-4 text-center">
+                  <div key={stat.label} className="text-center">
                     <p className="text-[18px] font-bold text-[#468fff]">{stat.value}</p>
                     <p className="text-[13px] text-[#383838]">{stat.label}</p>
                   </div>
@@ -167,7 +167,7 @@ const DashboardPage = () => {
           }}
         />
         <div style={{ position: 'absolute', bottom: '16px', left: '32px', right: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <img src={logoMamute} alt="Mamute Político" style={{ height: '28px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
+          <img src={logoMamute} alt="Mamute Político" style={{ height: '47px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
           <span style={{ fontSize: '12px', fontWeight: 500, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
           </span>
