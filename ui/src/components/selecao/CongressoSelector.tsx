@@ -15,6 +15,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
   ];
 
   return (
+    <>
     <section className="relative min-h-[calc(100vh-88px)] overflow-hidden bg-[#e6c54a]">
       <img
         src={congressoSelecao}
@@ -44,7 +45,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
                 type="button"
                 onClick={() => onSelect(option.key)}
                 className={`rounded-[76px] px-8 py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
-                  isActive ? 'bg-[#1b76ff] text-white' : 'bg-white text-[#383838] hover:bg-white/90'
+                  isActive ? 'bg-[#1b76ff] text-white' : 'bg-white text-[#383838] hover:bg-[#1b76ff] hover:text-white'
                 }`}
               >
                 {option.label}
@@ -53,13 +54,17 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
           })}
         </div>
 
-        <div className="mt-auto pt-8">
+      </div>
+
+    </section>
+    <div className="relative h-[185px] pt-8 bg-[#447b55]">
+    <div className="container  mt-auto ">
           <div className="flex items-end justify-between px-2 text-[12px] font-medium text-[#ffffff] [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">
             <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto brightness-0 invert" />
             <span>© 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
           </div>
         </div>
-      </div>
-    </section>
+        </div>
+    </>
   );
 }
