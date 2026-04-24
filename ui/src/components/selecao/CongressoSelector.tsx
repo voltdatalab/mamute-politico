@@ -78,7 +78,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
           </p>
         </div>
 
-        <div ref={buttonRowRef} className="mt-14 flex flex-wrap items-center justify-center gap-3">
+        <div ref={buttonRowRef} className="mx-auto mt-14 flex w-fit flex-wrap items-center justify-center gap-3">
           {options.map((option) => {
             const isActive = selected === option.key;
             const responsiveOrder =
