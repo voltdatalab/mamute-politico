@@ -69,6 +69,7 @@ services:
     environment:
       # TODO: Remove hardcoded values
       MYSQL_ROOT_PASSWORD: ${GHOST_DB_PASSWORD:-mamute_ghost_dev}
+      MYSQL_DATABASE: ghost
     volumes:
       - ghost_db_data:/var/lib/mysql
     networks:
@@ -88,7 +89,7 @@ services:
       database__client: mysql
       database__connection__host: ghost-db
       database__connection__user: root
-      database__connection__password: ${GHOST_DB_PASSWORD}
+      database__connection__password: ${GHOST_DB_PASSWORD:-mamute_ghost_dev}
       database__connection__database: ghost
     volumes:
       - ghost_content:/var/lib/ghost/content
@@ -108,7 +109,7 @@ services:
       POSTGRES_USER: ${PGVECTOR_DB_USER:-mamute}
       POSTGRES_PASSWORD: ${PGVECTOR_DB_PASSWORD:-mamute_pgvector_dev}
     volumes:
-      - pgvector_db_data:/var/lib/postgresql/data
+      - pgvector_db_data:/var/lib/postgresql
     networks:
       - backend
     healthcheck:

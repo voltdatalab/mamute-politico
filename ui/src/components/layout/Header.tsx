@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Building2, LayoutDashboard, Users, MessageSquare, LogIn, UserRound } from 'lucide-react';
+import { Bell, Building2, LayoutDashboard, LogIn, MessageSquare, UserRound, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useGhostAuth } from '@/components/auth/ghost-auth/react/useGhostAuth';
@@ -26,17 +26,17 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6">
+    <header className="sticky top-0 z-50 w-full border-b border-black/10 bg-[#e6c54a]/95 backdrop-blur supports-[backdrop-filter]:bg-[#e6c54a]/80">
+      <div className="container flex h-20 items-center justify-between">
+        <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-2">
-            <Building2 className="h-8 w-8 text-primary" />
-            <div className="flex flex-col">
-              <span className="font-display text-xl font-bold text-primary">
-                Mamute Político
+            <Building2 className="h-7 w-7 text-foreground" />
+            <div className="flex flex-col leading-none">
+              <span className="text-sm font-extrabold tracking-wide text-foreground">
+                MAMUTE
               </span>
-              <span className="text-[10px] text-muted-foreground -mt-1">
-                Monitor Legislativo
+              <span className="text-sm font-extrabold tracking-wide text-foreground">
+                POLITICO
               </span>
             </div>
           </Link>
@@ -44,18 +44,16 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
-              const Icon = item.icon;
               return (
                 <Link key={item.path} to={item.path}>
                   <Button
-                    variant={isActive ? 'default' : 'ghost'}
+                    variant="ghost"
                     size="sm"
                     className={cn(
-                      'gap-2',
-                      isActive && 'shadow-md'
+                      'rounded-full px-3 text-xs lg:text-sm',
+                      isActive ? 'underline underline-offset-4' : 'opacity-85 hover:opacity-100'
                     )}
                   >
-                    <Icon className="h-4 w-4" />
                     {item.label}
                   </Button>
                 </Link>
@@ -64,27 +62,33 @@ export function Header() {
           </nav>
         </div>
 
-        {/* TODO: Add notifications */}
         <div className="flex items-center gap-2">
-          {/* <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center">
+          <button
+            type="button"
+            className="relative h-8 w-8 rounded-full bg-white/40 text-foreground transition hover:bg-white/70"
+            aria-label="Notificações"
+          >
+            <Bell className="mx-auto h-4 w-4" />
+            <span className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full bg-foreground text-[9px] font-semibold text-white">
               3
             </span>
-          </Button> */}
-          {/* <Button variant="ghost" size="icon">
-            <Search className="h-5 w-5" />
-          </Button> */}
+          </button>
           <button
             type="button"
             onClick={handleAuthClick}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-muted hover:bg-accent transition cursor-pointer"
+            className="h-8 rounded-full bg-red-500 px-5 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-red-600 cursor-pointer"
             aria-label={token ? 'Conta' : 'Entrar'}
           >
             {token ? (
-              <UserRound className="h-5 w-5" />
+              <span className="inline-flex items-center gap-2">
+                <UserRound className="h-3.5 w-3.5" />
+                Sair
+              </span>
             ) : (
-              <LogIn className="h-5 w-5" />
+              <span className="inline-flex items-center gap-2">
+                <LogIn className="h-3.5 w-3.5" />
+                Sair
+              </span>
             )}
           </button>
         </div>

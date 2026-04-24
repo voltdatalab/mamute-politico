@@ -27,31 +27,36 @@ const SelecaoPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen ${casaSelecionada ? 'bg-[linear-gradient(to_bottom,#e6c54a_0%,#e6c54a_68%,#3d825b_68%,#3d825b_100%)]' : 'bg-[#ececec]'}`}>
       <Header />
       
-      <main className="container py-8">
+      <main className={`${casaSelecionada ? 'container py-8' : ''}`}>
         {!casaSelecionada ? (
-          <div className="animate-fade-in">
+          <div>
             <CongressoSelector 
               onSelect={handleSelectCasa} 
               selected={casaSelecionada} 
             />
           </div>
         ) : (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" onClick={handleBack} className="gap-2">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h1 className="text-center text-5xl font-extrabold text-foreground">
+                {casaSelecionada === 'senado' ? 'Senado Federal' : casaSelecionada === 'camara' ? 'Camara dos Deputados' : 'Ambas as Casas'}
+              </h1>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+              <Button variant="outline" onClick={handleBack} className="gap-2 bg-white">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar à seleção de casa
               </Button>
               
               {parlamentaresSelecionados.length > 0 && (
-                <Button variant="hero" className="gap-2">
+                <Button variant="hero" className="gap-2 bg-foreground hover:bg-foreground/90">
                   Ver Dashboard Geral
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               )}
+              </div>
             </div>
             
             <ParlamentarSelector

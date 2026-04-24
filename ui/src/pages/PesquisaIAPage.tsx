@@ -11,10 +11,7 @@ import {
   Send,
   Bot,
   User,
-  Sparkles,
-  Database,
-  Search,
-  Lightbulb,
+  PlusCircle,
 } from 'lucide-react';
 import {
   streamChat,
@@ -181,61 +178,38 @@ const PesquisaIAPage = () => {
   const canSend = input.trim().length >= MIN_QUESTION_LEN;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom,#f3f3f3_0%,#f3f3f3_72%,#1577ff_72%,#1577ff_100%)]">
       <Header />
 
       <main className="container py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="space-y-6">
-            <Card variant="primary">
+        <div className="mb-6">
+          <h1 className="text-5xl font-extrabold text-[#2a2e39] md:text-6xl">Pesquisa IA</h1>
+          <p className="mt-3 max-w-4xl text-lg leading-snug text-foreground/85 md:text-[24px]">
+            Consulte dados legislativos em linguagem natural. Acesse um banco de dados com as proposições, votações e discursos.
+            Combine SQL + processamento de linguagem natural para uma abordagem híbrida.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <Card className="border-black/10 bg-white">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  Pesquisa por IA
-                </CardTitle>
-                <CardDescription>
-                  Consulte dados legislativos em linguagem natural
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <Database className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">Banco de Dados</p>
-                    <p className="text-xs text-muted-foreground">
-                      Acesso a proposições, votações e discursos
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <Search className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">Abordagem Híbrida</p>
-                    <p className="text-xs text-muted-foreground">
-                      Combina SQL + processamento de linguagem natural
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Lightbulb className="h-5 w-5" />
+                <CardTitle className="text-4xl font-extrabold md:text-5xl">
                   Perguntas Sugeridas
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {exampleQuestions.map((question, index) => (
                     <button
                       key={index}
                       type="button"
                       onClick={() => handleExampleClick(question)}
-                      className="w-full text-left p-3 rounded-lg text-sm bg-muted/50 hover:bg-muted transition-colors disabled:opacity-50"
+                      className="w-full rounded-[20px] border border-black/10 bg-white p-4 text-left text-[17px] font-semibold leading-tight shadow-md transition-colors hover:bg-muted disabled:opacity-50 md:text-[22px]"
                     >
-                      {question}
+                      <span className="flex items-center justify-between gap-4">
+                        <span>{question}</span>
+                        <PlusCircle className="h-9 w-9 shrink-0 text-success" />
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -243,12 +217,12 @@ const PesquisaIAPage = () => {
             </Card>
           </div>
 
-          <div className="lg:col-span-3">
-            <Card className="flex flex-col">
+          <div>
+            <Card className="flex flex-col border-black/10 bg-white">
               <CardHeader className="border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                  Chat com Assistente Legislativo
+                <CardTitle className="text-4xl font-extrabold flex items-center gap-3 md:text-5xl">
+                  <Bot className="h-12 w-12 text-foreground" />
+                  Chat Bot
                 </CardTitle>
               </CardHeader>
 
@@ -271,9 +245,9 @@ const PesquisaIAPage = () => {
                         )}
 
                         <div
-                          className={`max-w-[80%] p-3 rounded-lg ${
+                          className={`max-w-[80%] p-4 rounded-[20px] ${
                             message.role === 'user'
-                              ? 'bg-primary text-primary-foreground'
+                              ? 'bg-success text-white'
                               : 'bg-muted'
                           }`}
                         >
@@ -293,7 +267,7 @@ const PesquisaIAPage = () => {
                               />
                             </div>
                           ) : (
-                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                            <p className="text-base whitespace-pre-wrap">{message.content}</p>
                           )}
                           <p
                             className={`text-xs mt-2 ${
@@ -327,7 +301,7 @@ const PesquisaIAPage = () => {
                       e.preventDefault();
                       void handleSend();
                     }}
-                    className="flex gap-2"
+                    className="flex flex-col gap-2 sm:flex-row"
                   >
                     <Input
                       value={input}
@@ -336,7 +310,8 @@ const PesquisaIAPage = () => {
                       className="flex-1"
                       minLength={MIN_QUESTION_LEN}
                     />
-                    <Button type="submit" disabled={!canSend}>
+                    <Button type="submit" disabled={!canSend} className="w-full px-8 sm:w-auto">
+                      ENVIAR
                       <Send className="h-4 w-4" />
                     </Button>
                   </form>

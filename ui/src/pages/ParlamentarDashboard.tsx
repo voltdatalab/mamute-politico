@@ -15,6 +15,32 @@ import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ApiError } from '@/api/client';
 import { ArrowLeft, Cloud, FileText, Vote, Loader2 } from 'lucide-react';
 
+const toErrorMessage = (value: unknown): string => {
+  if (value instanceof Error) {
+    if (value.message && value.message !== '[object Object]') return value.message;
+    const maybeResponseData = (value as Error & { response?: { data?: unknown } }).response?.data;
+    if (maybeResponseData != null && typeof maybeResponseData === 'object') {
+      const detail = (maybeResponseData as { detail?: unknown }).detail;
+      if (typeof detail === 'string') return detail;
+      if (Array.isArray(detail) && detail.length > 0 && typeof detail[0] === 'string') {
+        return detail[0];
+      }
+    }
+    return 'Falha ao carregar dados do parlamentar.';
+  }
+  if (typeof value === 'string') return value;
+  if (value != null && typeof value === 'object') {
+    const maybeMessage = (value as { message?: unknown }).message;
+    if (typeof maybeMessage === 'string') return maybeMessage;
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return 'Falha ao carregar dados do parlamentar.';
+    }
+  }
+  return 'Falha ao carregar dados do parlamentar.';
+};
+
 const ParlamentarDashboard = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id != null ? Number(id) : NaN;
@@ -34,13 +60,14 @@ const ParlamentarDashboard = () => {
 
   if (!isIdValid) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
         <Header />
         <main className="container py-8">
-          <div className="text-center py-16">
-            <h1 className="text-2xl font-bold mb-4">Parlamentar não encontrado</h1>
+          <div className="mx-auto max-w-xl rounded-[28px] border border-black/10 bg-white p-8 text-center shadow-md">
+            <h1 className="mb-3 text-4xl font-extrabold text-[#1f2b44]">Parlamentar não encontrado</h1>
+            <p className="mb-6 text-base text-muted-foreground">O identificador informado não é válido para esta rota.</p>
             <Link to="/selecao">
-              <Button>Voltar à seleção</Button>
+              <Button variant="hero" className="px-8">Voltar à seleção</Button>
             </Link>
           </div>
         </main>
@@ -50,11 +77,13 @@ const ParlamentarDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
         <Header />
-        <main className="container py-8 flex items-center justify-center gap-2 text-muted-foreground">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Carregando...</span>
+        <main className="container py-8">
+          <div className="mx-auto flex max-w-xl items-center justify-center gap-3 rounded-[28px] border border-black/10 bg-white p-8 text-muted-foreground shadow-md">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span className="text-lg font-medium">Carregando parlamentar...</span>
+          </div>
         </main>
       </div>
     );
@@ -63,18 +92,20 @@ const ParlamentarDashboard = () => {
   if (isError || !parlamentar) {
     const notFound = error instanceof ApiError && error.status === 404;
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
         <Header />
         <main className="container py-8">
-          <div className="text-center py-16">
-            <h1 className="text-2xl font-bold mb-4">
+          <div className="mx-auto max-w-xl rounded-[28px] border border-black/10 bg-white p-8 text-center shadow-md">
+            <h1 className="mb-3 text-5xl font-extrabold text-[#1f2b44]">
               {notFound ? 'Parlamentar não encontrado' : 'Falha ao carregar'}
             </h1>
-            {!notFound && error instanceof Error && (
-              <p className="text-muted-foreground mb-4">{error.message}</p>
+            {!notFound && (
+              <p className="mb-6 text-base text-muted-foreground">
+                {toErrorMessage(error)}
+              </p>
             )}
             <Link to="/selecao">
-              <Button>Voltar à seleção</Button>
+              <Button variant="hero" className="px-8">Voltar à seleção</Button>
             </Link>
           </div>
         </main>
@@ -83,13 +114,13 @@ const ParlamentarDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
       <Header />
       
       <main className="container py-8 space-y-6">
         {/* Back button */}
         <Link to="/selecao">
-          <Button variant="ghost" className="gap-2">
+          <Button variant="outline" className="gap-2 bg-white">
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
@@ -142,7 +173,7 @@ const ParlamentarDashboard = () => {
           </TabsList>
           
           <TabsContent value="proposicoes" className="mt-6">
-            <Card>
+            <Card className="border-black/10 bg-white">
               <CardHeader>
                 <CardTitle>Proposições do Parlamentar</CardTitle>
               </CardHeader>
@@ -153,7 +184,7 @@ const ParlamentarDashboard = () => {
           </TabsContent>
           
           <TabsContent value="votacoes" className="mt-6">
-            <Card>
+            <Card className="border-black/10 bg-white">
               <CardHeader>
                 <CardTitle>Histórico de Votações</CardTitle>
               </CardHeader>
@@ -164,7 +195,7 @@ const ParlamentarDashboard = () => {
           </TabsContent>
 
           <TabsContent value="taquigraficas" className="mt-6">
-            <Card>
+            <Card className="border-black/10 bg-white">
               <CardHeader>
                 <CardTitle>Notas Taquigráficas</CardTitle>
               </CardHeader>
