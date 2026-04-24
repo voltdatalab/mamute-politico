@@ -1,3 +1,4 @@
+import { useState, type MouseEventHandler } from 'react';
 import { CasaLegislativa } from '@/types/parlamentar';
 import congressoSelecao from '@/assets/congresso-selecao.png';
 import logoMamute from '@/assets/logo-mamute.png';
@@ -8,16 +9,39 @@ interface CongressoSelectorProps {
 }
 
 export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps) {
+  const [imageTransform, setImageTransform] = useState('perspective(1200px) rotateY(0deg) translateX(0px) scale(1.02)');
+
   const options: Array<{ key: CasaLegislativa; label: string }> = [
     { key: 'senado', label: 'SENADO FEDERAL' },
     { key: 'ambas', label: 'AMBAS AS CASAS' },
     { key: 'camara', label: 'CÂMARA DOS DEPUTADOS' },
   ];
 
+  const handleMouseMove: MouseEventHandler<HTMLElement> = (event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width;
+    const centered = (x - 0.5) * 2;
+
+    const rotateY = centered * -5;
+    const translateX = centered * -20;
+    setImageTransform(`perspective(1200px) rotateY(${rotateY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) scale(1.02)`);
+  };
+
+  const handleMouseLeave = () => {
+    setImageTransform('perspective(1200px) rotateY(0deg) translateX(0px) scale(1.02)');
+  };
+
   return (
     <>
-    <section className="relative min-h-[calc(800px)] overflow-hidden bg-[#e6c54a]">
-      <div className="absolute inset-0 h-full w-[101.25%]">
+    <section
+      className="relative min-h-[calc(800px)] overflow-hidden bg-[#e6c54a]"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div
+        className="absolute inset-0 h-full w-[101.25%] transition-transform duration-300 ease-out will-change-transform"
+        style={{ transform: imageTransform, transformOrigin: 'center bottom' }}
+      >
       <img
         src={congressoSelecao}
         alt="Congresso Nacional"
