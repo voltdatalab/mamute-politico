@@ -1,3 +1,4 @@
+import { useRef, useState, type MouseEventHandler } from 'react';
 import { CasaLegislativa } from '@/types/parlamentar';
 import congressoSelecao from '@/assets/congresso-selecao.png';
 import logoMamute from '@/assets/logo-mamute.png';
@@ -8,16 +9,53 @@ interface CongressoSelectorProps {
 }
 
 export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps) {
+  const PERSPECTIVE_PX = 1200;
+  const MAX_ROTATE_Y_DEG = 2;
+  const MAX_TRANSLATE_X_PX = 20;
+  const BACKGROUND_SCALE = 1.02;
+  const buttonRowRef = useRef<HTMLDivElement | null>(null);
+
+  const [imageTransform, setImageTransform] = useState(
+    `perspective(${PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${BACKGROUND_SCALE})`
+  );
+
   const options: Array<{ key: CasaLegislativa; label: string }> = [
     { key: 'senado', label: 'SENADO FEDERAL' },
     { key: 'ambas', label: 'AMBAS AS CASAS' },
     { key: 'camara', label: 'CÂMARA DOS DEPUTADOS' },
   ];
 
+  const handleMouseMove: MouseEventHandler<HTMLElement> = (event) => {
+    const rect =
+      buttonRowRef.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width;
+    const clampedX = Math.min(1, Math.max(0, x));
+    const centered = (clampedX - 0.5) * 2;
+
+    const rotateY = centered * -MAX_ROTATE_Y_DEG;
+    const translateX = centered * -MAX_TRANSLATE_X_PX;
+    setImageTransform(
+      `perspective(${PERSPECTIVE_PX}px) rotateY(${rotateY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) scale(${BACKGROUND_SCALE})`
+    );
+  };
+
+  const handleMouseLeave = () => {
+    setImageTransform(
+      `perspective(${PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${BACKGROUND_SCALE})`
+    );
+  };
+
   return (
     <>
-    <section className="relative min-h-[calc(800px)] overflow-hidden bg-[#e6c54a]">
-      <div className="absolute inset-0 h-full w-[101.25%]">
+    <section
+      className="relative min-h-[calc(800px)] overflow-hidden bg-[#e6c54a]"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div
+        className="absolute inset-0 h-full w-[101.25%] transition-transform duration-300 ease-out will-change-transform"
+        style={{ transform: imageTransform, transformOrigin: 'center bottom' }}
+      >
       <img
         src={congressoSelecao}
         alt="Congresso Nacional"
@@ -40,7 +78,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
           </p>
         </div>
 
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-3">
+        <div ref={buttonRowRef} className="mx-auto mt-14 flex w-fit flex-wrap items-center justify-center gap-3">
           {options.map((option) => {
             const isActive = selected === option.key;
             const responsiveOrder =
