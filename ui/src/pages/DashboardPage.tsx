@@ -55,7 +55,7 @@ const DashboardPage = () => {
         {/* Page header */}
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-[48px] font-bold leading-none text-[#383838] md:text-[56px]">
+            <h1 className="text-[48px] font-bold leading-none text-[#393939]">
               Dashboard Geral
             </h1>
             <p className="mt-1 text-[18px] font-normal text-[#383838]">
@@ -69,7 +69,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Parlamentares monitorados */}
-        <div className="rounded-[16px] bg-white p-6 shadow-sm">
+        <div className="mp-card bg-white p-6">
           <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Parlamentares monitorados</h2>
           {isLoadingMonitorados ? (
             <div className="flex items-center justify-center py-8 gap-2 text-[#383838]/60">
@@ -77,14 +77,14 @@ const DashboardPage = () => {
               <span>Carregando...</span>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-[27px]">
               {monitorados.map((parlamentar) => (
                 <Link
                   key={parlamentar.id}
                   to={`/parlamentar/${parlamentar.id}`}
-                  className="flex items-center gap-3 rounded-[12px] border border-black/10 bg-white p-3 hover:bg-[#f5f5f5] transition-colors"
+                  className="flex items-center gap-3 rounded-[28px] bg-white px-4 py-3 shadow-[0_4px_4px_rgba(0,0,0,0.25)] hover:opacity-90 transition-opacity min-w-[200px]"
                 >
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-[50px] w-[50px] shrink-0">
                     <AvatarImage src={parlamentar.foto} alt={parlamentar.nome} />
                     <AvatarFallback>{parlamentar.nome[0]}</AvatarFallback>
                   </Avatar>
@@ -92,7 +92,7 @@ const DashboardPage = () => {
                     <p className="font-semibold text-[18px] text-[#383838]">{parlamentar.nome}</p>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`rounded px-1.5 py-0.5 text-[11px] font-bold text-white ${
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white ${
                           parlamentar.casa === 'camara' ? 'bg-[#1b76ff]' : 'bg-[#09e03b]'
                         }`}
                       >
@@ -113,11 +113,11 @@ const DashboardPage = () => {
         </div>
 
         {/* Main grid: Timeline + Últimos projetos + Estatísticas */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Linha do tempo — 2 cols */}
-          <div className="lg:col-span-2 rounded-[16px] bg-white p-6 shadow-sm">
+          <div className="mp-card lg:col-span-2 bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Linha do tempo</h2>
-            <div className="h-[460px]">
+            <div className="h-[560px]">
               <Timeline />
             </div>
           </div>
@@ -125,26 +125,28 @@ const DashboardPage = () => {
           {/* Right column */}
           <div className="space-y-6">
             {/* Últimos projetos */}
-            <div className="rounded-[16px] bg-white p-6 shadow-sm">
+            <div className="mp-card bg-white p-6">
               <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
-              <div className="h-[200px] overflow-hidden">
-                <ProposicoesList limit={3} />
-              </div>
+              <ProposicoesList limit={2} />
             </div>
 
             {/* Estatísticas */}
-            <div className="rounded-[16px] bg-white p-6 shadow-sm">
+            <div className="mp-card bg-white p-6">
               <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Estatísticas</h2>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-start justify-between gap-2">
                 {[
-                  { value: '23', label: 'Projetos essa semana' },
-                  { value: '35%', label: 'Presença média' },
-                  { value: '14', label: 'Votações recentes' },
+                  { value: '23', label: 'Projetos\nessa semana' },
+                  { value: '35%', label: 'Presença\nmédia' },
+                  { value: '14', label: 'Votações\nrecentes' },
                   { value: '12', label: 'Discursos' },
                 ].map((stat) => (
-                  <div key={stat.label} className="rounded-[8px] bg-[#f5f5f5] p-4 text-center">
-                    <p className="text-[18px] font-bold text-[#468fff]">{stat.value}</p>
-                    <p className="text-[13px] text-[#383838]">{stat.label}</p>
+                  <div key={stat.label} className="flex flex-col items-center gap-2">
+                    <div className="w-[49px] h-[49px] flex items-center justify-center rounded-full border border-[#878787]">
+                      <p className="text-[18px] font-bold text-[#468fff]">{stat.value}</p>
+                    </div>
+                    <p className="text-[13px] text-[#383838] text-center leading-tight whitespace-pre-line">
+                      {stat.label}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -167,7 +169,7 @@ const DashboardPage = () => {
           }}
         />
         <div style={{ position: 'absolute', bottom: '16px', left: '32px', right: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <img src={logoMamute} alt="Mamute Político" style={{ height: '28px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
+          <img src={logoMamute} alt="Mamute Político" style={{ height: '47px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
           <span style={{ fontSize: '12px', fontWeight: 500, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
           </span>
