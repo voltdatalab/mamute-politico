@@ -43,12 +43,18 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
         <div className="mt-14 flex flex-wrap items-center justify-center gap-3">
           {options.map((option) => {
             const isActive = selected === option.key;
+            const responsiveOrder =
+              option.key === 'camara'
+                ? 'order-2 md:order-3'
+                : option.key === 'ambas'
+                  ? 'order-3 md:order-2'
+                  : 'order-1 md:order-1';
             return (
               <button
                 key={option.key}
                 type="button"
                 onClick={() => onSelect(option.key)}
-                className={`w-[194px] rounded-[76px] py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
+                className={`${responsiveOrder} w-[194px] rounded-[76px] py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
                   isActive ? 'bg-[#1b76ff] text-white' : 'bg-white text-[#383838] hover:bg-[#1b76ff] hover:text-white'
                 }`}
               >
