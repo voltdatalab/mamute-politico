@@ -160,12 +160,15 @@ const Index = () => {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {features.map((feature) => (
-                <div key={feature.title} className="group mp-card flex min-h-[254px] flex-col items-center gap-4 bg-white p-6 text-center">
+                <div
+                  key={feature.title}
+                  className="group mp-card flex min-h-[254px] flex-col items-center gap-4 bg-white p-6 text-center transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_14px_24px_rgba(0,0,0,0.22)]"
+                >
                   <img
                     src={iconFuncionalidades}
                     alt=""
                     aria-hidden="true"
-                    className="h-16 w-16 object-contain transition-transform duration-700 ease-out group-hover:rotate-[360deg]"
+                    className="h-16 w-16 object-contain transition-transform duration-500 ease-out group-hover:rotate-[360deg]"
                   />
                   <h3 className="text-[15px] font-bold uppercase text-[#4b4b4b] whitespace-pre-line leading-tight">
                     {feature.title}
