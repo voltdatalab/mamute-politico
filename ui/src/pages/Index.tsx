@@ -3,11 +3,11 @@ import { Header } from '@/components/layout/Header';
 import congressoIlustrado from '@/assets/congresso-ilustrado.png';
 import mammothImage from '@/assets/figma-mamute.png';
 import logoMamute from '@/assets/logo-mamute.png';
+import iconFuncionalidades from '@/assets/icon-funcionalidades.svg';
 import iconDeputados from '@/assets/icon-deputados.svg';
 import iconSenadores from '@/assets/icon-senadores.svg';
 import iconProposicoes from '@/assets/icon-proposicoes.svg';
 import iconVotacoes from '@/assets/icon-votacoes.svg';
-import { CheckCircle2 } from 'lucide-react';
 
 const TempoRealIcon = () => (
   <svg viewBox="0 0 41 29" aria-hidden="true" className="h-[18px] w-[26px]">
@@ -113,14 +113,12 @@ const Index = () => {
 
           <div className="grid items-end gap-8 lg:grid-cols-2">
             <div className="flex justify-center lg:justify-start">
-              <img src={mammothImage} alt="Mamute ilustração" className="max-h-[560px] w-auto object-contain" />
+              <img src={mammothImage} alt="Mamute ilustração" className="h-auto w-[780px] max-w-none object-contain lg:-ml-24" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {features.map((feature) => (
                 <div key={feature.title} className="mp-card flex min-h-[254px] flex-col items-center gap-4 bg-white p-6 text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1b76ff]">
-                    <CheckCircle2 className="h-6 w-6 text-white" />
-                  </div>
+                  <img src={iconFuncionalidades} alt="" aria-hidden="true" className="h-16 w-16 object-contain" />
                   <h3 className="text-[15px] font-bold uppercase text-[#4b4b4b] whitespace-pre-line leading-tight">
                     {feature.title}
                   </h3>

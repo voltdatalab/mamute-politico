@@ -1,3 +1,10 @@
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/montserrat/600.css";
+@import "@fontsource/montserrat/700.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -120,15 +127,41 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Avenir Next', 'Avenir', 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', 'Avenir Next', 'Avenir', system-ui, sans-serif;
+    min-width: 320px;
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Gill Sans', 'Avenir Next', 'Inter', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Gill Sans', 'Avenir Next', 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer utilities {
+  .mp-card {
+    border-radius: 28px;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  }
+
+  .mp-pill-blue {
+    border-radius: 76px;
+    background: #1b76ff;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .mp-pill-light {
+    border-radius: 76px;
+    background: #fff;
+    color: #4b4b4b;
+    font-weight: 600;
+  }
+
+  .mp-footer-note {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: normal;
+  }
+
   .gradient-hero {
     background: var(--gradient-hero);
   }
