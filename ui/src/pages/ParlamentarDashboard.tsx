@@ -60,7 +60,7 @@ const ParlamentarDashboard = () => {
 
   if (!isIdValid) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
+      <div className="min-h-screen bg-[#e6c54a]">
         <Header />
         <main className="container py-8">
           <div className="mx-auto max-w-xl rounded-[28px] border border-black/10 bg-white p-8 text-center shadow-md">
@@ -77,7 +77,7 @@ const ParlamentarDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
+      <div className="min-h-screen bg-[#e6c54a]">
         <Header />
         <main className="container py-8">
           <div className="mx-auto flex max-w-xl items-center justify-center gap-3 rounded-[28px] border border-black/10 bg-white p-8 text-muted-foreground shadow-md">
@@ -92,7 +92,7 @@ const ParlamentarDashboard = () => {
   if (isError || !parlamentar) {
     const notFound = error instanceof ApiError && error.status === 404;
     return (
-      <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
+      <div className="min-h-screen bg-[#e6c54a]">
         <Header />
         <main className="container py-8">
           <div className="mx-auto max-w-xl rounded-[28px] border border-black/10 bg-white p-8 text-center shadow-md">
@@ -114,97 +114,73 @@ const ParlamentarDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_74%,#3d825b_74%,#3d825b_100%)]">
+    <div className="min-h-screen bg-[#e6c54a]">
       <Header />
-      
+
       <main className="container py-8 space-y-6">
         {/* Back button */}
-        <Link to="/selecao">
-          <Button variant="outline" className="gap-2 bg-white">
+        <Link to="/dashboard">
+          <button className="flex items-center gap-2 rounded-full bg-white px-5 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90">
             <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </Button>
+            VOLTAR AO DASHBOARD GERAL
+          </button>
         </Link>
 
-        {/* Top Row - Info, Word Cloud, Recent Projects */}
+        {/* Top Row: Dados cadastrais | Temas do discurso | Últimos projetos */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <ParlamentarInfo parlamentar={parlamentar} />
-          
-          <Card variant="highlight">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Cloud className="h-5 w-5" />
-                Temas dos Discursos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <WordCloud parliamentarianId={parliamentarianCode} />
-            </CardContent>
-          </Card>
-          
-          <Card variant="accent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Projetos Recentes
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="">
-              <ProposicoesList limit={3} parliamentarianId={id} />
-            </CardContent>
-          </Card>
+          {/* Dados cadastrais */}
+          <div className="rounded-[16px] bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-[20px] font-bold text-[#090909]">Dados cadastrais</h2>
+            <ParlamentarInfo parlamentar={parlamentar} />
+          </div>
+
+          {/* Temas do discurso */}
+          <div className="rounded-[16px] bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-[20px] font-bold text-[#090909]">Temas do discurso</h2>
+            <WordCloud parliamentarianId={parliamentarianCode} />
+          </div>
+
+          {/* Últimos projetos */}
+          <div className="rounded-[16px] bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-[20px] font-bold text-[#090909]">Últimos projetos</h2>
+            <ProposicoesList limit={4} parliamentarianId={id} />
+          </div>
         </div>
 
-        {/* Bottom Row - Tabs for Propositions, Votes and Stenographic Notes */}
-        <Tabs defaultValue="proposicoes" className="w-full">
-          <TabsList className="grid w-full max-w-xl grid-cols-3">
-            <TabsTrigger value="proposicoes" className="gap-2">
-              <FileText className="h-4 w-4" />
-              Proposições
-            </TabsTrigger>
-            <TabsTrigger value="votacoes" className="gap-2">
-              <Vote className="h-4 w-4" />
-              Votações
-            </TabsTrigger>
-            <TabsTrigger value="taquigraficas" className="gap-2">
-              <FileText className="h-4 w-4" />
-              Taquigráficas
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="proposicoes" className="mt-6">
-            <Card className="border-black/10 bg-white">
-              <CardHeader>
-                <CardTitle>Proposições do Parlamentar</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ProposicoesTable parliamentarianId={id} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="votacoes" className="mt-6">
-            <Card className="border-black/10 bg-white">
-              <CardHeader>
-                <CardTitle>Histórico de Votações</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[500px]">
-                <VotacoesTable parliamentarianId={numericId} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="taquigraficas" className="mt-6">
-            <Card className="border-black/10 bg-white">
-              <CardHeader>
-                <CardTitle>Notas Taquigráficas</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[500px]">
-                <TaquigraficasTable parliamentarianId={numericId} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Bottom: Proposições do Parlamentar with tabs */}
+        <div className="rounded-[16px] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b px-6 pt-6 pb-4">
+            <h2 className="text-[20px] font-bold text-[#090909]">Proposições do Parlamentar</h2>
+            <Tabs defaultValue="proposicoes" className="w-auto">
+              <TabsList className="rounded-full bg-[#f5f5f5]">
+                <TabsTrigger value="proposicoes" className="rounded-full text-[13px]">
+                  PROPOSIÇÕES
+                </TabsTrigger>
+                <TabsTrigger value="votacoes" className="rounded-full text-[13px]">
+                  VOTAÇÕES
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <Tabs defaultValue="proposicoes" className="w-full">
+            <div className="sr-only">
+              <TabsList>
+                <TabsTrigger value="proposicoes">Proposições</TabsTrigger>
+                <TabsTrigger value="votacoes">Votações</TabsTrigger>
+                <TabsTrigger value="taquigraficas">Taquigráficas</TabsTrigger>
+              </TabsList>
+            </div>
+            <TabsContent value="proposicoes" className="p-6 pt-4">
+              <ProposicoesTable parliamentarianId={id} />
+            </TabsContent>
+            <TabsContent value="votacoes" className="p-6 pt-4 h-[500px]">
+              <VotacoesTable parliamentarianId={numericId} />
+            </TabsContent>
+            <TabsContent value="taquigraficas" className="p-6 pt-4 h-[500px]">
+              <TaquigraficasTable parliamentarianId={numericId} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
     </div>
   );

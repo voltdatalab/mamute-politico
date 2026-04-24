@@ -122,7 +122,7 @@ export function ParlamentarSelector({
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Available Parliamentarians */}
-      <Card variant="default" className="flex h-[640px] flex-col border-black/10 bg-[#f5f5f5]">
+      <Card className="flex h-[640px] flex-col border-black/10 bg-white shadow-sm rounded-[16px]">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-extrabold">Parlamentares Disponiveis</CardTitle>
@@ -296,7 +296,7 @@ export function ParlamentarSelector({
       </Card>
 
       {/* Selected Parliamentarians */}
-      <Card variant="accent" className="flex h-[640px] flex-col border-black/10 bg-[#f5f5f5]">
+      <Card className="flex h-[640px] flex-col border-black/10 bg-white shadow-sm rounded-[16px]">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-extrabold">Parlamentares Monitorados</CardTitle>

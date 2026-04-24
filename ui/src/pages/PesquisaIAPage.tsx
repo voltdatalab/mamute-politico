@@ -1,23 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  MessageSquare,
-  Send,
-  Bot,
-  User,
-  PlusCircle,
-} from 'lucide-react';
+import { Bot, User, PlusCircle, Send } from 'lucide-react';
 import {
   streamChat,
   ChatbotStreamError,
   type ChatMessagePayload,
 } from '@/api/chatbot';
+import logoMamute from '@/assets/logo-mamute.png';
 
 interface Message {
   id: string;
@@ -88,12 +82,7 @@ const PesquisaIAPage = () => {
       return [
         ...next,
         userMessage,
-        {
-          id: assistantId,
-          role: 'assistant',
-          content: '',
-          timestamp: new Date(),
-        },
+        { id: assistantId, role: 'assistant', content: '', timestamp: new Date() },
       ];
     });
 
@@ -109,9 +98,7 @@ const PesquisaIAPage = () => {
       const chunk = pending;
       pending = '';
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId ? { ...m, content: m.content + chunk } : m
-        )
+        prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m))
       );
     };
 
@@ -133,16 +120,10 @@ const PesquisaIAPage = () => {
           scheduleFlush();
         },
       });
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-        rafId = 0;
-      }
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
       flushPending();
     } catch (e) {
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-        rafId = 0;
-      }
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
       pending = '';
       if (e instanceof DOMException && e.name === 'AbortError') {
         setMessages((prev) =>
@@ -158,11 +139,7 @@ const PesquisaIAPage = () => {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantId && m.role === 'assistant' && !m.content
-            ? {
-                ...m,
-                content:
-                  'Não foi possível obter uma resposta agora. Verifique se o serviço de chat está disponível.',
-              }
+            ? { ...m, content: 'Não foi possível obter uma resposta agora.' }
             : m
         )
       );
@@ -171,161 +148,135 @@ const PesquisaIAPage = () => {
     }
   };
 
-  const handleExampleClick = (question: string) => {
-    setInput(question);
-  };
-
   const canSend = input.trim().length >= MIN_QUESTION_LEN;
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom,#f3f3f3_0%,#f3f3f3_72%,#1577ff_72%,#1577ff_100%)]">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #dbae34 0%, #dbae34 30%, #efeeee 30%, #efeeee 72%, #1b76ff 72%, #1b76ff 100%)' }}>
       <Header />
 
       <main className="container py-8">
-        <div className="mb-6">
-          <h1 className="text-5xl font-extrabold text-[#2a2e39] md:text-6xl">Pesquisa IA</h1>
-          <p className="mt-3 max-w-4xl text-lg leading-snug text-foreground/85 md:text-[24px]">
+        {/* Page title */}
+        <div className="mb-8">
+          <h1 className="text-[48px] font-bold text-[#383838] md:text-[56px]">Pesquisa IA</h1>
+          <p className="mt-2 max-w-4xl text-[18px] font-normal leading-snug text-[#383838]">
             Consulte dados legislativos em linguagem natural. Acesse um banco de dados com as proposições, votações e discursos.
             Combine SQL + processamento de linguagem natural para uma abordagem híbrida.
           </p>
         </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <Card className="border-black/10 bg-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-4xl font-extrabold md:text-5xl">
-                  Perguntas Sugeridas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {exampleQuestions.map((question, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => handleExampleClick(question)}
-                      className="w-full rounded-[20px] border border-black/10 bg-white p-4 text-left text-[17px] font-semibold leading-tight shadow-md transition-colors hover:bg-muted disabled:opacity-50 md:text-[22px]"
-                    >
-                      <span className="flex items-center justify-between gap-4">
-                        <span>{question}</span>
-                        <PlusCircle className="h-9 w-9 shrink-0 text-success" />
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Perguntas sugeridas */}
+          <div className="rounded-[16px] bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Perguntas sugeridas</h2>
+            <div className="space-y-3">
+              {exampleQuestions.map((question, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setInput(question)}
+                  className="w-full rounded-[12px] border border-black/10 bg-white p-4 text-left shadow-sm transition hover:bg-[#f5f5f5]"
+                >
+                  <span className="flex items-center justify-between gap-4">
+                    <span className="text-[15px] font-semibold text-[#383838] leading-tight">
+                      {question}
+                    </span>
+                    <PlusCircle className="h-8 w-8 shrink-0 text-[#09e03b]" />
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div>
-            <Card className="flex flex-col border-black/10 bg-white">
-              <CardHeader className="border-b">
-                <CardTitle className="text-4xl font-extrabold flex items-center gap-3 md:text-5xl">
-                  <Bot className="h-12 w-12 text-foreground" />
-                  Chat Bot
-                </CardTitle>
-              </CardHeader>
+          {/* Chat bot */}
+          <div className="flex flex-col rounded-[16px] bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b px-6 py-4">
+              <Bot className="h-8 w-8 text-[#383838]" />
+              <h2 className="text-[32px] font-bold text-[#090909]">Chat Bot</h2>
+            </div>
 
-              <CardContent className="flex-1 p-0 flex flex-col">
-                <ScrollArea className="flex-1 p-4">
-                  <div className="space-y-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex gap-3 ${
-                          message.role === 'user' ? 'justify-end' : 'justify-start'
-                        }`}
-                      >
-                        {message.role === 'assistant' && (
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-primary text-primary-foreground">
-                              <Bot className="h-4 w-4" />
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-
-                        <div
-                          className={`max-w-[80%] p-4 rounded-[20px] ${
-                            message.role === 'user'
-                              ? 'bg-success text-white'
-                              : 'bg-muted'
-                          }`}
-                        >
-                          {message.role === 'assistant' && message.content === '' ? (
-                            <div className="flex gap-1 py-1">
-                              <span
-                                className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                                style={{ animationDelay: '0ms' }}
-                              />
-                              <span
-                                className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                                style={{ animationDelay: '150ms' }}
-                              />
-                              <span
-                                className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                                style={{ animationDelay: '300ms' }}
-                              />
-                            </div>
-                          ) : (
-                            <p className="text-base whitespace-pre-wrap">{message.content}</p>
-                          )}
-                          <p
-                            className={`text-xs mt-2 ${
-                              message.role === 'user'
-                                ? 'text-primary-foreground/70'
-                                : 'text-muted-foreground'
-                            }`}
-                          >
-                            {message.timestamp.toLocaleTimeString('pt-BR', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </p>
-                        </div>
-
-                        {message.role === 'user' && (
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-accent text-accent-foreground">
-                              <User className="h-4 w-4" />
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-
-                <div className="p-4 border-t">
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      void handleSend();
-                    }}
-                    className="flex flex-col gap-2 sm:flex-row"
+            <ScrollArea className="flex-1 p-4" style={{ height: '360px' }}>
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <Input
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      placeholder="Digite sua pergunta sobre dados legislativos..."
-                      className="flex-1"
-                      minLength={MIN_QUESTION_LEN}
-                    />
-                    <Button type="submit" disabled={!canSend} className="w-full px-8 sm:w-auto">
-                      ENVIAR
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </form>
-                  {input.trim().length > 0 && input.trim().length < MIN_QUESTION_LEN && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Mínimo de {MIN_QUESTION_LEN} caracteres.
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    {message.role === 'assistant' && (
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarFallback className="bg-[#1b76ff] text-white">
+                          <Bot className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={`max-w-[80%] rounded-[16px] p-4 ${
+                        message.role === 'user' ? 'bg-[#09e03b] text-white' : 'bg-[#f5f5f5] text-[#383838]'
+                      }`}
+                    >
+                      {message.role === 'assistant' && message.content === '' ? (
+                        <div className="flex gap-1 py-1">
+                          {[0, 150, 300].map((delay) => (
+                            <span
+                              key={delay}
+                              className="h-2 w-2 rounded-full bg-[#1b76ff] animate-bounce"
+                              style={{ animationDelay: `${delay}ms` }}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      )}
+                      <p className={`mt-2 text-xs ${message.role === 'user' ? 'text-white/70' : 'text-[#383838]/50'}`}>
+                        {message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                    {message.role === 'user' && (
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarFallback className="bg-[#383838] text-white">
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+
+            <div className="border-t p-4">
+              <form
+                onSubmit={(e) => { e.preventDefault(); void handleSend(); }}
+                className="flex gap-2"
+              >
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Digite sua pergunta sobre dados legislativos..."
+                  className="flex-1 rounded-full border-black/10"
+                  minLength={MIN_QUESTION_LEN}
+                />
+                <button
+                  type="submit"
+                  disabled={!canSend || isLoading}
+                  className="flex items-center gap-2 rounded-full bg-[#1b76ff] px-6 py-2 text-[13px] font-bold uppercase text-white transition hover:opacity-90 disabled:opacity-50"
+                >
+                  ENVIAR
+                  <Send className="h-3.5 w-3.5" />
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="mt-8 py-6">
+        <div className="container flex items-center justify-between">
+          <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto brightness-0 invert" />
+          <span className="text-[12px] font-medium text-white">
+            © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
+          </span>
+        </div>
+      </footer>
     </div>
   );
 };

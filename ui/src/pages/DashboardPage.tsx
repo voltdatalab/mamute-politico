@@ -1,26 +1,15 @@
 import { Link } from 'react-router-dom';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Timeline } from '@/components/dashboard/Timeline';
 import { ProposicoesList } from '@/components/dashboard/ProposicoesList';
-import { VotacoesTable } from '@/components/dashboard/VotacoesTable';
-import { Badge } from '@/components/ui/badge';
 import { listParliamentarians, listProjectFavorites, getParliamentarian } from '@/api/endpoints';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  Clock,
-  FileText,
-  Users,
-  Vote,
-  TrendingUp,
-  Loader2,
-} from 'lucide-react';
-import heroImage from '@/assets/figma-hero.png';
-import mammothImage from '@/assets/figma-mamute.png';
+import { Loader2, Users } from 'lucide-react';
+import congressoDashboard from '@/assets/congresso-dashboard.png';
+import logoMamute from '@/assets/logo-mamute.png';
 
-// TODO: Remove this once we have a project ID
 const projectId = undefined;
 
 const DashboardPage = () => {
@@ -59,154 +48,131 @@ const DashboardPage = () => {
       : fallbackListQuery.isLoading;
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_bottom,#e0bb3f_0%,#e0bb3f_72%,#3d825b_72%,#3d825b_100%)]">
+    <div className="min-h-screen bg-[#e6c54a]">
       <Header />
-      
-      <main className="container relative py-10 space-y-6">
-        <img src={heroImage} alt="" className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover opacity-20" />
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+
+      <main className="container py-10 space-y-6">
+        {/* Page header */}
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-5xl font-extrabold leading-none text-[#1f2b44] md:text-[74px]">Dashboard Geral</h1>
-            <p className="mt-1 text-base text-[#273349] md:text-[28px] md:leading-tight">
+            <h1 className="text-[48px] font-bold leading-none text-[#383838] md:text-[56px]">
+              Dashboard Geral
+            </h1>
+            <p className="mt-1 text-[18px] font-normal text-[#383838]">
               Acompanhe a atividade dos parlamentares monitorados
             </p>
           </div>
-          <Badge variant="accent" className="gap-2 self-start px-4 py-2 text-xs md:self-auto md:px-5 md:text-xs">
+          <div className="flex items-center gap-2 self-start rounded-full bg-[#1b76ff] px-5 py-2 text-[13px] font-semibold text-white">
             <Users className="h-4 w-4" />
-            {monitorados.length} parlamentares monitorados
-          </Badge>
+            {monitorados.length} PARLAMENTAR{monitorados.length !== 1 ? 'ES' : ''} MONITORADO{monitorados.length !== 1 ? 'S' : ''}
+          </div>
         </div>
 
-        {/* Monitored Parliamentarians */}
-        <Card className="border-black/10 bg-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Parlamentares Monitorados
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingMonitorados ? (
-              <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Carregando...</span>
-              </div>
-            ) : (
-            <div className="flex gap-4 flex-wrap">
+        {/* Parlamentares monitorados */}
+        <div className="rounded-[16px] bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Parlamentares monitorados</h2>
+          {isLoadingMonitorados ? (
+            <div className="flex items-center justify-center py-8 gap-2 text-[#383838]/60">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Carregando...</span>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-4">
               {monitorados.map((parlamentar) => (
                 <Link
                   key={parlamentar.id}
                   to={`/parlamentar/${parlamentar.id}`}
-                  className="flex items-center gap-3 p-3 rounded-lg border bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                  className="flex items-center gap-3 rounded-[12px] border border-black/10 bg-white p-3 hover:bg-[#f5f5f5] transition-colors"
                 >
-                  <Avatar>
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={parlamentar.foto} alt={parlamentar.nome} />
                     <AvatarFallback>{parlamentar.nome[0]}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium text-sm">{parlamentar.nome}</p>
+                    <p className="font-semibold text-[18px] text-[#383838]">{parlamentar.nome}</p>
                     <div className="flex items-center gap-2">
-                      <Badge variant={parlamentar.casa === 'camara' ? 'camara' : 'senado'} className="text-[10px] px-1.5 py-0">
-                        {parlamentar.casa === 'camara' ? 'Câmara' : 'Senado'}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {parlamentar.partido.sigla}
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[11px] font-bold text-white ${
+                          parlamentar.casa === 'camara' ? 'bg-[#1b76ff]' : 'bg-[#09e03b]'
+                        }`}
+                      >
+                        {parlamentar.casa === 'camara' ? 'CÂMARA' : 'SENADO'}
+                      </span>
+                      <span className="text-[11px] text-[#383838]">
+                        {parlamentar.partido.sigla} - {parlamentar.uf}
                       </span>
                     </div>
                   </div>
                 </Link>
               ))}
               {monitorados.length === 0 && !isLoadingMonitorados && (
-                <div className="w-full rounded-xl border border-dashed border-black/10 bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-                  Nenhum parlamentar monitorado.
-                </div>
+                <p className="text-sm text-[#383838]/60 py-4">Nenhum parlamentar monitorado.</p>
               )}
             </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Timeline - Takes 2 columns */}
-          <div className="lg:col-span-2">
-            <Card className="h-[440px] md:h-[560px] border-black/10 bg-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Linha do Tempo
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="h-[calc(100%-80px)]">
-                <Timeline />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="space-y-6">
-            <Card className="h-[220px] md:h-[270px] border-black/10 bg-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-accent" />
-                  Últimos Projetos
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="h-[calc(100%-80px)]">
-                <ProposicoesList limit={3} />
-              </CardContent>
-            </Card>
-
-            <Card className="h-[220px] md:h-[270px] border-black/10 bg-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-success" />
-                  Estatísticas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* TODO: Remove hardcoded values */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-4 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold text-primary">23</p>
-                    <p className="text-xs text-muted-foreground">Projetos esta semana</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold text-accent">15</p>
-                    <p className="text-xs text-muted-foreground">Votações recentes</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold text-success">87%</p>
-                    <p className="text-xs text-muted-foreground">Presença média</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold text-warning">12</p>
-                    <p className="text-xs text-muted-foreground">Discursos</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          )}
         </div>
 
-        {/* Voting History */}
-        <Card className="border-black/10 bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Vote className="h-5 w-5 text-primary" />
-              Últimas Votações
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <VotacoesTable />
-          </CardContent>
-        </Card>
-        <div className="flex flex-col items-center gap-3 py-5 text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] md:flex-row md:items-end md:justify-between md:gap-4">
-          <span className="text-base font-semibold md:text-lg">MAMUTE POLITICO</span>
-          <img src={mammothImage} alt="" className="h-28 opacity-95 md:h-36" />
-          <span className="max-w-[340px] text-center text-xs md:max-w-none md:text-right md:text-sm">© 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
+        {/* Main grid: Timeline + Últimos projetos + Estatísticas */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Linha do tempo — 2 cols */}
+          <div className="lg:col-span-2 rounded-[16px] bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Linha do tempo</h2>
+            <div className="h-[460px]">
+              <Timeline />
+            </div>
+          </div>
+
+          {/* Right column */}
+          <div className="space-y-6">
+            {/* Últimos projetos */}
+            <div className="rounded-[16px] bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
+              <div className="h-[200px] overflow-hidden">
+                <ProposicoesList limit={3} />
+              </div>
+            </div>
+
+            {/* Estatísticas */}
+            <div className="rounded-[16px] bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Estatísticas</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { value: '23', label: 'Projetos essa semana' },
+                  { value: '35%', label: 'Presença média' },
+                  { value: '14', label: 'Votações recentes' },
+                  { value: '12', label: 'Discursos' },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-[8px] bg-[#f5f5f5] p-4 text-center">
+                    <p className="text-[18px] font-bold text-[#468fff]">{stat.value}</p>
+                    <p className="text-[13px] text-[#383838]">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Dashboard footer with congress + mammoth illustration */}
+      <div className="relative bg-[#e6c54a]" style={{ overflow: 'hidden', height: '420px' }}>
+        <img
+          src={congressoDashboard}
+          alt=""
+          style={{
+            position: 'absolute',
+            top: '-1480px',
+            left: '0',
+            width: '100%',
+            height: 'auto',
+          }}
+        />
+        <div style={{ position: 'absolute', bottom: '16px', left: '32px', right: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <img src={logoMamute} alt="Mamute Político" style={{ height: '28px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
+          <span style={{ fontSize: '12px', fontWeight: 500, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+            © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

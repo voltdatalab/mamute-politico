@@ -1,6 +1,6 @@
 import { CasaLegislativa } from '@/types/parlamentar';
-import { Badge } from '@/components/ui/badge';
-import congressoImage from '@/assets/figma-hero.png';
+import congressoSelecao from '@/assets/congresso-selecao.png';
+import logoMamute from '@/assets/logo-mamute.png';
 
 interface CongressoSelectorProps {
   onSelect: (casa: CasaLegislativa) => void;
@@ -8,38 +8,45 @@ interface CongressoSelectorProps {
 }
 
 export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps) {
-  const options: Array<{ key: CasaLegislativa; label: string; subtitle: string }> = [
-    { key: 'senado', label: 'Senado Federal', subtitle: '81 senadores/as' },
-    { key: 'ambas', label: 'Ambas as Casas', subtitle: 'Monitoramento completo' },
-    { key: 'camara', label: 'Camara dos Deputados', subtitle: '513 deputados/as' },
+  const options: Array<{ key: CasaLegislativa; label: string }> = [
+    { key: 'senado', label: 'SENADO FEDERAL' },
+    { key: 'ambas', label: 'AMBAS AS CASAS' },
+    { key: 'camara', label: 'CÂMARA DOS DEPUTADOS' },
   ];
 
   return (
-    <section className="relative min-h-[calc(100vh-80px)] overflow-hidden">
-      <img src={congressoImage} alt="Congresso Nacional" className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-transparent" />
+    <section className="relative min-h-[calc(100vh-64px)] overflow-hidden bg-[#e6c54a]">
+      <img
+        src={congressoSelecao}
+        alt="Congresso Nacional"
+        className="absolute bottom-0 left-0 w-full object-cover object-bottom"
+        style={{ height: '60%' }}
+      />
+      <div className="absolute inset-0 bg-[#e6c54a]/0" />
 
-      <div className="relative flex min-h-[calc(100vh-80px)] flex-col items-center justify-between py-14">
+      <div className="relative flex min-h-[calc(100vh-64px)] flex-col py-14 px-6">
         <div className="space-y-3 text-center">
-          <h2 className="text-5xl font-extrabold text-[#1f2b44] drop-shadow-[0_1px_0_rgba(255,255,255,0.25)] md:text-6xl">
-          Selecione a Casa Legislativa
+          <h2 className="text-[48px] font-bold text-[#383838]">
+            Selecione a Casa Legislativa
           </h2>
-          <p className="mx-auto max-w-2xl text-xl text-[#273349]">
-            Escolha qual casa legislativa voce deseja acompanhar.
+          <p className="mx-auto max-w-2xl text-[18px] font-normal text-[#383838]">
+            Escolha qual casa legislativa você deseja acompanhar.
             <br />
-            Voce pode selecionar a Camara dos Deputados, o Senado Federal, ou ambas.
+            Você pode selecionar a Câmara dos Deputados, o Senado Federal, ou ambas.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-3">
           {options.map((option) => {
             const isActive = selected === option.key;
             return (
               <button
                 key={option.key}
                 type="button"
-                className={`rounded-full px-8 py-2 text-sm font-semibold uppercase shadow-sm transition ${isActive ? 'bg-primary text-white' : 'bg-white text-foreground hover:bg-white/90'}`}
                 onClick={() => onSelect(option.key)}
+                className={`rounded-full px-8 py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
+                  isActive ? 'bg-[#1b76ff] text-white' : 'bg-white text-[#383838] hover:bg-white/90'
+                }`}
               >
                 {option.label}
               </button>
@@ -47,18 +54,9 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
           })}
         </div>
 
-        <div className="w-full max-w-6xl space-y-6">
-          {selected && (
-            <div className="animate-fade-in text-center">
-              <Badge variant={selected === 'camara' ? 'camara' : selected === 'senado' ? 'senado' : 'highlight'} className="px-6 py-2 text-base">
-                {selected === 'camara' && 'Camara dos Deputados selecionada'}
-                {selected === 'senado' && 'Senado Federal selecionado'}
-                {selected === 'ambas' && 'Ambas as Casas selecionadas'}
-              </Badge>
-            </div>
-          )}
-          <div className="flex items-center justify-between px-2 text-sm font-semibold text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">
-            <span>MAMUTE POLITICO</span>
+        <div className="mt-auto pt-8">
+          <div className="flex items-end justify-between px-2 text-[12px] font-medium text-[#ffffff] [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">
+            <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto brightness-0 invert" />
             <span>© 2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.</span>
           </div>
         </div>

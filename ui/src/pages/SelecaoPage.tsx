@@ -3,8 +3,8 @@ import { Header } from '@/components/layout/Header';
 import { CongressoSelector } from '@/components/selecao/CongressoSelector';
 import { ParlamentarSelector } from '@/components/selecao/ParlamentarSelector';
 import { CasaLegislativa, Parlamentar } from '@/types/parlamentar';
-import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import logoMamute from '@/assets/logo-mamute.png';
 
 const SelecaoPage = () => {
   const [casaSelecionada, setCasaSelecionada] = useState<CasaLegislativa | null>(null);
@@ -26,48 +26,70 @@ const SelecaoPage = () => {
     setCasaSelecionada(null);
   };
 
+  const casaLabel =
+    casaSelecionada === 'senado'
+      ? 'Senado Federal'
+      : casaSelecionada === 'camara'
+        ? 'Câmara dos Deputados'
+        : 'Ambas as Casas';
+
   return (
-    <div className={`min-h-screen ${casaSelecionada ? 'bg-[linear-gradient(to_bottom,#e6c54a_0%,#e6c54a_68%,#3d825b_68%,#3d825b_100%)]' : 'bg-[#ececec]'}`}>
+    <div className="min-h-screen bg-[#e6c54a]">
       <Header />
-      
-      <main className={`${casaSelecionada ? 'container py-8' : ''}`}>
-        {!casaSelecionada ? (
-          <div>
-            <CongressoSelector 
-              onSelect={handleSelectCasa} 
-              selected={casaSelecionada} 
-            />
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h1 className="text-center text-5xl font-extrabold text-foreground">
-                {casaSelecionada === 'senado' ? 'Senado Federal' : casaSelecionada === 'camara' ? 'Camara dos Deputados' : 'Ambas as Casas'}
-              </h1>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-              <Button variant="outline" onClick={handleBack} className="gap-2 bg-white">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar à seleção de casa
-              </Button>
-              
-              {parlamentaresSelecionados.length > 0 && (
-                <Button variant="hero" className="gap-2 bg-foreground hover:bg-foreground/90">
-                  Ver Dashboard Geral
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              )}
+
+      {!casaSelecionada ? (
+        <CongressoSelector onSelect={handleSelectCasa} selected={casaSelecionada} />
+      ) : (
+        <main className="min-h-[calc(100vh-64px)]">
+          {/* Yellow top section with title */}
+          <div className="bg-[#e6c54a] px-6 py-10">
+            <div className="container">
+              <h1 className="text-center text-[48px] font-bold text-[#383838]">{casaLabel}</h1>
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="flex items-center gap-2 rounded-full bg-white px-6 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  VOLTAR À SELEÇÃO DE CASA
+                </button>
+                {parlamentaresSelecionados.length > 0 && (
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 rounded-full bg-[#383838] px-6 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90"
+                  >
+                    VER DASHBOARD GERAL
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
-            
-            <ParlamentarSelector
-              casaSelecionada={casaSelecionada}
-              parlamentaresSelecionados={parlamentaresSelecionados}
-              onAddParlamentar={handleAddParlamentar}
-              onRemoveParlamentar={handleRemoveParlamentar}
-            />
           </div>
-        )}
-      </main>
+
+          {/* Gray bottom section with parlamentar selector */}
+          <div className="bg-[#ececec] px-6 py-8">
+            <div className="container">
+              <ParlamentarSelector
+                casaSelecionada={casaSelecionada}
+                parlamentaresSelecionados={parlamentaresSelecionados}
+                onAddParlamentar={handleAddParlamentar}
+                onRemoveParlamentar={handleRemoveParlamentar}
+              />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="bg-[#ececec] px-6 py-6 border-t border-black/10">
+            <div className="container flex items-center justify-between">
+              <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto" />
+              <span className="text-[12px] font-medium text-[#383838]">
+                © 2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
+              </span>
+            </div>
+          </div>
+        </main>
+      )}
     </div>
   );
 };
