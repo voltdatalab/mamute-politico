@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -7,15 +8,15 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1.5rem",
       screens: {
-        "2xl": "1400px",
+        "2xl": "1230px",
       },
     },
     extend: {
       fontFamily: {
-        sans: ['Avenir Next', 'Avenir', 'Inter', 'system-ui', 'sans-serif'],
-        display: ['Gill Sans', 'Avenir Next', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'Avenir Next', 'Avenir', 'system-ui', 'sans-serif'],
+        display: ['Montserrat', 'Gill Sans', 'Avenir Next', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -114,5 +115,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;
