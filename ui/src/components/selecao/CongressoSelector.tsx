@@ -44,7 +44,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
                 key={option.key}
                 type="button"
                 onClick={() => onSelect(option.key)}
-                className={`rounded-[76px] px-8 py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
+                className={`w-[194px] rounded-[76px] py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
                   isActive ? 'bg-[#1b76ff] text-white' : 'bg-white text-[#383838] hover:bg-[#1b76ff] hover:text-white'
                 }`}
               >
