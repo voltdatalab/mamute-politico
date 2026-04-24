@@ -10,7 +10,7 @@ interface CongressoSelectorProps {
 
 export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps) {
   const PERSPECTIVE_PX = 1200;
-  const MAX_ROTATE_Y_DEG = 5;
+  const MAX_ROTATE_Y_DEG = 2;
   const MAX_TRANSLATE_X_PX = 20;
   const BACKGROUND_SCALE = 1.02;
 
