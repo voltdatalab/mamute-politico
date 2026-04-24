@@ -204,7 +204,7 @@ const PesquisaIAPage = () => {
                       key={index}
                       type="button"
                       onClick={() => handleExampleClick(question)}
-                      className="w-full rounded-[20px] border border-black/10 bg-white p-4 text-left text-[20px] font-semibold leading-tight shadow-md transition-colors hover:bg-muted disabled:opacity-50 md:text-[22px]"
+                      className="w-full rounded-[20px] border border-black/10 bg-white p-4 text-left text-[17px] font-semibold leading-tight shadow-md transition-colors hover:bg-muted disabled:opacity-50 md:text-[22px]"
                     >
                       <span className="flex items-center justify-between gap-4">
                         <span>{question}</span>
@@ -301,7 +301,7 @@ const PesquisaIAPage = () => {
                       e.preventDefault();
                       void handleSend();
                     }}
-                    className="flex gap-2"
+                    className="flex flex-col gap-2 sm:flex-row"
                   >
                     <Input
                       value={input}
@@ -310,7 +310,7 @@ const PesquisaIAPage = () => {
                       className="flex-1"
                       minLength={MIN_QUESTION_LEN}
                     />
-                    <Button type="submit" disabled={!canSend} className="px-8">
+                    <Button type="submit" disabled={!canSend} className="w-full px-8 sm:w-auto">
                       ENVIAR
                       <Send className="h-4 w-4" />
                     </Button>

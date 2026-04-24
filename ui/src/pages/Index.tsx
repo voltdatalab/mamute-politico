@@ -48,22 +48,22 @@ const Index = () => {
           alt="Fundo Congresso Nacional"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover"
         />
-        <div className="container relative py-10 md:py-14">
+        <div className="container relative py-10 md:py-12">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div className="space-y-6">
               <div className="space-y-3">
                 <Badge variant="outline" className="border-0 bg-transparent px-0 text-sm font-extrabold italic text-foreground">
                   TEMPO REAL
                 </Badge>
-                <h1 className="max-w-xl text-5xl font-extrabold leading-[0.95] text-foreground md:text-[86px]">
+                <h1 className="max-w-[760px] text-4xl font-extrabold leading-[0.95] text-foreground md:max-w-[680px] md:text-[84px]">
                   Acompanhe o Congresso Nacional de perto
                 </h1>
-                <p className="max-w-xl text-lg leading-snug text-foreground/80 md:text-[29px] md:leading-[1.1]">
+                <p className="max-w-2xl text-lg leading-snug text-foreground/80 md:max-w-[700px] md:text-[26px] md:leading-[1.12]">
                   Monitore parlamentares, analise votacoes, acompanhe proposicoes e mantenha-se informado sobre a atividade legislativa brasileira.
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-3 pt-1">
                 <Link to="/selecao">
                   <Button variant="hero" className="h-11 px-8 text-xs uppercase tracking-wide">
                     COMECAR AGORA
