@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -50,11 +50,135 @@ def _ensure_active_project(db: Session, project_id: int) -> Projetos:
     return project
 
 
+def _get_project_from_token_email(request: Request, db: Session) -> Projetos:
+    token_email = getattr(request.state, "token_email", None)
+    if not token_email:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token sem e-mail (sub) para identificar o projeto.",
+        )
+
+    stmt = select(Projetos).where(
+        Projetos.email == token_email,
+        Projetos.deleted_at.is_(None),
+    )
+    project = db.execute(stmt).scalar_one_or_none()
+    if project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Projeto não encontrado para o e-mail autenticado.",
+        )
+
+    return project
+
+
 def _ensure_parliamentarian_exists(db: Session, parliamentarian_id: int) -> Parliamentarian:
     parliamentarian = db.get(Parliamentarian, parliamentarian_id)
     if parliamentarian is None:
         raise HTTPException(status_code=404, detail="Parlamentar não encontrado.")
     return parliamentarian
+
+
+def _create_project_favorite(
+    db: Session,
+    project_id: int,
+    parliamentarian_id: int,
+) -> ProjetosParliamentarian:
+    _ensure_active_project(db, project_id)
+    _ensure_parliamentarian_exists(db, parliamentarian_id)
+
+    existing_stmt = select(ProjetosParliamentarian).where(
+        ProjetosParliamentarian.projeto_id == project_id,
+        ProjetosParliamentarian.parliamentarian_id == parliamentarian_id,
+    )
+    existing = db.execute(existing_stmt).scalar_one_or_none()
+    if existing is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Parlamentar já está favoritado neste projeto.",
+        )
+
+    favorite = ProjetosParliamentarian(
+        projeto_id=project_id,
+        parliamentarian_id=parliamentarian_id,
+    )
+    db.add(favorite)
+    db.commit()
+    db.refresh(favorite)
+    return favorite
+
+
+def _delete_project_favorite(db: Session, project_id: int, parliamentarian_id: int) -> None:
+    _ensure_active_project(db, project_id)
+    stmt = select(ProjetosParliamentarian).where(
+        ProjetosParliamentarian.projeto_id == project_id,
+        ProjetosParliamentarian.parliamentarian_id == parliamentarian_id,
+    )
+    favorite = db.execute(stmt).scalar_one_or_none()
+
+    if favorite is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Favorito não encontrado para o projeto informado.",
+        )
+
+    db.delete(favorite)
+    db.commit()
+
+
+@router.get(
+    "/me/favorites",
+    response_model=List[ProjectFavoriteOut],
+    summary="Lista favoritos do projeto do usuário autenticado",
+)
+def list_my_project_favorites(
+    request: Request,
+    db: Session = Depends(get_db),
+    limit: int = Query(100, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
+) -> List[ProjetosParliamentarian]:
+    """Retorna os favoritos do projeto identificado pelo e-mail do token JWT."""
+    project = _get_project_from_token_email(request, db)
+    stmt = (
+        select(ProjetosParliamentarian)
+        .where(ProjetosParliamentarian.projeto_id == project.id)
+        .offset(offset)
+        .limit(limit)
+    )
+    favorites = db.execute(stmt)
+    return favorites.scalars().all()
+
+
+@router.post(
+    "/me/favorites",
+    response_model=ProjectFavoriteOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Adiciona favorito ao projeto do usuário autenticado",
+)
+def add_my_project_favorite(
+    request: Request,
+    payload: ProjectFavoriteCreate,
+    db: Session = Depends(get_db),
+) -> ProjetosParliamentarian:
+    """Cria favorito usando o projeto identificado pelo e-mail do token JWT."""
+    project = _get_project_from_token_email(request, db)
+    return _create_project_favorite(db, project.id, payload.parliamentarian_id)
+
+
+@router.delete(
+    "/me/favorites/{parliamentarian_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove favorito do projeto do usuário autenticado",
+)
+def remove_my_project_favorite(
+    request: Request,
+    parliamentarian_id: int,
+    db: Session = Depends(get_db),
+) -> Response:
+    """Remove favorito usando o projeto identificado pelo e-mail do token JWT."""
+    project = _get_project_from_token_email(request, db)
+    _delete_project_favorite(db, project.id, parliamentarian_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get(
@@ -93,30 +217,7 @@ def add_project_favorite(
     db: Session = Depends(get_db),
 ) -> ProjetosParliamentarian:
     """Cria o vínculo de favorito entre um projeto e um parlamentar."""
-    _ensure_active_project(db, project_id)
-    _ensure_parliamentarian_exists(db, payload.parliamentarian_id)
-
-    existing_stmt = select(ProjetosParliamentarian).where(
-        ProjetosParliamentarian.projeto_id == project_id,
-        ProjetosParliamentarian.parliamentarian_id == payload.parliamentarian_id,
-    )
-    existing = db.execute(existing_stmt).scalar_one_or_none()
-
-    if existing is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Parlamentar já está favoritado neste projeto.",
-        )
-
-    favorite = ProjetosParliamentarian(
-        projeto_id=project_id,
-        parliamentarian_id=payload.parliamentarian_id,
-    )
-    db.add(favorite)
-    db.commit()
-    db.refresh(favorite)
-
-    return favorite
+    return _create_project_favorite(db, project_id, payload.parliamentarian_id)
 
 
 @router.delete(
@@ -130,21 +231,7 @@ def remove_project_favorite(
     db: Session = Depends(get_db),
 ) -> Response:
     """Remove o vínculo de favorito entre um projeto e um parlamentar."""
-    _ensure_active_project(db, project_id)
-    stmt = select(ProjetosParliamentarian).where(
-        ProjetosParliamentarian.projeto_id == project_id,
-        ProjetosParliamentarian.parliamentarian_id == parliamentarian_id,
-    )
-    favorite = db.execute(stmt).scalar_one_or_none()
-
-    if favorite is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Favorito não encontrado para o projeto informado.",
-        )
-
-    db.delete(favorite)
-    db.commit()
+    _delete_project_favorite(db, project_id, parliamentarian_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
