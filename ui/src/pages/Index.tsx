@@ -90,7 +90,7 @@ const Index = () => {
         onMouseLeave={handleHeroMouseLeave}
       >
         <div
-          className="pointer-events-none absolute inset-0 h-full w-full transition-transform duration-300 ease-out will-change-transform"
+          className="pointer-events-none absolute inset-0 h-full w-full"
           style={{ transform: heroTransform, transformOrigin: 'center center' }}
         >
           <img
@@ -156,9 +156,9 @@ const Index = () => {
 
           <div className="grid items-end gap-8 lg:grid-cols-2">
             <div className="flex justify-center lg:justify-start">
-              <img src={mammothImage} alt="Mamute ilustração" className="h-auto w-[780px] max-w-none object-contain lg:-ml-24" />
+              <img src={mammothImage} alt="Mamute ilustração" className="h-auto w-[780px] lg:max-w-none max-w-full object-contain lg:-ml-24" />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               {features.map((feature) => (
                 <div
                   key={feature.title}

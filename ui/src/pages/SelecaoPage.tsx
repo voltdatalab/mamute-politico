@@ -44,12 +44,12 @@ const SelecaoPage = () => {
           {/* Yellow top section with title */}
           <div className="bg-[#e6c54a] px-6 py-10">
             <div className="container">
-              <h1 className="text-center text-[48px] font-bold text-[#383838]">{casaLabel}</h1>
+              <h1 className="text-center text-[56px] font-bold text-[#393939]">{casaLabel}</h1>
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="flex items-center gap-2 rounded-full bg-white px-6 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90"
+                  className="flex items-center gap-2 rounded-[76px] bg-white px-6 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   VOLTAR À SELEÇÃO DE CASA
@@ -57,7 +57,7 @@ const SelecaoPage = () => {
                 {parlamentaresSelecionados.length > 0 && (
                   <button
                     type="button"
-                    className="flex items-center gap-2 rounded-full bg-[#383838] px-6 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90"
+                    className="flex items-center gap-2 rounded-[76px] bg-[#393939] px-6 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90"
                   >
                     VER DASHBOARD GERAL
                     <ArrowRight className="h-4 w-4" />
@@ -68,7 +68,7 @@ const SelecaoPage = () => {
           </div>
 
           {/* Gray bottom section with parlamentar selector */}
-          <div className="bg-[#ececec] px-6 py-8">
+          <div className="bg-[#4b8b60] px-6 py-8">
             <div className="container">
               <ParlamentarSelector
                 casaSelecionada={casaSelecionada}
@@ -80,10 +80,10 @@ const SelecaoPage = () => {
           </div>
 
           {/* Footer */}
-          <div className="bg-[#ececec] px-6 py-6 border-t border-black/10">
+          <div className="bg-[#4b8b60] px-6 py-6">
             <div className="container flex items-center justify-between">
-              <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto" />
-              <span className="text-[12px] font-medium text-[#383838]">
+              <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto brightness-0 invert" />
+              <span className="text-[12px] font-medium text-white">
                 © 2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
               </span>
             </div>
