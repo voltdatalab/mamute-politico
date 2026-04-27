@@ -53,7 +53,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
       onMouseLeave={handleMouseLeave}
     >
       <div
-        className="absolute inset-0 h-full w-[101.25%] transition-transform duration-300 ease-out will-change-transform"
+        className="absolute inset-0 h-full w-[101.25%]"
         style={{ transform: imageTransform, transformOrigin: 'center bottom' }}
       >
       <img
