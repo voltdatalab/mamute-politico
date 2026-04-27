@@ -90,7 +90,7 @@ const Index = () => {
         onMouseLeave={handleHeroMouseLeave}
       >
         <div
-          className="pointer-events-none absolute inset-0 h-full w-full transition-transform duration-300 ease-out will-change-transform"
+          className="pointer-events-none absolute inset-0 h-full w-full"
           style={{ transform: heroTransform, transformOrigin: 'center center' }}
         >
           <img
