@@ -136,7 +136,7 @@ const Index = () => {
                   <img
                     src={stat.iconSrc}
                     alt={stat.iconAlt}
-                    className={`h-28 w-28 object-contain transition-transform duration-300 ease-out ${
+                    className={`h-auto w-[clamp(64px,18vw,96px)] object-contain transition-transform duration-300 ease-out ${
                       stat.liftIconOnHover ? 'group-hover:-translate-y-1' : ''
                     }`}
                   />
