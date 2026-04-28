@@ -43,10 +43,10 @@ const features = [
 ];
 
 const stats = [
-  { label: 'DEPUTADOS/AS', value: '513', iconSrc: iconDeputados, iconAlt: 'Ícone de deputados' },
-  { label: 'SENADORES/AS', value: '81', iconSrc: iconSenadores, iconAlt: 'Ícone de senadores' },
-  { label: 'PROPOSIÇÕES 2024', value: '4.532', iconSrc: iconProposicoes, iconAlt: 'Ícone de proposições' },
-  { label: 'VOTAÇÕES', value: '892', iconSrc: iconVotacoes, iconAlt: 'Ícone de votações' },
+  { label: 'DEPUTADOS/AS', value: '513', iconSrc: iconDeputados, iconAlt: 'Ícone de deputados', liftIconOnHover: true },
+  { label: 'SENADORES/AS', value: '81', iconSrc: iconSenadores, iconAlt: 'Ícone de senadores', liftIconOnHover: true },
+  { label: 'PROPOSIÇÕES 2024', value: '4.532', iconSrc: iconProposicoes, iconAlt: 'Ícone de proposições', liftIconOnHover: true },
+  { label: 'VOTAÇÕES', value: '892', iconSrc: iconVotacoes, iconAlt: 'Ícone de votações', liftIconOnHover: true },
 ];
 
 const Index = () => {
@@ -130,10 +130,16 @@ const Index = () => {
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="mp-card flex h-[285px] flex-col items-center justify-center gap-3 bg-white p-4 text-center transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_14px_24px_rgba(0,0,0,0.22)]"
+                className="group mp-card flex h-[285px] flex-col items-center justify-center gap-3 bg-white p-4 text-center transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_14px_24px_rgba(0,0,0,0.22)]"
               >
                 {stat.iconSrc ? (
-                  <img src={stat.iconSrc} alt={stat.iconAlt} className="h-28 w-28 object-contain" />
+                  <img
+                    src={stat.iconSrc}
+                    alt={stat.iconAlt}
+                    className={`h-28 w-28 object-contain transition-transform duration-300 ease-out ${
+                      stat.liftIconOnHover ? 'group-hover:-translate-y-1' : ''
+                    }`}
+                  />
                 ) : null}
                 <p className="text-[36px] font-extrabold leading-none text-[#878787]">{stat.value}</p>
                 <p className="text-[14px] font-normal uppercase tracking-normal text-black">{stat.label}</p>
