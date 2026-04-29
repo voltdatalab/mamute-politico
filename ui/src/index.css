@@ -131,9 +131,36 @@
 }
 
 @layer utilities {
+  /* Warm gold textured surface (fallback #e6c54a) — same look as Header */
+  .bg-textura-gold {
+    background-color: #e6c54a;
+    background-image: url('./assets/textura.png');
+    background-repeat: repeat;
+    background-size: auto;
+  }
+
   .mp-card {
     border-radius: 28px;
     box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  }
+
+  .mp-timeline-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #7f7b7b #efeeee;
+  }
+
+  .mp-timeline-scroll::-webkit-scrollbar {
+    width: 17px;
+  }
+
+  .mp-timeline-scroll::-webkit-scrollbar-track {
+    background: #efeeee;
+    border-radius: 8px;
+  }
+
+  .mp-timeline-scroll::-webkit-scrollbar-thumb {
+    background: #7f7b7b;
+    border-radius: 8px;
   }
 
   .mp-pill-blue {

@@ -103,7 +103,7 @@ const Index = () => {
           <img
             src={congressoForeground}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            className="absolute right-0 bottom-0 w-full object-cover object-center"
           />
         </div>
 
