@@ -1,7 +1,8 @@
 import { useRef, useState, type MouseEventHandler } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
-import congressoIlustrado from '@/assets/congresso-ilustrado.png';
+import texturaBackground from '@/assets/textura.png';
+import congressoForeground from '@/assets/banner1-semfundo.png';
 import mammothImage from '@/assets/figma-mamute.png';
 import logoMamute from '@/assets/logo-mamute.png';
 import iconFuncionalidades from '@/assets/icon-funcionalidades.svg';
@@ -89,12 +90,18 @@ const Index = () => {
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
+        <img
+          src={texturaBackground}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        />
         <div
           className="pointer-events-none absolute inset-0 h-full w-full"
           style={{ transform: heroTransform, transformOrigin: 'center center' }}
         >
           <img
-            src={congressoIlustrado}
+            src={congressoForeground}
             alt=""
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
