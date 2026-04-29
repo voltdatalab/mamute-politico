@@ -62,7 +62,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
       <div
         className="pointer-events-none absolute inset-0 transition-opacity duration-500 ease-in-out"
         style={{
-          opacity: tilt < 0 || !isHovering ? 0.4 : 0,
+          opacity: tilt < 0 || !isHovering ? 0.5 : 0,
           maskImage: 'linear-gradient(to left, black 47%, transparent 53%)',
           WebkitMaskImage: 'linear-gradient(to left, black 47%, transparent 53%)',
         }}
@@ -73,7 +73,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
       <div
         className="pointer-events-none absolute inset-0 transition-opacity duration-500 ease-in-out"
         style={{
-          opacity: tilt > 0 || !isHovering ? 0.4 : 0,
+          opacity: tilt > 0 || !isHovering ? 0.5 : 0,
           maskImage: 'linear-gradient(to right, black 47%, transparent 53%)',
           WebkitMaskImage: 'linear-gradient(to right, black 47%, transparent 53%)',
         }}
