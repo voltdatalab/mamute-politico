@@ -156,21 +156,20 @@ const DashboardPage = () => {
       </main>
 
       {/* Dashboard footer with congress + mammoth illustration */}
-      <div className="relative bg-textura-gold" style={{ overflow: 'hidden', height: '560px' }}>
+      <div className="relative bg-textura-gold overflow-hidden">
         <img
           src={banner3}
           alt=""
           style={{
-            position: 'absolute',
-            top: '-200px',
-            left: '0',
+            display: 'block',
             width: '100%',
             height: 'auto',
+            marginTop: '-14.5%',
           }}
         />
-        <div style={{ position: 'absolute', bottom: '20px', left: '40px', right: '40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1 }}>
+        <div className="absolute bottom-5 left-10 right-10 flex items-center justify-between" style={{ zIndex: 1 }}>
           <img src={logoMamute} alt="Mamute Político" style={{ height: '47px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
-          <span style={{ fontSize: '12px', fontWeight: 500, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+          <span className="mp-footer-note text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
           </span>
         </div>
