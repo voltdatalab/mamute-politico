@@ -85,7 +85,7 @@ const Index = () => {
 
       <section
         ref={heroContainerRef}
-        className="relative overflow-hidden bg-[#e6c54a]"
+        className="relative overflow-hidden bg-textura-gold"
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
