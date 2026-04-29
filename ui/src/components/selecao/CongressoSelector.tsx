@@ -20,6 +20,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
 
   // -1 = full left tilt, 0 = centered, 1 = full right tilt
   const [tilt, setTilt] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
   const imageTransform = buildTransform(tilt);
 
   const tiltMap: Record<CasaLegislativa, number> = {
@@ -61,7 +62,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
       <div
         className="pointer-events-none absolute inset-0 transition-opacity duration-500 ease-in-out"
         style={{
-          opacity: tilt < 0 ? 1 : 0,
+          opacity: tilt < 0 || !isHovering ? 0.4 : 0,
           maskImage: 'linear-gradient(to left, black 47%, transparent 53%)',
           WebkitMaskImage: 'linear-gradient(to left, black 47%, transparent 53%)',
         }}
@@ -72,7 +73,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
       <div
         className="pointer-events-none absolute inset-0 transition-opacity duration-500 ease-in-out"
         style={{
-          opacity: tilt > 0 ? 1 : 0,
+          opacity: tilt > 0 || !isHovering ? 0.4 : 0,
           maskImage: 'linear-gradient(to right, black 47%, transparent 53%)',
           WebkitMaskImage: 'linear-gradient(to right, black 47%, transparent 53%)',
         }}
@@ -106,8 +107,8 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
                 key={option.key}
                 type="button"
                 onClick={() => onSelect(option.key)}
-                onMouseEnter={() => setTilt(tiltMap[option.key])}
-                onMouseLeave={() => setTilt(0)}
+                onMouseEnter={() => { setTilt(tiltMap[option.key]); setIsHovering(true); }}
+                onMouseLeave={() => { setTilt(0); setIsHovering(false); }}
                 className={`${responsiveOrder} w-[194px] rounded-[76px] py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
                   isActive ? 'bg-[#1b76ff] text-white' : 'bg-white text-[#383838] hover:bg-[#1b76ff] hover:text-white'
                 }`}
