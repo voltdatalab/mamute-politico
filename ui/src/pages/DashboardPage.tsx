@@ -7,7 +7,7 @@ import { listParliamentarians, listProjectFavorites, getParliamentarian } from '
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Users } from 'lucide-react';
-import congressoDashboard from '@/assets/congresso-dashboard.png';
+import banner3 from '@/assets/banner3-semfundo.png';
 import logoMamute from '@/assets/logo-mamute.png';
 
 const projectId = undefined;
@@ -48,7 +48,7 @@ const DashboardPage = () => {
       : fallbackListQuery.isLoading;
 
   return (
-    <div className="min-h-screen bg-[#e6c54a]">
+    <div className="min-h-screen bg-textura-gold">
       <Header />
 
       <main className="container py-10 space-y-6">
@@ -156,19 +156,19 @@ const DashboardPage = () => {
       </main>
 
       {/* Dashboard footer with congress + mammoth illustration */}
-      <div className="relative bg-[#e6c54a]" style={{ overflow: 'hidden', height: '420px' }}>
+      <div className="relative bg-textura-gold" style={{ overflow: 'hidden', height: '560px' }}>
         <img
-          src={congressoDashboard}
+          src={banner3}
           alt=""
           style={{
             position: 'absolute',
-            top: '-1480px',
+            top: '-200px',
             left: '0',
             width: '100%',
             height: 'auto',
           }}
         />
-        <div style={{ position: 'absolute', bottom: '16px', left: '32px', right: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ position: 'absolute', bottom: '20px', left: '40px', right: '40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1 }}>
           <img src={logoMamute} alt="Mamute Político" style={{ height: '47px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
           <span style={{ fontSize: '12px', fontWeight: 500, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
