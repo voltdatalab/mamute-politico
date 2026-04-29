@@ -26,7 +26,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#e6c54a]">
+    <header className="sticky top-0 z-50 w-full bg-textura-gold">
       <div className="container flex h-[88px] items-center justify-between">
         <div className="flex items-center gap-10">
           <Link to="/" className="flex items-center">
