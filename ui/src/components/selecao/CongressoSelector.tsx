@@ -1,4 +1,4 @@
-import { useRef, useState, type MouseEventHandler } from 'react';
+import { useState } from 'react';
 import { CasaLegislativa } from '@/types/parlamentar';
 import texturaBackground from '@/assets/textura.png';
 import congressoRecorte from '@/assets/banner2-semfundo.png';
@@ -14,11 +14,18 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
   const MAX_ROTATE_Y_DEG = 2;
   const MAX_TRANSLATE_X_PX = 20;
   const BACKGROUND_SCALE = 1.02;
-  const buttonRowRef = useRef<HTMLDivElement | null>(null);
 
-  const [imageTransform, setImageTransform] = useState(
-    `perspective(${PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${BACKGROUND_SCALE})`
-  );
+  const buildTransform = (centered: number) =>
+    `perspective(${PERSPECTIVE_PX}px) rotateY(${(centered * -MAX_ROTATE_Y_DEG).toFixed(2)}deg) translateX(${(centered * -MAX_TRANSLATE_X_PX).toFixed(2)}px) scale(${BACKGROUND_SCALE})`;
+
+  const [imageTransform, setImageTransform] = useState(buildTransform(0));
+
+  // -1 = full left tilt, 0 = centered, 1 = full right tilt
+  const tiltMap: Record<CasaLegislativa, number> = {
+    senado: -1,
+    ambas: 0,
+    camara: 1,
+  };
 
   const options: Array<{ key: CasaLegislativa; label: string }> = [
     { key: 'senado', label: 'SENADO FEDERAL' },
@@ -26,32 +33,10 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
     { key: 'camara', label: 'CÂMARA DOS DEPUTADOS' },
   ];
 
-  const handleMouseMove: MouseEventHandler<HTMLElement> = (event) => {
-    const rect =
-      buttonRowRef.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width;
-    const clampedX = Math.min(1, Math.max(0, x));
-    const centered = (clampedX - 0.5) * 2;
-
-    const rotateY = centered * -MAX_ROTATE_Y_DEG;
-    const translateX = centered * -MAX_TRANSLATE_X_PX;
-    setImageTransform(
-      `perspective(${PERSPECTIVE_PX}px) rotateY(${rotateY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) scale(${BACKGROUND_SCALE})`
-    );
-  };
-
-  const handleMouseLeave = () => {
-    setImageTransform(
-      `perspective(${PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${BACKGROUND_SCALE})`
-    );
-  };
-
   return (
     <>
     <section
       className="relative min-h-[calc(800px)] overflow-hidden bg-textura-gold"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     >
       <img
         src={texturaBackground}
@@ -60,7 +45,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
         className="absolute inset-0 h-full w-full object-cover object-bottom"
       />
       <div
-        className="absolute inset-0 h-full w-[101.25%]"
+        className="absolute inset-0 h-full w-[101.25%] transition-transform duration-500 ease-in-out"
         style={{ transform: imageTransform, transformOrigin: 'center bottom' }}
       >
         <img
@@ -85,7 +70,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
           </p>
         </div>
 
-        <div ref={buttonRowRef} className="mx-auto mt-14 flex w-fit flex-wrap items-center justify-center gap-3">
+        <div className="mx-auto mt-14 flex w-fit flex-wrap items-center justify-center gap-3">
           {options.map((option) => {
             const isActive = selected === option.key;
             const responsiveOrder =
@@ -99,6 +84,8 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
                 key={option.key}
                 type="button"
                 onClick={() => onSelect(option.key)}
+                onMouseEnter={() => setImageTransform(buildTransform(tiltMap[option.key]))}
+                onMouseLeave={() => setImageTransform(buildTransform(0))}
                 className={`${responsiveOrder} w-[194px] rounded-[76px] py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
                   isActive ? 'bg-[#1b76ff] text-white' : 'bg-white text-[#383838] hover:bg-[#1b76ff] hover:text-white'
                 }`}
