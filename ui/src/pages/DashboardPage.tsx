@@ -1,3 +1,4 @@
+import { useRef, useState, type MouseEventHandler } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
@@ -13,6 +14,34 @@ import logoMamute from '@/assets/logo-mamute.png';
 const projectId = undefined;
 
 const DashboardPage = () => {
+  const FOOTER_PERSPECTIVE_PX = 1200;
+  const FOOTER_MAX_ROTATE_Y_DEG = 2;
+  const FOOTER_MAX_TRANSLATE_X_PX = 20;
+  const FOOTER_SCALE = 1.02;
+  const footerImageRef = useRef<HTMLDivElement | null>(null);
+  const [footerImageTransform, setFooterImageTransform] = useState(
+    `perspective(${FOOTER_PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${FOOTER_SCALE})`
+  );
+
+  const handleFooterMouseMove: MouseEventHandler<HTMLElement> = (event) => {
+    const rect = footerImageRef.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width;
+    const clampedX = Math.min(1, Math.max(0, x));
+    const centered = (clampedX - 0.5) * 2;
+
+    const rotateY = centered * -FOOTER_MAX_ROTATE_Y_DEG;
+    const translateX = centered * -FOOTER_MAX_TRANSLATE_X_PX;
+    setFooterImageTransform(
+      `perspective(${FOOTER_PERSPECTIVE_PX}px) rotateY(${rotateY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) scale(${FOOTER_SCALE})`
+    );
+  };
+
+  const handleFooterMouseLeave = () => {
+    setFooterImageTransform(
+      `perspective(${FOOTER_PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${FOOTER_SCALE})`
+    );
+  };
+
   const favoritesQuery = useQuery({
     queryKey: ['project-favorites', projectId],
     queryFn: () => listProjectFavorites(projectId!),
@@ -156,17 +185,23 @@ const DashboardPage = () => {
       </main>
 
       {/* Dashboard footer with congress + mammoth illustration */}
-      <div className="relative bg-textura-gold overflow-hidden">
-        <img
-          src={banner3}
-          alt=""
-          style={{
-            display: 'block',
-            width: '100%',
-            height: 'auto',
-            marginTop: '-14.5%',
-          }}
-        />
+      <div
+        ref={footerImageRef}
+        className="relative bg-textura-gold overflow-hidden"
+        onMouseMove={handleFooterMouseMove}
+        onMouseLeave={handleFooterMouseLeave}
+      >
+        <div style={{ transform: footerImageTransform, transformOrigin: 'center center' }}>
+          <img
+            src={banner3}
+            alt=""
+            style={{
+              display: 'block',
+              width: '100%',
+              height: 'auto',
+            }}
+          />
+        </div>
         <div className="absolute bottom-5 left-10 right-10 flex items-center justify-between" style={{ zIndex: 1 }}>
           <img src={logoMamute} alt="Mamute Político" style={{ height: '47px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
           <span className="mp-footer-note text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
