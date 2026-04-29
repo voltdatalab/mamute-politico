@@ -187,7 +187,7 @@ const DashboardPage = () => {
       {/* Dashboard footer with congress + mammoth illustration */}
       <div
         ref={footerImageRef}
-        className="relative bg-textura-gold overflow-hidden"
+        className="relative overflow-hidden"
         onMouseMove={handleFooterMouseMove}
         onMouseLeave={handleFooterMouseLeave}
       >
