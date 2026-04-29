@@ -9,11 +9,13 @@ import { WordCloud } from '@/components/dashboard/WordCloud';
 import { ProposicoesList } from '@/components/dashboard/ProposicoesList';
 import { ProposicoesTable } from '@/components/dashboard/ProposicoesTable';
 import { VotacoesTable } from '@/components/dashboard/VotacoesTable';
-import { TaquigraficasTable } from '@/components/dashboard/TaquigraficasTable';
 import { getParliamentarian } from '@/api/endpoints';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ApiError } from '@/api/client';
 import { ArrowLeft, Cloud, FileText, Vote, Loader2 } from 'lucide-react';
+
+const parlamentarProposicoesTabTriggerClass =
+  'rounded-full border-0 px-6 py-2.5 text-[13px] font-semibold uppercase tracking-wide text-[#090909] shadow-none ring-offset-0 transition-all focus-visible:ring-2 focus-visible:ring-black/25 focus-visible:ring-offset-0 data-[state=active]:bg-[#090909] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-[#f5f5f5] data-[state=inactive]:text-[#090909] data-[state=inactive]:shadow-[0_2px_8px_rgba(0,0,0,0.12)]';
 
 const toErrorMessage = (value: unknown): string => {
   if (value instanceof Error) {
@@ -149,35 +151,23 @@ const ParlamentarDashboard = () => {
 
         {/* Bottom: Proposições do Parlamentar with tabs */}
         <div className="mp-card bg-white">
-          <div className="flex items-center justify-between border-b px-6 pt-6 pb-4">
-            <h2 className="text-[37px] font-bold text-[#090909]">Proposições do Parlamentar</h2>
-            <Tabs defaultValue="proposicoes" className="w-auto">
-              <TabsList className="rounded-full bg-[#f5f5f5]">
-                <TabsTrigger value="proposicoes" className="rounded-full text-[13px]">
+          <Tabs defaultValue="proposicoes" className="w-full">
+            <div className="flex flex-col gap-4 border-b border-black/[0.06] px-6 pt-6 pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-[37px] font-bold text-[#090909]">Proposições do Parlamentar</h2>
+              <TabsList className="inline-flex h-auto w-fit shrink-0 items-center gap-2 bg-transparent p-0">
+                <TabsTrigger value="proposicoes" className={parlamentarProposicoesTabTriggerClass}>
                   PROPOSIÇÕES
                 </TabsTrigger>
-                <TabsTrigger value="votacoes" className="rounded-full text-[13px]">
+                <TabsTrigger value="votacoes" className={parlamentarProposicoesTabTriggerClass}>
                   VOTAÇÕES
                 </TabsTrigger>
               </TabsList>
-            </Tabs>
-          </div>
-          <Tabs defaultValue="proposicoes" className="w-full">
-            <div className="sr-only">
-              <TabsList>
-                <TabsTrigger value="proposicoes">Proposições</TabsTrigger>
-                <TabsTrigger value="votacoes">Votações</TabsTrigger>
-                <TabsTrigger value="taquigraficas">Taquigráficas</TabsTrigger>
-              </TabsList>
             </div>
-            <TabsContent value="proposicoes" className="p-6 pt-4">
+            <TabsContent value="proposicoes" className="mt-0 p-6 pt-4">
               <ProposicoesTable parliamentarianId={id} />
             </TabsContent>
-            <TabsContent value="votacoes" className="p-6 pt-4 h-[500px]">
+            <TabsContent value="votacoes" className="mt-0 p-6 pt-4 h-[500px]">
               <VotacoesTable parliamentarianId={numericId} />
-            </TabsContent>
-            <TabsContent value="taquigraficas" className="p-6 pt-4 h-[500px]">
-              <TaquigraficasTable parliamentarianId={numericId} />
             </TabsContent>
           </Tabs>
         </div>
