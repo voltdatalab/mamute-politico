@@ -62,8 +62,8 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
         className="pointer-events-none absolute inset-0 transition-opacity duration-500 ease-in-out"
         style={{
           opacity: tilt < 0 ? 1 : 0,
-          maskImage: 'linear-gradient(to left, black 40%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to left, black 40%, transparent 100%)',
+          maskImage: 'linear-gradient(to left, black 47%, transparent 53%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 47%, transparent 53%)',
         }}
       >
         <img src={texturaBackground} alt="" aria-hidden className="h-full w-full object-cover object-bottom" />
@@ -73,8 +73,8 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
         className="pointer-events-none absolute inset-0 transition-opacity duration-500 ease-in-out"
         style={{
           opacity: tilt > 0 ? 1 : 0,
-          maskImage: 'linear-gradient(to right, black 40%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to right, black 40%, transparent 100%)',
+          maskImage: 'linear-gradient(to right, black 47%, transparent 53%)',
+          WebkitMaskImage: 'linear-gradient(to right, black 47%, transparent 53%)',
         }}
       >
         <img src={texturaBackground} alt="" aria-hidden className="h-full w-full object-cover object-bottom" />
