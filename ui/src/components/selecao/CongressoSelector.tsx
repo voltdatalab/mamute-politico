@@ -18,9 +18,10 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
   const buildTransform = (centered: number) =>
     `perspective(${PERSPECTIVE_PX}px) rotateY(${(centered * -MAX_ROTATE_Y_DEG).toFixed(2)}deg) translateX(${(centered * -MAX_TRANSLATE_X_PX).toFixed(2)}px) scale(${BACKGROUND_SCALE})`;
 
-  const [imageTransform, setImageTransform] = useState(buildTransform(0));
-
   // -1 = full left tilt, 0 = centered, 1 = full right tilt
+  const [tilt, setTilt] = useState(0);
+  const imageTransform = buildTransform(tilt);
+
   const tiltMap: Record<CasaLegislativa, number> = {
     senado: -1,
     ambas: 0,
@@ -56,7 +57,28 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
 
       </div>
 
-      <div className="absolute inset-0 bg-[#e6c54a]/0" /> 
+      {/* textura over right side when Senado (left) is hovered */}
+      <div
+        className="pointer-events-none absolute inset-0 transition-opacity duration-500 ease-in-out"
+        style={{
+          opacity: tilt < 0 ? 1 : 0,
+          maskImage: 'linear-gradient(to left, black 40%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 40%, transparent 100%)',
+        }}
+      >
+        <img src={texturaBackground} alt="" aria-hidden className="h-full w-full object-cover object-bottom" />
+      </div>
+      {/* textura over left side when Câmara (right) is hovered */}
+      <div
+        className="pointer-events-none absolute inset-0 transition-opacity duration-500 ease-in-out"
+        style={{
+          opacity: tilt > 0 ? 1 : 0,
+          maskImage: 'linear-gradient(to right, black 40%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to right, black 40%, transparent 100%)',
+        }}
+      >
+        <img src={texturaBackground} alt="" aria-hidden className="h-full w-full object-cover object-bottom" />
+      </div>
 
       <div className="relative flex min-h-[calc(100vh-88px)] flex-col py-14 px-6">
         <div className="space-y-3 text-center">
@@ -84,8 +106,8 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
                 key={option.key}
                 type="button"
                 onClick={() => onSelect(option.key)}
-                onMouseEnter={() => setImageTransform(buildTransform(tiltMap[option.key]))}
-                onMouseLeave={() => setImageTransform(buildTransform(0))}
+                onMouseEnter={() => setTilt(tiltMap[option.key])}
+                onMouseLeave={() => setTilt(0)}
                 className={`${responsiveOrder} w-[194px] rounded-[76px] py-2.5 text-[13px] font-semibold uppercase tracking-wide shadow-sm transition ${
                   isActive ? 'bg-[#1b76ff] text-white' : 'bg-white text-[#383838] hover:bg-[#1b76ff] hover:text-white'
                 }`}
