@@ -60,11 +60,11 @@ const ParlamentarDashboard = () => {
 
   if (!isIdValid) {
     return (
-      <div className="min-h-screen bg-[#e6c54a]">
+      <div className="min-h-screen bg-textura-gold">
         <Header />
         <main className="container py-8">
           <div className="mx-auto max-w-xl rounded-[28px] border border-black/10 bg-white p-8 text-center shadow-md">
-            <h1 className="mb-3 text-4xl font-extrabold text-[#1f2b44]">Parlamentar não encontrado</h1>
+            <h1 className="mb-3 text-4xl font-bold text-[#1f2b44]">Parlamentar não encontrado</h1>
             <p className="mb-6 text-base text-muted-foreground">O identificador informado não é válido para esta rota.</p>
             <Link to="/selecao">
               <Button variant="hero" className="px-8">Voltar à seleção</Button>
@@ -77,7 +77,7 @@ const ParlamentarDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#e6c54a]">
+      <div className="min-h-screen bg-textura-gold">
         <Header />
         <main className="container py-8">
           <div className="mx-auto flex max-w-xl items-center justify-center gap-3 rounded-[28px] border border-black/10 bg-white p-8 text-muted-foreground shadow-md">
@@ -92,11 +92,11 @@ const ParlamentarDashboard = () => {
   if (isError || !parlamentar) {
     const notFound = error instanceof ApiError && error.status === 404;
     return (
-      <div className="min-h-screen bg-[#e6c54a]">
+      <div className="min-h-screen bg-textura-gold">
         <Header />
         <main className="container py-8">
           <div className="mx-auto max-w-xl rounded-[28px] border border-black/10 bg-white p-8 text-center shadow-md">
-            <h1 className="mb-3 text-5xl font-extrabold text-[#1f2b44]">
+            <h1 className="mb-3 text-5xl font-bold text-[#1f2b44]">
               {notFound ? 'Parlamentar não encontrado' : 'Falha ao carregar'}
             </h1>
             {!notFound && (
@@ -114,13 +114,13 @@ const ParlamentarDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#e6c54a]">
+    <div className="min-h-screen bg-textura-gold">
       <Header />
 
       <main className="container py-8 space-y-6">
         {/* Back button */}
         <Link to="/dashboard">
-          <button className="flex items-center gap-2 rounded-full bg-white px-5 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90">
+          <button className="flex items-center gap-2 rounded-[76px] bg-white px-5 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90">
             <ArrowLeft className="h-4 w-4" />
             VOLTAR AO DASHBOARD GERAL
           </button>
@@ -129,28 +129,28 @@ const ParlamentarDashboard = () => {
         {/* Top Row: Dados cadastrais | Temas do discurso | Últimos projetos */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Dados cadastrais */}
-          <div className="rounded-[16px] bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-[20px] font-bold text-[#090909]">Dados cadastrais</h2>
+          <div className="mp-card bg-[#efeeee] p-6">
+            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Dados cadastrais</h2>
             <ParlamentarInfo parlamentar={parlamentar} />
           </div>
 
           {/* Temas do discurso */}
-          <div className="rounded-[16px] bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-[20px] font-bold text-[#090909]">Temas do discurso</h2>
+          <div className="mp-card bg-[#efeeee] p-6">
+            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Temas do discurso</h2>
             <WordCloud parliamentarianId={parliamentarianCode} />
           </div>
 
           {/* Últimos projetos */}
-          <div className="rounded-[16px] bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-[20px] font-bold text-[#090909]">Últimos projetos</h2>
+          <div className="mp-card bg-[#efeeee] p-6">
+            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
             <ProposicoesList limit={4} parliamentarianId={id} />
           </div>
         </div>
 
         {/* Bottom: Proposições do Parlamentar with tabs */}
-        <div className="rounded-[16px] bg-white shadow-sm">
+        <div className="mp-card bg-[#efeeee]">
           <div className="flex items-center justify-between border-b px-6 pt-6 pb-4">
-            <h2 className="text-[20px] font-bold text-[#090909]">Proposições do Parlamentar</h2>
+            <h2 className="text-[37px] font-bold text-[#090909]">Proposições do Parlamentar</h2>
             <Tabs defaultValue="proposicoes" className="w-auto">
               <TabsList className="rounded-full bg-[#f5f5f5]">
                 <TabsTrigger value="proposicoes" className="rounded-full text-[13px]">

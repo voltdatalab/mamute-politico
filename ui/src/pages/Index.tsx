@@ -1,7 +1,8 @@
 import { useRef, useState, type MouseEventHandler } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
-import congressoIlustrado from '@/assets/congresso-ilustrado.png';
+import texturaBackground from '@/assets/textura.png';
+import congressoForeground from '@/assets/banner1-semfundo.png';
 import mammothImage from '@/assets/figma-mamute.png';
 import logoMamute from '@/assets/logo-mamute.png';
 import iconFuncionalidades from '@/assets/icon-funcionalidades.svg';
@@ -43,10 +44,10 @@ const features = [
 ];
 
 const stats = [
-  { label: 'DEPUTADOS/AS', value: '513', iconSrc: iconDeputados, iconAlt: 'Ícone de deputados' },
-  { label: 'SENADORES/AS', value: '81', iconSrc: iconSenadores, iconAlt: 'Ícone de senadores' },
-  { label: 'PROPOSIÇÕES 2024', value: '4.532', iconSrc: iconProposicoes, iconAlt: 'Ícone de proposições' },
-  { label: 'VOTAÇÕES', value: '892', iconSrc: iconVotacoes, iconAlt: 'Ícone de votações' },
+  { label: 'DEPUTADOS/AS', value: '513', iconSrc: iconDeputados, iconAlt: 'Ícone de deputados', liftIconOnHover: true },
+  { label: 'SENADORES/AS', value: '81', iconSrc: iconSenadores, iconAlt: 'Ícone de senadores', liftIconOnHover: true },
+  { label: 'PROPOSIÇÕES 2024', value: '4.532', iconSrc: iconProposicoes, iconAlt: 'Ícone de proposições', liftIconOnHover: true },
+  { label: 'VOTAÇÕES', value: '892', iconSrc: iconVotacoes, iconAlt: 'Ícone de votações', liftIconOnHover: true },
 ];
 
 const Index = () => {
@@ -85,16 +86,22 @@ const Index = () => {
 
       <section
         ref={heroContainerRef}
-        className="relative overflow-hidden bg-[#e6c54a]"
+        className="relative overflow-hidden bg-textura-gold"
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
+        <img
+          src={texturaBackground}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        />
         <div
           className="pointer-events-none absolute inset-0 h-full w-full"
           style={{ transform: heroTransform, transformOrigin: 'center center' }}
         >
           <img
-            src={congressoIlustrado}
+            src={congressoForeground}
             alt=""
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
@@ -130,10 +137,16 @@ const Index = () => {
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="mp-card flex h-[285px] flex-col items-center justify-center gap-3 bg-white p-4 text-center transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_14px_24px_rgba(0,0,0,0.22)]"
+                className="group mp-card flex h-[285px] flex-col items-center justify-center gap-3 bg-white p-4 text-center transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_14px_24px_rgba(0,0,0,0.22)]"
               >
                 {stat.iconSrc ? (
-                  <img src={stat.iconSrc} alt={stat.iconAlt} className="h-28 w-28 object-contain" />
+                  <img
+                    src={stat.iconSrc}
+                    alt={stat.iconAlt}
+                    className={`h-auto w-[clamp(64px,18vw,96px)] object-contain transition-transform duration-300 ease-out ${
+                      stat.liftIconOnHover ? 'group-hover:-translate-y-1' : ''
+                    }`}
+                  />
                 ) : null}
                 <p className="text-[36px] font-extrabold leading-none text-[#878787]">{stat.value}</p>
                 <p className="text-[14px] font-normal uppercase tracking-normal text-black">{stat.label}</p>

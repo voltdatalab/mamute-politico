@@ -34,7 +34,7 @@ const SelecaoPage = () => {
         : 'Ambas as Casas';
 
   return (
-    <div className="min-h-screen bg-[#e6c54a]">
+    <div className="min-h-screen bg-textura-gold">
       <Header />
 
       {!casaSelecionada ? (
@@ -42,7 +42,7 @@ const SelecaoPage = () => {
       ) : (
         <main className="min-h-[calc(100vh-64px)]">
           {/* Yellow top section with title */}
-          <div className="bg-[#e6c54a] px-6 py-10">
+          <div className="bg-textura-gold px-6 py-10">
             <div className="container">
               <h1 className="text-center text-[56px] font-bold text-[#393939]">{casaLabel}</h1>
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
