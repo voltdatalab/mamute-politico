@@ -129,26 +129,26 @@ const ParlamentarDashboard = () => {
         {/* Top Row: Dados cadastrais | Temas do discurso | Últimos projetos */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Dados cadastrais */}
-          <div className="mp-card bg-[#efeeee] p-6">
+          <div className="mp-card bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Dados cadastrais</h2>
             <ParlamentarInfo parlamentar={parlamentar} />
           </div>
 
           {/* Temas do discurso */}
-          <div className="mp-card bg-[#efeeee] p-6">
+          <div className="mp-card bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Temas do discurso</h2>
             <WordCloud parliamentarianId={parliamentarianCode} />
           </div>
 
           {/* Últimos projetos */}
-          <div className="mp-card bg-[#efeeee] p-6">
+          <div className="mp-card bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
             <ProposicoesList limit={4} parliamentarianId={id} />
           </div>
         </div>
 
         {/* Bottom: Proposições do Parlamentar with tabs */}
-        <div className="mp-card bg-[#efeeee]">
+        <div className="mp-card bg-white">
           <div className="flex items-center justify-between border-b px-6 pt-6 pb-4">
             <h2 className="text-[37px] font-bold text-[#090909]">Proposições do Parlamentar</h2>
             <Tabs defaultValue="proposicoes" className="w-auto">
