@@ -1,6 +1,7 @@
 import { useRef, useState, type MouseEventHandler } from 'react';
 import { CasaLegislativa } from '@/types/parlamentar';
-import congressoSelecao from '@/assets/congresso-selecao.png';
+import texturaBackground from '@/assets/textura.png';
+import congressoRecorte from '@/assets/banner2-semfundo.png';
 import logoMamute from '@/assets/logo-mamute.png';
 
 interface CongressoSelectorProps {
@@ -56,11 +57,17 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
         className="absolute inset-0 h-full w-[101.25%]"
         style={{ transform: imageTransform, transformOrigin: 'center bottom' }}
       >
-      <img
-        src={congressoSelecao}
-        alt="Congresso Nacional"
-        className="absolute inset-0 h-full w-full object-cover object-bottom"
-      />
+        <img
+          src={texturaBackground}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover object-bottom"
+        />
+        <img
+          src={congressoRecorte}
+          alt="Congresso Nacional"
+          className="absolute bottom-0 left-0 w-full object-contain object-bottom"
+        />
 
       </div>
 
