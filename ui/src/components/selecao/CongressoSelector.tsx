@@ -48,7 +48,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
   return (
     <>
     <section
-      className="relative min-h-[calc(800px)] overflow-hidden bg-[#e6c54a]"
+      className="relative min-h-[calc(800px)] overflow-hidden bg-textura-gold"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
