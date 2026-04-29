@@ -53,16 +53,16 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
+      <img
+        src={texturaBackground}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover object-bottom"
+      />
       <div
         className="absolute inset-0 h-full w-[101.25%]"
         style={{ transform: imageTransform, transformOrigin: 'center bottom' }}
       >
-        <img
-          src={texturaBackground}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover object-bottom"
-        />
         <img
           src={congressoRecorte}
           alt="Congresso Nacional"
