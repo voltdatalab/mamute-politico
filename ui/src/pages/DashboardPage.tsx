@@ -199,6 +199,7 @@ const DashboardPage = () => {
               display: 'block',
               width: '100%',
               height: 'auto',
+              marginBottom: '-250px',
             }}
           />
         </div>
