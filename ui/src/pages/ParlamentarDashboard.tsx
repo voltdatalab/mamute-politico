@@ -9,12 +9,13 @@ import { WordCloud } from '@/components/dashboard/WordCloud';
 import { ProposicoesList } from '@/components/dashboard/ProposicoesList';
 import { ProposicoesTable } from '@/components/dashboard/ProposicoesTable';
 import { VotacoesTable } from '@/components/dashboard/VotacoesTable';
+import { TaquigraficasTable } from '@/components/dashboard/TaquigraficasTable';
 import { getParliamentarian } from '@/api/endpoints';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ApiError } from '@/api/client';
 import { ArrowLeft, Cloud, FileText, Vote, Loader2 } from 'lucide-react';
 
-const parlamentarProposicoesTabTriggerClass =
+const parlamentarSectionTabTriggerClass =
   'rounded-full border-0 px-6 py-2.5 text-[13px] font-semibold uppercase tracking-wide text-[#090909] shadow-none ring-offset-0 transition-all focus-visible:ring-2 focus-visible:ring-black/25 focus-visible:ring-offset-0 data-[state=active]:bg-[#090909] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-[#f5f5f5] data-[state=inactive]:text-[#090909] data-[state=inactive]:shadow-[0_2px_8px_rgba(0,0,0,0.12)]';
 
 const toErrorMessage = (value: unknown): string => {
@@ -154,12 +155,15 @@ const ParlamentarDashboard = () => {
           <Tabs defaultValue="proposicoes" className="w-full">
             <div className="flex flex-col gap-4 border-b border-black/[0.06] px-6 pt-6 pb-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-[37px] font-bold text-[#090909]">Proposições do Parlamentar</h2>
-              <TabsList className="inline-flex h-auto w-fit shrink-0 items-center gap-2 bg-transparent p-0">
-                <TabsTrigger value="proposicoes" className={parlamentarProposicoesTabTriggerClass}>
+              <TabsList className="inline-flex h-auto w-fit max-w-full shrink-0 flex-wrap items-center gap-2 bg-transparent p-0">
+                <TabsTrigger value="proposicoes" className={parlamentarSectionTabTriggerClass}>
                   PROPOSIÇÕES
                 </TabsTrigger>
-                <TabsTrigger value="votacoes" className={parlamentarProposicoesTabTriggerClass}>
+                <TabsTrigger value="votacoes" className={parlamentarSectionTabTriggerClass}>
                   VOTAÇÕES
+                </TabsTrigger>
+                <TabsTrigger value="taquigraficas" className={parlamentarSectionTabTriggerClass}>
+                  TAQUIGRÁFICAS
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -168,6 +172,9 @@ const ParlamentarDashboard = () => {
             </TabsContent>
             <TabsContent value="votacoes" className="mt-0 p-6 pt-4 h-[500px]">
               <VotacoesTable parliamentarianId={numericId} />
+            </TabsContent>
+            <TabsContent value="taquigraficas" className="mt-0 p-6 pt-4 h-[500px]">
+              <TaquigraficasTable parliamentarianId={numericId} />
             </TabsContent>
           </Tabs>
         </div>
