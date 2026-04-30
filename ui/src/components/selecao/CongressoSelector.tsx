@@ -105,6 +105,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
             return (
               <button
                 key={option.key}
+                id={option.key === 'ambas' ? 'selector-ambas-casas' : undefined}
                 type="button"
                 onClick={() => onSelect(option.key)}
                 onMouseEnter={() => { setTilt(tiltMap[option.key]); setIsHovering(true); }}

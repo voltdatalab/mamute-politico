@@ -137,7 +137,11 @@ const DashboardPage = () => {
 
         {/* Parlamentares monitorados */}
         <div className="mp-card bg-white p-6">
-          <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Parlamentares monitorados</h2>
+          <h2 className="mb-4 text-[32px] font-bold text-[#090909]">
+            <Link to="/selecao#selector-ambas-casas" className="underline-offset-4 transition hover:underline">
+              Parlamentares monitorados
+            </Link>
+          </h2>
           {isLoadingMonitorados ? (
             <div className="flex items-center justify-center py-8 gap-2 text-[#383838]/60">
               <Loader2 className="h-5 w-5 animate-spin" />
