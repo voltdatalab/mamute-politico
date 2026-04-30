@@ -110,7 +110,7 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
                     <span>Carregando...</span>
                   </div>
                 ) : analysisBySpeechId.get(speech.id) ? (
-                  <div className="flex flex-wrap items-center gap-1">
+                  <div className="flex items-center gap-1 whitespace-nowrap">
                     {/* <Badge variant="secondary" className="text-[10px]">
                       KW: {analysisBySpeechId.get(speech.id)?.keywords.length ?? 0}
                     </Badge>
@@ -119,7 +119,7 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
                     </Badge> */}
                     {(analysisBySpeechId.get(speech.id)?.keywords[0]?.term ??
                       analysisBySpeechId.get(speech.id)?.keywords[0]?.keyword) && (
-                      <Badge variant="info" className="text-[10px]">
+                      <Badge variant="info" className="whitespace-nowrap text-[10px]">
                         {(analysisBySpeechId.get(speech.id)?.keywords[0]?.term ??
                           analysisBySpeechId.get(speech.id)?.keywords[0]?.keyword) as string}
                       </Badge>
