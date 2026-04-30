@@ -10,6 +10,7 @@ import DashboardPage from "./pages/DashboardPage";
 import PesquisaIAPage from "./pages/PesquisaIAPage";
 import NotFound from "./pages/NotFound";
 import { useGhostAuth } from "@/components/auth/ghost-auth/react/useGhostAuth";
+import { LOGIN_URL } from "@/components/auth/config";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,17 @@ function RootRoute() {
   return <Index />;
 }
 
+function RequireAuth({ children }: { children: JSX.Element }) {
+  const token = useGhostAuth();
+
+  if (!token) {
+    window.location.href = LOGIN_URL;
+    return null;
+  }
+
+  return children;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -64,10 +76,38 @@ const App = () => (
       <BrowserRouter basename={routerBasename}>
         <Routes>
           <Route path="/" element={<RootRoute />} />
-          <Route path="/selecao" element={<SelecaoPage />} />
-          <Route path="/parlamentar/:id" element={<ParlamentarDashboard />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/pesquisa" element={<PesquisaIAPage />} />
+          <Route
+            path="/selecao"
+            element={
+              <RequireAuth>
+                <SelecaoPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/parlamentar/:id"
+            element={
+              <RequireAuth>
+                <ParlamentarDashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <DashboardPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/pesquisa"
+            element={
+              <RequireAuth>
+                <PesquisaIAPage />
+              </RequireAuth>
+            }
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

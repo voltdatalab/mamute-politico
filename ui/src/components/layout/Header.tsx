@@ -15,6 +15,7 @@ const navItems = [
 export function Header() {
   const location = useLocation();
   const token = useGhostAuth();
+  const visibleNavItems = token ? navItems : navItems//.filter((item) => item.path === '/');
 
   const handleAuthClick = () => {
     if (token) {
@@ -25,9 +26,9 @@ export function Header() {
     }
   };
 
-  const handleAccountClick = () => {
-    window.open(ACCOUNT_URL, '_blank', 'noopener,noreferrer');
-  };
+  // const handleAccountClick = () => {
+  //   window.open(ACCOUNT_URL, '_blank', 'noopener,noreferrer');
+  // };
 
   return (
     //TODO: Add sticky to the header
@@ -39,7 +40,7 @@ export function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-3">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <Link
@@ -68,28 +69,28 @@ export function Header() {
               3
             </span>
           </button> */}
-          {token && (
+          {/* {token && (
             <button
               type="button"
-              onClick={handleAccountClick}
-              className="flex h-8 w-8 items-center justify-center rounded-full hover:border border-[#393939] text-[#393939] transition hover:opacity-80"
+              onClick={handleAuthClick}
+              className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[#ff0004] hover:text-white border-[#393939] bg-white text-[#393939] transition hover:opacity-80"
               aria-label="Sua conta"
               title="Sua conta"
             >
-              <User className="h-5 w-5" />
+              <User className="h-5 w-5" /> CONTA
             </button>
-          )}
-          <button
+          )} */}
+          {<button
             type="button"
             onClick={handleAuthClick}
             className={cn(
               'cursor-pointer rounded-[92px] px-6 py-2 text-[11px] font-bold uppercase tracking-wide transition hover:opacity-90',
-              token ? 'bg-[#ff0004] text-white' : 'bg-[#f5f5f5] text-black'
+              'hover:bg-[#ff0004] hover:text-white bg-[#f5f5f5] text-black'
             )}
             aria-label={token ? 'Sair' : 'Iniciar Sessão'}
           >
-            {token ? 'SAIR' : 'INICIAR SESSÃO'}
-          </button>
+            {token ? <div className="flex items-center gap-2"><User className="h-5 w-5" />{" "}CONTA</div> : 'INICIAR SESSÃO'}
+          </button>}
         </div>
       </div>
     </header>
