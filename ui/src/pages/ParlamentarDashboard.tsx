@@ -153,8 +153,7 @@ const ParlamentarDashboard = () => {
         {/* Bottom: Proposições do Parlamentar with tabs */}
         <div className="mp-card bg-white">
           <Tabs defaultValue="proposicoes" className="w-full">
-            <div className="flex flex-col gap-4 border-b border-black/[0.06] px-6 pt-6 pb-4 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-[37px] font-bold text-[#090909]">Proposições do Parlamentar</h2>
+            <div className="flex flex-col gap-4 border-b border-black/[0.06] px-6 pt-6 pb-4">
               <TabsList className="inline-flex h-auto w-fit max-w-full shrink-0 flex-wrap items-center gap-2 bg-transparent p-0">
                 <TabsTrigger value="proposicoes" className={parlamentarSectionTabTriggerClass}>
                   PROPOSIÇÕES
@@ -166,6 +165,7 @@ const ParlamentarDashboard = () => {
                   TAQUIGRÁFICAS
                 </TabsTrigger>
               </TabsList>
+              <h2 className="text-[37px] font-bold text-[#090909]">Atividades do Parlamentar</h2>
             </div>
             <TabsContent value="proposicoes" className="mt-0 p-6 pt-4">
               <ProposicoesTable parliamentarianId={id} />
