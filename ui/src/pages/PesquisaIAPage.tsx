@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
@@ -27,7 +27,7 @@ const exampleQuestions = [
   'Quais senadores mais discursaram sobre meio ambiente?',
 ];
 
-const MIN_QUESTION_LEN = 3;
+const MIN_QUESTION_LEN = 1;
 
 const PesquisaIAPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -42,9 +42,20 @@ const PesquisaIAPage = () => {
   ]);
   const [input, setInput] = useState('');
   const abortRef = useRef<AbortController | null>(null);
+  const threadBottomRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef<number | null>(null);
   const messagesRef = useRef<Message[]>(messages);
   messagesRef.current = messages;
   const urlAutoSendConsumed = useRef(false);
+
+  useLayoutEffect(() => {
+    const n = messages.length;
+    const prev = prevMessageCountRef.current;
+    prevMessageCountRef.current = n;
+    if (prev !== null && n > prev) {
+      threadBottomRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    }
+  }, [messages.length]);
 
   useEffect(() => {
     return () => {
@@ -259,6 +270,7 @@ const PesquisaIAPage = () => {
                     )}
                   </div>
                 ))}
+                <div ref={threadBottomRef} aria-hidden className="h-0 w-full shrink-0" />
               </div>
             </ScrollArea>
 
