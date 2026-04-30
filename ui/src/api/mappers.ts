@@ -69,6 +69,21 @@ export function mapParliamentarianOutToParlamentar(o: ParliamentarianOut): Parla
   };
 }
 
+function getAutorFromDetails(details: Record<string, unknown> | null | undefined): string {
+  if (!details) return '—';
+  const processo = details['processo'] as Record<string, unknown> | undefined;
+  const documento = processo?.['documento'] as Record<string, unknown> | undefined;
+  const autoria = documento?.['autoria'] as Array<Record<string, unknown>> | undefined;
+  if (autoria && autoria.length > 0) {
+    const a = autoria[0];
+    const nome = a['autor'] as string | undefined;
+    const partido = a['siglaPartido'] as string | undefined;
+    const uf = a['uf'] as string | undefined;
+    if (nome) return partido && uf ? `${nome} ${partido} - ${uf}` : nome;
+  }
+  return '—';
+}
+
 export function mapPropositionOutToProposicao(o: PropositionOut): Proposicao {
   const ementa = o.proposition_description ?? o.summary ?? '—';
   return {
@@ -81,7 +96,7 @@ export function mapPropositionOutToProposicao(o: PropositionOut): Proposicao {
     dataApresentacao: o.presentation_date ?? '',
     situacao: o.current_status ?? '—',
     tema: '—',
-    autor: '—',
+    autor: getAutorFromDetails(o.details),
   };
 }
 

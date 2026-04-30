@@ -1,9 +1,9 @@
 import { useQueries } from '@tanstack/react-query';
 import { listPropositions, listRollCallVotes } from '@/api/endpoints';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Vote, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import iconProjeto from '@/assets/icon-timeline-projeto.svg';
+import iconVotacaoAprovado from '@/assets/icon-timeline-votacao-aprovado.svg';
+import iconVotacaoRejeitado from '@/assets/icon-timeline-votacao-rejeitado.svg';
 
 interface TimelineItem {
   id: string;
@@ -12,12 +12,66 @@ interface TimelineItem {
   descricao: string;
   data: string;
   autor: string;
-  autorFoto: string;
   status: string;
 }
 
-// TODO: Remove this
-const PLACEHOLDER_AVATAR = 'https://api.dicebear.com/7.x/personas/svg?seed=';
+function extractAutor(details: Record<string, unknown> | null | undefined): string {
+  if (!details) return '—';
+  const processo = details['processo'] as Record<string, unknown> | undefined;
+  const documento = processo?.['documento'] as Record<string, unknown> | undefined;
+  const autoria = documento?.['autoria'] as Array<Record<string, unknown>> | undefined;
+  if (autoria && autoria.length > 0) {
+    const a = autoria[0];
+    const nome = a['autor'] as string | undefined;
+    const partido = a['siglaPartido'] as string | undefined;
+    const uf = a['uf'] as string | undefined;
+    if (nome) return partido && uf ? `${nome} ${partido} - ${uf}` : nome;
+  }
+  return '—';
+}
+
+function voteStatusLabel(vote: string | null | undefined): string {
+  if (!vote) return '—';
+  const v = vote.toLowerCase();
+  if (v === 'sim' || v === 's' || v === 'yes') return 'Aprovado';
+  if (v === 'não' || v === 'nao' || v === 'n' || v === 'no') return 'Rejeitado';
+  return vote;
+}
+
+function getItemIcon(item: TimelineItem): string {
+  if (item.tipo === 'proposicao') return iconProjeto;
+  if (item.status === 'Aprovado') return iconVotacaoAprovado;
+  if (item.status === 'Rejeitado') return iconVotacaoRejeitado;
+  return iconVotacaoAprovado;
+}
+
+function getBadgeClass(item: TimelineItem): string {
+  if (item.tipo === 'proposicao') return 'bg-[#1b76ff]';
+  if (item.status === 'Aprovado') return 'bg-[#09e03b]';
+  if (item.status === 'Rejeitado') return 'bg-[#ff0004]';
+  return 'bg-[#1b76ff]';
+}
+
+function toTitleCase(str: string): string {
+  if (!str || str === '—') return str;
+  if (str === 'Aprovado' || str === 'Rejeitado') return str;
+  return str.toLowerCase().split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function getStatusClass(status: string): string {
+  if (status === 'Aprovado') return 'text-[#09e03b]';
+  if (status === 'Rejeitado') return 'text-[#ff0004]';
+  return 'text-[#383838]';
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '—';
+  try {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR');
+  } catch {
+    return dateStr;
+  }
+}
 
 export function Timeline() {
   const [propositionsQuery, votesQuery] = useQueries({
@@ -43,131 +97,95 @@ export function Timeline() {
       titulo: `${p.proposition_acronym ?? 'PL'} ${p.proposition_number ?? ''}/${p.presentation_year ?? ''}`.trim(),
       descricao: p.proposition_description ?? p.summary ?? '—',
       data: p.presentation_date ?? p.created_at?.slice(0, 10) ?? '',
-      autor: '—',
-      autorFoto: PLACEHOLDER_AVATAR + p.id,
+      autor: extractAutor(p.details),
       status: p.current_status ?? '—',
     })),
     ...votes.map((v) => ({
       id: `v-${v.id}`,
       tipo: 'votacao' as const,
-      titulo: `Votação #${v.proposition_id}`,
-      descricao: v.description ?? `Voto: ${v.vote ?? '—'}`,
+      titulo: v.proposition_title?.trim() || `Votação #${v.proposition_id}`,
+      descricao: v.description?.trim() || '—',
       data: v.created_at?.slice(0, 10) ?? '',
       autor: '—',
-      autorFoto: PLACEHOLDER_AVATAR + v.id,
-      status: v.vote ?? '—',
+      status: voteStatusLabel(v.vote),
     })),
   ]
     .filter((i) => i.data)
     .sort((a, b) => (b.data > a.data ? 1 : -1))
     .slice(0, 15);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Aprovado':
-        return 'success';
-      case 'Apresentado':
-        return 'info';
-      case 'Em tramitação':
-        return 'warning';
-      case 'Rejeitado':
-        return 'destructive';
-      default:
-        return 'secondary';
-    }
-  };
-
   const isLoading = propositionsQuery.isLoading || votesQuery.isLoading;
   const isError = propositionsQuery.isError || votesQuery.isError;
 
   if (isLoading) {
     return (
-      <ScrollArea className="h-full">
-        <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Carregando linha do tempo...</span>
-        </div>
-      </ScrollArea>
+      <div className="flex h-full items-center justify-center gap-2 text-[#383838]/60">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <span>Carregando linha do tempo...</span>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <ScrollArea className="h-full">
-        <div className="text-center py-8 text-muted-foreground text-sm">
-          Falha ao carregar a linha do tempo.
-        </div>
-      </ScrollArea>
+      <div className="flex h-full items-center justify-center text-sm text-[#383838]/60">
+        Falha ao carregar a linha do tempo.
+      </div>
     );
   }
 
   return (
-    <ScrollArea className="h-full">
-      <div className="relative pl-8 space-y-0">
-        <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-border" />
+    <div className="h-full overflow-y-auto space-y-[26px] pr-[6px] mp-timeline-scroll">
+      {timelineItems.length === 0 ? (
+        <div className="flex h-full items-center justify-center text-sm text-[#383838]/60">
+          Nenhum item na linha do tempo.
+        </div>
+      ) : (
+        timelineItems.map((item) => (
+          <div
+            key={item.id}
+            className="flex items-start gap-5 rounded-[28px] bg-white px-6 py-[22px] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
+          >
+            {/* Icon */}
+            <div className="shrink-0 flex items-start pt-0.5">
+              <img src={getItemIcon(item)} alt="" className="w-[38px] h-[42px] object-contain" />
+            </div>
 
-        {timelineItems.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            Nenhum item na linha do tempo.
-          </div>
-        ) : (
-          timelineItems.map((item) => (
-            <div key={item.id} className="relative pb-6 last:pb-0">
-              <div
-                className={`absolute left-[-20px] w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                  item.tipo === 'proposicao'
-                    ? 'bg-primary border-primary'
-                    : 'bg-accent border-accent'
-                }`}
-              >
-                {item.tipo === 'proposicao' ? (
-                  <FileText className="h-3 w-3 text-primary-foreground" />
-                ) : (
-                  <Vote className="h-3 w-3 text-accent-foreground" />
-                )}
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {/* Row 1: bill + badge + status */}
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[18px] font-semibold leading-none text-[#383838] shrink-0">
+                  {item.titulo}
+                </span>
+                <span
+                  className={`shrink-0 rounded-full px-3 py-0.5 text-[11px] font-bold text-white ${getBadgeClass(item)}`}
+                >
+                  {item.tipo === 'proposicao' ? 'PROJETO' : 'VOTAÇÃO'}
+                </span>
+                <span
+                  className={`ml-auto shrink-0 text-[13px] font-semibold truncate max-w-[140px] ${getStatusClass(item.status)}`}
+                >
+                  {toTitleCase(item.status)}
+                </span>
               </div>
 
-              <div className="ml-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-sm">{item.titulo}</span>
-                      <Badge
-                        variant={item.tipo === 'proposicao' ? 'default' : 'accent'}
-                        className="text-[10px]"
-                      >
-                        {item.tipo === 'proposicao' ? 'Projeto' : 'Votação'}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {item.descricao}
-                    </p>
-                  </div>
-                  <Badge
-                    variant={getStatusBadge(item.status) as 'success' | 'destructive' | 'secondary' | 'info' | 'warning'}
-                    className="text-[10px] shrink-0"
-                  >
-                    {item.status}
-                  </Badge>
-                </div>
+              {/* Row 2: description */}
+              <p className="text-[11px] text-[#383838] line-clamp-1 mb-2 leading-snug">
+                {item.descricao}
+              </p>
 
-                <div className="flex items-center justify-between mt-3">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={item.autorFoto} alt={item.autor} />
-                      <AvatarFallback>{item.autor[0] ?? '?'}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs text-muted-foreground">{item.autor}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {item.data ? new Date(item.data).toLocaleDateString('pt-BR') : '—'}
-                  </span>
-                </div>
+              {/* Row 3: author + date */}
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] font-semibold text-[#383838]">{item.autor}</span>
+                <span className="text-[13px] font-semibold text-[#383838]">
+                  {formatDate(item.data)}
+                </span>
               </div>
             </div>
-          ))
-        )}
-      </div>
-    </ScrollArea>
+          </div>
+        ))
+      )}
+    </div>
   );
 }
