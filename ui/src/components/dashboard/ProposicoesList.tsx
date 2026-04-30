@@ -1,13 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
 import { listPropositions, listPropositionsByParliamentarian } from '@/api/endpoints';
 import { mapPropositionOutToProposicao } from '@/api/mappers';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Calendar, Tag, Loader2 } from 'lucide-react';
+import { getProposicaoSituacaoTextClass } from '@/lib/proposicaoSituacao';
+import { Loader2 } from 'lucide-react';
 
 interface ProposicoesListProps {
   limit?: number;
   parliamentarianId?: string;
+}
+
+function toTitleCase(str: string): string {
+  if (!str || str === '—') return str;
+  return str.toLowerCase().split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '—';
+  try {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR');
+  } catch {
+    return dateStr;
+  }
 }
 
 export function ProposicoesList({ limit = 5, parliamentarianId }: ProposicoesListProps) {
@@ -24,100 +37,84 @@ export function ProposicoesList({ limit = 5, parliamentarianId }: ProposicoesLis
 
   const proposicoes = rawList != null ? rawList.map(mapPropositionOutToProposicao) : [];
 
-  const getSituacaoBadge = (situacao: string) => {
-    switch (situacao) {
-      case 'Aprovado':
-        return 'success';
-      case 'Em tramitação':
-        return 'info';
-      case 'Aguardando votação':
-        return 'warning';
-      case 'Rejeitado':
-        return 'destructive';
-      default:
-        return 'secondary';
-    }
-  };
-
   if (isLoading) {
     return (
-      <ScrollArea className="h-full">
-        <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Carregando...</span>
-        </div>
-      </ScrollArea>
+      <div className="flex items-center justify-center py-8 gap-2 text-[#383838]/60">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span>Carregando...</span>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <ScrollArea className="h-full">
-        <div className="text-center py-8 text-muted-foreground text-sm">
-          Falha ao carregar proposições.
-        </div>
-      </ScrollArea>
+      <div className="text-center py-8 text-[#383838]/60 text-sm">
+        Falha ao carregar proposições.
+      </div>
     );
   }
 
   return (
-    <ScrollArea className="h-full">
-      <div className="space-y-3">
-        {proposicoes.map((proposicao) => (
-          <div
-            key={proposicao.id}
-            role={proposicao.link ? 'link' : undefined}
-            tabIndex={proposicao.link ? 0 : -1}
-            onClick={() => {
-              if (!proposicao.link) return;
+    <div className="space-y-[22px]">
+      {proposicoes.map((proposicao) => (
+        <div
+          key={proposicao.id}
+          role={proposicao.link ? 'link' : undefined}
+          tabIndex={proposicao.link ? 0 : -1}
+          onClick={() => {
+            if (!proposicao.link) return;
+            window.open(proposicao.link, '_blank', 'noopener,noreferrer');
+          }}
+          onKeyDown={(e) => {
+            if (!proposicao.link) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
               window.open(proposicao.link, '_blank', 'noopener,noreferrer');
-            }}
-            onKeyDown={(e) => {
-              if (!proposicao.link) return;
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                window.open(proposicao.link, '_blank', 'noopener,noreferrer');
-              }
-            }}
-            className={[
-              'p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors',
-              proposicao.link ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2' : 'cursor-default',
-            ].join(' ')}
-          >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-primary shrink-0" />
-                <span className="font-semibold text-sm">
-                  {proposicao.tipo} {proposicao.numero}/{proposicao.ano}
-                </span>
-              </div>
-              <Badge variant={getSituacaoBadge(proposicao.situacao) as 'success' | 'destructive' | 'secondary' | 'info' | 'warning'} className="text-[10px] shrink-0">
-                {proposicao.situacao}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-              {proposicao.ementa}
-            </p>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {proposicao.dataApresentacao
-                  ? new Date(proposicao.dataApresentacao).toLocaleDateString('pt-BR')
-                  : '—'}
-              </div>
-              <div className="flex items-center gap-1">
-                <Tag className="h-3 w-3" />
-                {proposicao.tema}
-              </div>
-            </div>
+            }
+          }}
+          className={[
+            'rounded-[28px] bg-white px-7 py-[22px] shadow-[0_4px_4px_rgba(0,0,0,0.25)]',
+            proposicao.link
+              ? 'cursor-pointer hover:bg-[#f9f9f9] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1b76ff] focus:ring-offset-2'
+              : 'cursor-default',
+          ].join(' ')}
+        >
+          {/* Row 1: bill + badge + status */}
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[18px] font-semibold leading-none text-[#383838]">
+              {proposicao.tipo} {proposicao.numero}/{proposicao.ano}
+            </span>
+            <span className="shrink-0 rounded-full px-3 py-0.5 text-[11px] font-bold text-white bg-[#1b76ff]">
+              PROJETO
+            </span>
+            <span
+              className={`ml-auto shrink-0 text-[11px] font-semibold truncate max-w-[140px] ${getProposicaoSituacaoTextClass(proposicao.situacao)}`}
+            >
+              {toTitleCase(proposicao.situacao)}
+            </span>
           </div>
-        ))}
-        {proposicoes.length === 0 && (
-          <div className="text-center py-6 text-muted-foreground text-sm">
-            Nenhuma proposição encontrada.
+
+          {/* Description */}
+          <p className="text-[11px] text-[#383838] line-clamp-3 mb-2 leading-snug">
+            {proposicao.ementa}
+          </p>
+
+          {/* Date + Theme */}
+          <div className="flex items-center gap-4">
+            <span className="text-[11px] font-semibold text-[#383838]">
+              {formatDate(proposicao.dataApresentacao)}
+            </span>
+            {proposicao.tema && proposicao.tema !== '—' && (
+              <span className="text-[11px] font-semibold text-[#383838]">{proposicao.tema}</span>
+            )}
           </div>
-        )}
-      </div>
-    </ScrollArea>
+        </div>
+      ))}
+      {proposicoes.length === 0 && (
+        <div className="text-center py-6 text-[#383838]/60 text-sm">
+          Nenhuma proposição encontrada.
+        </div>
+      )}
+    </div>
   );
 }

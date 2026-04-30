@@ -122,11 +122,11 @@ export function ParlamentarSelector({
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Available Parliamentarians */}
-      <Card className="flex h-[640px] flex-col border-black/10 bg-white shadow-sm rounded-[16px]">
+      <Card className="mp-card flex h-[564px] flex-col border-none bg-white">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-extrabold">Parlamentares Disponiveis</CardTitle>
-            <Badge variant="secondary">{parlamentaresDisponiveis.length}</Badge>
+            <CardTitle className="text-[32px] font-bold text-[#090909]">Parlamentares disponíveis</CardTitle>
+            <Badge variant="secondary" className="bg-transparent text-[18px] font-medium text-[#7f7c7c]">+{parlamentaresDisponiveis.length}</Badge>
           </div>
           
           {/* Search and Filters */}
@@ -137,7 +137,7 @@ export function ParlamentarSelector({
                 placeholder="Buscar por nome..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="h-9 rounded-[76px] border-none bg-[#d9d9d9] pl-9"
               />
             </div>
             
@@ -296,11 +296,11 @@ export function ParlamentarSelector({
       </Card>
 
       {/* Selected Parliamentarians */}
-      <Card className="flex h-[640px] flex-col border-black/10 bg-white shadow-sm rounded-[16px]">
+      <Card className="mp-card flex h-[564px] flex-col border-none bg-white">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-extrabold">Parlamentares Monitorados</CardTitle>
-            <Badge variant="accent">{parlamentaresSelecionados.length}</Badge>
+            <CardTitle className="text-[32px] font-bold text-[#090909]">Parlamentares monitorados</CardTitle>
+            <Badge variant="secondary" className="bg-transparent text-[18px] font-medium text-[#7f7c7c]">+{parlamentaresSelecionados.length}</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             Clique no parlamentar para acessar seu dashboard completo

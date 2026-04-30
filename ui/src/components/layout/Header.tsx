@@ -54,7 +54,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+          {/* <button
             type="button"
             className="relative flex h-8 w-8 items-center justify-center rounded-full text-[#393939] transition hover:opacity-80"
             aria-label="Notificações"
@@ -63,7 +63,7 @@ export function Header() {
             <span className="absolute right-[4px] top-[1px] flex h-[15px] w-[15px] items-center justify-center rounded-full bg-black text-[10px] font-bold text-white">
               3
             </span>
-          </button>
+          </button> */}
           <button
             type="button"
             onClick={handleAuthClick}

@@ -15,6 +15,9 @@ import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ApiError } from '@/api/client';
 import { ArrowLeft, Cloud, FileText, Vote, Loader2 } from 'lucide-react';
 
+const parlamentarSectionTabTriggerClass =
+  'rounded-full border-0 px-6 py-2.5 text-[13px] font-semibold uppercase tracking-wide text-[#090909] shadow-none ring-offset-0 transition-all focus-visible:ring-2 focus-visible:ring-black/25 focus-visible:ring-offset-0 data-[state=active]:bg-[#090909] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-[#f5f5f5] data-[state=inactive]:text-[#090909] data-[state=inactive]:shadow-[0_2px_8px_rgba(0,0,0,0.12)]';
+
 const toErrorMessage = (value: unknown): string => {
   if (value instanceof Error) {
     if (value.message && value.message !== '[object Object]') return value.message;
@@ -129,54 +132,48 @@ const ParlamentarDashboard = () => {
         {/* Top Row: Dados cadastrais | Temas do discurso | Últimos projetos */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Dados cadastrais */}
-          <div className="mp-card bg-[#efeeee] p-6">
+          <div className="mp-card bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Dados cadastrais</h2>
             <ParlamentarInfo parlamentar={parlamentar} />
           </div>
 
           {/* Temas do discurso */}
-          <div className="mp-card bg-[#efeeee] p-6">
+          <div className="mp-card bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Temas do discurso</h2>
-            <WordCloud parliamentarianId={parliamentarianCode} />
+            <WordCloud parliamentarianId={parliamentarianCode} parlamentarNome={parlamentar.nome} />
           </div>
 
           {/* Últimos projetos */}
-          <div className="mp-card bg-[#efeeee] p-6">
+          <div className="mp-card bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
             <ProposicoesList limit={4} parliamentarianId={id} />
           </div>
         </div>
 
         {/* Bottom: Proposições do Parlamentar with tabs */}
-        <div className="mp-card bg-[#efeeee]">
-          <div className="flex items-center justify-between border-b px-6 pt-6 pb-4">
-            <h2 className="text-[37px] font-bold text-[#090909]">Proposições do Parlamentar</h2>
-            <Tabs defaultValue="proposicoes" className="w-auto">
-              <TabsList className="rounded-full bg-[#f5f5f5]">
-                <TabsTrigger value="proposicoes" className="rounded-full text-[13px]">
+        <div className="mp-card bg-white">
+          <Tabs defaultValue="proposicoes" className="w-full">
+            <div className="flex flex-col gap-4 border-b border-black/[0.06] px-6 pt-6 pb-4">
+              <TabsList className="inline-flex h-auto w-fit max-w-full shrink-0 flex-wrap items-center gap-2 bg-transparent p-0">
+                <TabsTrigger value="proposicoes" className={parlamentarSectionTabTriggerClass}>
                   PROPOSIÇÕES
                 </TabsTrigger>
-                <TabsTrigger value="votacoes" className="rounded-full text-[13px]">
+                <TabsTrigger value="votacoes" className={parlamentarSectionTabTriggerClass}>
                   VOTAÇÕES
                 </TabsTrigger>
+                <TabsTrigger value="taquigraficas" className={parlamentarSectionTabTriggerClass}>
+                  TAQUIGRÁFICAS
+                </TabsTrigger>
               </TabsList>
-            </Tabs>
-          </div>
-          <Tabs defaultValue="proposicoes" className="w-full">
-            <div className="sr-only">
-              <TabsList>
-                <TabsTrigger value="proposicoes">Proposições</TabsTrigger>
-                <TabsTrigger value="votacoes">Votações</TabsTrigger>
-                <TabsTrigger value="taquigraficas">Taquigráficas</TabsTrigger>
-              </TabsList>
+              <h2 className="text-[32px] font-bold text-[#090909]">Atividades do Parlamentar</h2>
             </div>
-            <TabsContent value="proposicoes" className="p-6 pt-4">
+            <TabsContent value="proposicoes" className="mt-0 p-6 pt-4">
               <ProposicoesTable parliamentarianId={id} />
             </TabsContent>
-            <TabsContent value="votacoes" className="p-6 pt-4 h-[500px]">
+            <TabsContent value="votacoes" className="mt-0 p-6 pt-4 h-[500px]">
               <VotacoesTable parliamentarianId={numericId} />
             </TabsContent>
-            <TabsContent value="taquigraficas" className="p-6 pt-4 h-[500px]">
+            <TabsContent value="taquigraficas" className="mt-0 p-6 pt-4 h-[500px]">
               <TaquigraficasTable parliamentarianId={numericId} />
             </TabsContent>
           </Tabs>

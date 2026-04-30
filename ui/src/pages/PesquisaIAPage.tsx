@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -27,9 +27,10 @@ const exampleQuestions = [
   'Quais senadores mais discursaram sobre meio ambiente?',
 ];
 
-const MIN_QUESTION_LEN = 3;
+const MIN_QUESTION_LEN = 1;
 
 const PesquisaIAPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -40,8 +41,21 @@ const PesquisaIAPage = () => {
     },
   ]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const threadBottomRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef<number | null>(null);
+  const messagesRef = useRef<Message[]>(messages);
+  messagesRef.current = messages;
+  const urlAutoSendConsumed = useRef(false);
+
+  useLayoutEffect(() => {
+    const n = messages.length;
+    const prev = prevMessageCountRef.current;
+    prevMessageCountRef.current = n;
+    if (prev !== null && n > prev) {
+      threadBottomRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    }
+  }, [messages.length]);
 
   useEffect(() => {
     return () => {
@@ -49,8 +63,8 @@ const PesquisaIAPage = () => {
     };
   }, []);
 
-  const handleSend = async () => {
-    const question = input.trim();
+  const sendQuestion = useCallback(async (questionRaw: string) => {
+    const question = questionRaw.trim();
     if (!question) return;
     if (question.length < MIN_QUESTION_LEN) {
       toast.error(`Digite pelo menos ${MIN_QUESTION_LEN} caracteres.`);
@@ -59,7 +73,7 @@ const PesquisaIAPage = () => {
 
     abortRef.current?.abort();
 
-    const historyForApi: ChatMessagePayload[] = messages.map(({ role, content }) => ({
+    const historyForApi: ChatMessagePayload[] = messagesRef.current.map(({ role, content }) => ({
       role,
       content,
     }));
@@ -88,7 +102,6 @@ const PesquisaIAPage = () => {
 
     const controller = new AbortController();
     abortRef.current = controller;
-    setIsLoading(true);
 
     let pending = '';
     let rafId = 0;
@@ -143,9 +156,25 @@ const PesquisaIAPage = () => {
             : m
         )
       );
-    } finally {
-      setIsLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    if (searchParams.get('autoSend') !== '1') {
+      urlAutoSendConsumed.current = false;
+      return;
+    }
+    const pergunta = searchParams.get('pergunta')?.trim();
+    if (!pergunta || pergunta.length < MIN_QUESTION_LEN) return;
+    if (urlAutoSendConsumed.current) return;
+
+    urlAutoSendConsumed.current = true;
+    setSearchParams({}, { replace: true });
+    void sendQuestion(pergunta);
+  }, [searchParams, setSearchParams, sendQuestion]);
+
+  const handleSend = () => {
+    void sendQuestion(input);
   };
 
   const canSend = input.trim().length >= MIN_QUESTION_LEN;
@@ -241,6 +270,7 @@ const PesquisaIAPage = () => {
                     )}
                   </div>
                 ))}
+                <div ref={threadBottomRef} aria-hidden className="h-0 w-full shrink-0" />
               </div>
             </ScrollArea>
 
@@ -258,7 +288,7 @@ const PesquisaIAPage = () => {
                 />
                 <button
                   type="submit"
-                  disabled={!canSend || isLoading}
+                  disabled={!canSend}
                   className="flex items-center gap-2 rounded-full bg-[#1b76ff] px-6 py-2 text-[13px] font-bold uppercase text-white transition hover:opacity-90 disabled:opacity-50"
                 >
                   ENVIAR

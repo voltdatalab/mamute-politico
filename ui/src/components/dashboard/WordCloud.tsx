@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { listParliamentarianSpeechAnalysis } from '@/api/endpoints';
 import type { SpeechAnalysisSummaryOut } from '@/api/types';
 import { Loader2 } from 'lucide-react';
@@ -57,11 +59,27 @@ function extractWordsFromAnalysis(
     .slice(0, maxWords);
 }
 
-interface WordCloudProps {
-  parliamentarianId?: number;
+function formatTemaForPrompt(term: string): string {
+  return term
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
 }
 
-export function WordCloud({ parliamentarianId }: WordCloudProps) {
+function buildPesquisaPrompt(parlamentarNome: string, tema: string): string {
+  const nome = parlamentarNome.trim();
+  const temaFmt = formatTemaForPrompt(tema);
+  return `O que diz o(a) parlamentar ${nome} sobre ${temaFmt}`;
+}
+
+interface WordCloudProps {
+  parliamentarianId?: number;
+  parlamentarNome?: string;
+}
+
+export function WordCloud({ parliamentarianId, parlamentarNome }: WordCloudProps) {
+  const navigate = useNavigate();
   const { data: analysisSummaries, isLoading, isError } = useQuery({
     queryKey: ['analysis-parliamentarian', parliamentarianId],
     queryFn: () =>
@@ -120,10 +138,10 @@ export function WordCloud({ parliamentarianId }: WordCloudProps) {
     return 14 + weight * 30;
   };
 
-  const getOpacity = (frequency: number, rank: number) => {
-    const weight = getWeight(frequency, rank);
-    return 0.45 + weight * 0.55;
-  };
+  // const getOpacity = (frequency: number, rank: number) => {
+  //   const weight = getWeight(frequency, rank);
+  //   return 0.45 + weight * 0.55;
+  // };
 
   const colors = [
     'text-primary',
@@ -133,18 +151,47 @@ export function WordCloud({ parliamentarianId }: WordCloudProps) {
     'text-success',
   ];
 
+  const handleWordNavigate = (tema: string) => {
+    if (!parlamentarNome?.trim()) {
+      toast.error('Nome do parlamentar indisponível para montar a pergunta.');
+      return;
+    }
+    const pergunta = buildPesquisaPrompt(parlamentarNome, tema);
+    const params = new URLSearchParams({
+      pergunta,
+      autoSend: '1',
+    });
+    navigate({ pathname: '/pesquisa', search: params.toString() });
+  };
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-3 p-4">
       {words.map((word, index) => (
         <span
           key={word.text}
-          className={`${colors[index % colors.length]} font-medium hover:scale-110 transition-transform cursor-default`}
+          role="button"
+          tabIndex={0}
+          className={`${colors[index % colors.length]} font-medium uppercase hover:scale-110 transition-transform cursor-pointer select-none rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`}
           style={{
             fontSize: `${getFontSize(word.frequency, word.rank)}px`,
-            opacity: getOpacity(word.frequency, word.rank),
+            // opacity: getOpacity(word.frequency, word.rank),
+          }}
+          onClick={() => handleWordNavigate(word.text)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleWordNavigate(word.text);
+            }
           }}
         >
-          {word.text} <small><small><small><small>({word.frequency})</small></small></small></small>
+          {word.text}{' '}
+          <small>
+            <small>
+              <small>
+                <small>({word.frequency})</small>
+              </small>
+            </small>
+          </small>
         </span>
       ))}
     </div>

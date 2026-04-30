@@ -12,6 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { getProposicaoSituacaoBadgeVariant } from '@/lib/proposicaoSituacao';
 import { Download, Filter, ArrowUpDown, Loader2 } from 'lucide-react';
 
 interface ProposicoesTableProps {
@@ -33,21 +34,6 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
 
   const proposicoes = rawList != null ? rawList.map(mapPropositionOutToProposicao) : [];
 
-  const getSituacaoBadge = (situacao: string) => {
-    switch (situacao) {
-      case 'Aprovado':
-        return 'success';
-      case 'Em tramitação':
-        return 'info';
-      case 'Aguardando votação':
-        return 'warning';
-      case 'Rejeitado':
-        return 'destructive';
-      default:
-        return 'secondary';
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
@@ -67,7 +53,7 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-2">
             <Filter className="h-3.5 w-3.5" />
@@ -82,7 +68,7 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
           <Download className="h-3.5 w-3.5" />
           Exportar CSV
         </Button>
-      </div>
+      </div> */}
 
       <ScrollArea className="h-[400px]">
         <Table>
@@ -134,7 +120,10 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
                     : '—'}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getSituacaoBadge(proposicao.situacao) as 'success' | 'destructive' | 'secondary' | 'info' | 'warning'} className="text-[10px]">
+                  <Badge
+                    variant={getProposicaoSituacaoBadgeVariant(proposicao.situacao)}
+                    className="text-[10px]"
+                  >
                     {proposicao.situacao}
                   </Badge>
                 </TableCell>
