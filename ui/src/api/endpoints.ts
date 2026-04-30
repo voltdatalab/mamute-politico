@@ -142,6 +142,35 @@ export function listProjectFavorites(
   );
 }
 
+export function listMyProjectFavorites(
+  params: { limit?: number; offset?: number } = {}
+): Promise<ProjectFavoriteOut[]> {
+  const sp = new URLSearchParams();
+  if (params.limit != null) sp.set('limit', String(params.limit));
+  if (params.offset != null) sp.set('offset', String(params.offset));
+  const q = sp.toString();
+  return request<ProjectFavoriteOut[]>(
+    `/projects/me/favorites${q ? `?${q}` : ''}`
+  );
+}
+
+export function addMyProjectFavorite(
+  parliamentarianId: number
+): Promise<ProjectFavoriteOut> {
+  return request<ProjectFavoriteOut>('/projects/me/favorites', {
+    method: 'POST',
+    body: JSON.stringify({ parliamentarian_id: parliamentarianId }),
+  });
+}
+
+export function removeMyProjectFavorite(
+  parliamentarianId: number
+): Promise<void> {
+  return request<void>(`/projects/me/favorites/${parliamentarianId}`, {
+    method: 'DELETE',
+  });
+}
+
 export function getMyDashboardStats(): Promise<DashboardStatsOut> {
   return request<DashboardStatsOut>('/projects/me/dashboard-stats');
 }
