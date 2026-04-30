@@ -62,7 +62,8 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
 
   return (
     <ScrollArea className="h-full">
-      <Table>
+      <div className="w-full overflow-x-auto">
+      <Table className="min-w-[760px]">
         <TableHeader>
           <TableRow>
             <TableHead>Data</TableHead>
@@ -134,6 +135,7 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
           ))}
         </TableBody>
       </Table>
+      </div>
       {(speeches ?? []).length === 0 && (
         <div className="text-center py-8 text-muted-foreground text-sm">
           Nenhuma nota taquigráfica encontrada.

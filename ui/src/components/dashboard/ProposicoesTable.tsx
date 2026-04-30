@@ -71,7 +71,8 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
       </div> */}
 
       <ScrollArea className="h-[400px]">
-        <Table>
+        <div className="w-full overflow-x-auto">
+        <Table className="min-w-[760px]">
           <TableHeader>
             <TableRow>
               <TableHead>Tipo/Número</TableHead>
@@ -131,6 +132,7 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
             ))}
           </TableBody>
         </Table>
+        </div>
         {proposicoes.length === 0 && (
           <div className="text-center py-8 text-muted-foreground text-sm">
             Nenhuma proposição encontrada.
