@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
+import { SelecaoFooter } from '@/components/selecao/SelecaoFooter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -74,6 +75,7 @@ const ParlamentarDashboard = () => {
             </Link>
           </div>
         </main>
+        <SelecaoFooter />
       </div>
     );
   }
@@ -88,6 +90,7 @@ const ParlamentarDashboard = () => {
             <span className="text-lg font-medium">Carregando parlamentar...</span>
           </div>
         </main>
+        <SelecaoFooter />
       </div>
     );
   }
@@ -112,6 +115,7 @@ const ParlamentarDashboard = () => {
             </Link>
           </div>
         </main>
+        <SelecaoFooter />
       </div>
     );
   }
@@ -179,6 +183,7 @@ const ParlamentarDashboard = () => {
           </Tabs>
         </div>
       </main>
+      <SelecaoFooter />
     </div>
   );
 };
