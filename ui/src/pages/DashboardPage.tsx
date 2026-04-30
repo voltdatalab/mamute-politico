@@ -4,7 +4,12 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
 import { Timeline } from '@/components/dashboard/Timeline';
 import { ProposicoesList } from '@/components/dashboard/ProposicoesList';
-import { listParliamentarians, listProjectFavorites, getParliamentarian } from '@/api/endpoints';
+import {
+  listParliamentarians,
+  listProjectFavorites,
+  getParliamentarian,
+  getMyDashboardStats,
+} from '@/api/endpoints';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Users } from 'lucide-react';
@@ -75,6 +80,34 @@ const DashboardPage = () => {
     projectId != null
       ? favoritesQuery.isLoading || parliamentarianQueries.some((q) => q.isLoading)
       : fallbackListQuery.isLoading;
+
+  const dashboardStatsQuery = useQuery({
+    queryKey: ['dashboard-stats', 'me'],
+    queryFn: getMyDashboardStats,
+  });
+
+  const dashboardStats = dashboardStatsQuery.data;
+  const statsItems = [
+    {
+      value: dashboardStats != null ? String(dashboardStats.propositions_this_week) : '--',
+      label: 'Projetos\nessa semana',
+    },
+    {
+      value:
+        dashboardStats?.attendance_avg_percent != null
+          ? `${dashboardStats.attendance_avg_percent}%`
+          : '--',
+      label: 'Presença\nmédia',
+    },
+    {
+      value: dashboardStats != null ? String(dashboardStats.recent_votes_count) : '--',
+      label: 'Votações\nrecentes',
+    },
+    {
+      value: dashboardStats != null ? String(dashboardStats.speeches_count) : '--',
+      label: 'Discursos',
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-textura-gold">
@@ -163,12 +196,7 @@ const DashboardPage = () => {
             <div className="mp-card bg-white p-6">
               <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Estatísticas</h2>
               <div className="flex items-start justify-between gap-2">
-                {[
-                  { value: '23', label: 'Projetos\nessa semana' },
-                  { value: '35%', label: 'Presença\nmédia' },
-                  { value: '14', label: 'Votações\nrecentes' },
-                  { value: '12', label: 'Discursos' },
-                ].map((stat) => (
+                {statsItems.map((stat) => (
                   <div key={stat.label} className="flex flex-col items-center gap-2">
                     <div className="w-[49px] h-[49px] flex items-center justify-center rounded-full border border-[#878787]">
                       <p className="text-[18px] font-bold text-[#468fff]">{stat.value}</p>

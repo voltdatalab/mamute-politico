@@ -5,6 +5,7 @@ import type {
   RollCallVoteOut,
   SpeechesTranscriptOut,
   ProjectFavoriteOut,
+  DashboardStatsOut,
   AuthorsPropositionOut,
   SpeechAnalysisSummaryOut,
   SpeechAnalysisOut,
@@ -139,6 +140,10 @@ export function listProjectFavorites(
   return request<ProjectFavoriteOut[]>(
     `/projects/${projectId}/favorites${q ? `?${q}` : ''}`
   );
+}
+
+export function getMyDashboardStats(): Promise<DashboardStatsOut> {
+  return request<DashboardStatsOut>('/projects/me/dashboard-stats');
 }
 
 export interface ListAuthorsPropositionParams {
