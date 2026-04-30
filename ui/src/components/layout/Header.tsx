@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Bell } from 'lucide-react';
+import { User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGhostAuth } from '@/components/auth/ghost-auth/react/useGhostAuth';
 import { ACCOUNT_URL, JWT_TOKEN_KEY, LOGIN_URL } from '@/components/auth/config';
@@ -23,6 +23,10 @@ export function Header() {
     } else {
       window.location.href = LOGIN_URL;
     }
+  };
+
+  const handleAccountClick = () => {
+    window.open(ACCOUNT_URL, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -64,6 +68,17 @@ export function Header() {
               3
             </span>
           </button> */}
+          {token && (
+            <button
+              type="button"
+              onClick={handleAccountClick}
+              className="flex h-8 w-8 items-center justify-center rounded-full hover:border border-[#393939] text-[#393939] transition hover:opacity-80"
+              aria-label="Sua conta"
+              title="Sua conta"
+            >
+              <User className="h-5 w-5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={handleAuthClick}
