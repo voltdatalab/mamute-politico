@@ -214,7 +214,7 @@ const Index = () => {
         <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
           <img src={logoMamute} alt="Mamute Político" className="h-[47px] w-auto" />
           <p className="mp-footer-note text-black">
-            © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
+            2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
           </p>
         </div>
       </footer>
