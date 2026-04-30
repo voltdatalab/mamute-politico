@@ -1,30 +1,103 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useMutation, useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
 import { CongressoSelector } from '@/components/selecao/CongressoSelector';
 import { ParlamentarSelector } from '@/components/selecao/ParlamentarSelector';
 import { CasaLegislativa, Parlamentar } from '@/types/parlamentar';
+import {
+  listMyProjectFavorites,
+  addMyProjectFavorite,
+  removeMyProjectFavorite,
+  getParliamentarian,
+} from '@/api/endpoints';
+import { ApiError } from '@/api/client';
+import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import logoMamute from '@/assets/logo-mamute.png';
 
 const SelecaoPage = () => {
+  const queryClient = useQueryClient();
   const [casaSelecionada, setCasaSelecionada] = useState<CasaLegislativa | null>(null);
-  const [parlamentaresSelecionados, setParlamentaresSelecionados] = useState<Parlamentar[]>([]);
+
+  const favoritesQuery = useQuery({
+    queryKey: ['project-favorites', 'me'],
+    queryFn: () => listMyProjectFavorites(),
+    enabled: casaSelecionada != null,
+  });
+
+  const favoriteIds = favoritesQuery.data?.map((f) => f.parliamentarian_id) ?? [];
+  const parliamentarianQueries = useQueries({
+    queries: favoriteIds.map((id) => ({
+      queryKey: ['parliamentarian', id],
+      queryFn: () => getParliamentarian(id),
+    })),
+  });
+
+  const parlamentaresMonitorados: Parlamentar[] = parliamentarianQueries
+    .filter((q) => q.data != null)
+    .map((q) => mapParliamentarianOutToParlamentar(q.data!));
+
+  const monitoradosLoading =
+    favoritesQuery.isLoading ||
+    (favoriteIds.length > 0 && parliamentarianQueries.some((q) => q.isLoading));
+
+  const monitoradosError =
+    favoritesQuery.isError && !monitoradosLoading
+      ? favoritesQuery.error instanceof ApiError
+        ? favoritesQuery.error.message
+        : favoritesQuery.error instanceof Error
+          ? favoritesQuery.error.message
+          : 'Não foi possível carregar os favoritos.'
+      : null;
+
+  const addMutation = useMutation({
+    mutationFn: (parlamentar: Parlamentar) => addMyProjectFavorite(Number(parlamentar.id)),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['project-favorites', 'me'] });
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 409) {
+        toast.info('Este parlamentar já está nos favoritos.');
+        void queryClient.invalidateQueries({ queryKey: ['project-favorites', 'me'] });
+        return;
+      }
+      const msg =
+        error instanceof Error ? error.message : 'Não foi possível adicionar o favorito.';
+      toast.error(msg);
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => removeMyProjectFavorite(Number(id)),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['project-favorites', 'me'] });
+    },
+    onError: (error) => {
+      const msg =
+        error instanceof Error ? error.message : 'Não foi possível remover o favorito.';
+      toast.error(msg);
+    },
+  });
 
   const handleSelectCasa = (casa: CasaLegislativa) => {
     setCasaSelecionada(casa);
   };
 
   const handleAddParlamentar = (parlamentar: Parlamentar) => {
-    setParlamentaresSelecionados((prev) => [...prev, parlamentar]);
+    addMutation.mutate(parlamentar);
   };
 
   const handleRemoveParlamentar = (id: string) => {
-    setParlamentaresSelecionados((prev) => prev.filter((p) => p.id !== id));
+    removeMutation.mutate(id);
   };
 
   const handleBack = () => {
     setCasaSelecionada(null);
   };
+
+  const favoritosMutating = addMutation.isPending || removeMutation.isPending;
 
   const casaLabel =
     casaSelecionada === 'senado'
@@ -54,14 +127,14 @@ const SelecaoPage = () => {
                   <ArrowLeft className="h-4 w-4" />
                   VOLTAR À SELEÇÃO DE CASA
                 </button>
-                {parlamentaresSelecionados.length > 0 && (
-                  <button
-                    type="button"
+                {parlamentaresMonitorados.length > 0 && (
+                  <Link
+                    to="/dashboard"
                     className="flex items-center gap-2 rounded-[76px] bg-[#393939] px-6 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90"
                   >
                     VER DASHBOARD GERAL
                     <ArrowRight className="h-4 w-4" />
-                  </button>
+                  </Link>
                 )}
               </div>
             </div>
@@ -72,9 +145,12 @@ const SelecaoPage = () => {
             <div className="container">
               <ParlamentarSelector
                 casaSelecionada={casaSelecionada}
-                parlamentaresSelecionados={parlamentaresSelecionados}
+                parlamentaresSelecionados={parlamentaresMonitorados}
                 onAddParlamentar={handleAddParlamentar}
                 onRemoveParlamentar={handleRemoveParlamentar}
+                monitoradosLoading={monitoradosLoading}
+                monitoradosError={monitoradosError}
+                favoritosMutating={favoritosMutating}
               />
             </div>
           </div>

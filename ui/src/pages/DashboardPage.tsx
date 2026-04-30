@@ -4,19 +4,13 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
 import { Timeline } from '@/components/dashboard/Timeline';
 import { ProposicoesList } from '@/components/dashboard/ProposicoesList';
-import {
-  listParliamentarians,
-  listProjectFavorites,
-  getParliamentarian,
-  getMyDashboardStats,
-} from '@/api/endpoints';
+import { listMyProjectFavorites, getParliamentarian, getMyDashboardStats } from '@/api/endpoints';
+import { ApiError } from '@/api/client';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Users } from 'lucide-react';
 import banner3 from '@/assets/banner3-semfundo.png';
 import logoMamute from '@/assets/logo-mamute.png';
-
-const projectId = undefined;
 
 const DashboardPage = () => {
   const FOOTER_PERSPECTIVE_PX = 1200;
@@ -48,9 +42,8 @@ const DashboardPage = () => {
   };
 
   const favoritesQuery = useQuery({
-    queryKey: ['project-favorites', projectId],
-    queryFn: () => listProjectFavorites(projectId!),
-    enabled: projectId != null && !isNaN(projectId),
+    queryKey: ['project-favorites', 'me'],
+    queryFn: () => listMyProjectFavorites(),
   });
 
   const favoriteIds = favoritesQuery.data?.map((f) => f.parliamentarian_id) ?? [];
@@ -61,25 +54,21 @@ const DashboardPage = () => {
     })),
   });
 
-  const fallbackListQuery = useQuery({
-    queryKey: ['parliamentarians', 'dashboard-fallback'],
-    queryFn: () => listParliamentarians({ limit: 4, offset: 0 }),
-    enabled: projectId == null || !favoritesQuery.isSuccess || favoriteIds.length === 0,
-  });
-
-  const monitorados =
-    projectId != null && favoriteIds.length > 0
-      ? parliamentarianQueries
-          .filter((q) => q.data != null)
-          .map((q) => mapParliamentarianOutToParlamentar(q.data!))
-      : fallbackListQuery.data != null
-        ? fallbackListQuery.data.map(mapParliamentarianOutToParlamentar)
-        : [];
+  const monitorados = parliamentarianQueries
+    .filter((q) => q.data != null)
+    .map((q) => mapParliamentarianOutToParlamentar(q.data!));
 
   const isLoadingMonitorados =
-    projectId != null
-      ? favoritesQuery.isLoading || parliamentarianQueries.some((q) => q.isLoading)
-      : fallbackListQuery.isLoading;
+    favoritesQuery.isLoading ||
+    (favoriteIds.length > 0 && parliamentarianQueries.some((q) => q.isLoading));
+
+  const favoritesError = favoritesQuery.error;
+  const monitoradosErrorMessage =
+    favoritesError instanceof ApiError
+      ? favoritesError.message
+      : favoritesError instanceof Error
+        ? favoritesError.message
+        : 'Não foi possível carregar os favoritos.';
 
   const dashboardStatsQuery = useQuery({
     queryKey: ['dashboard-stats', 'me'],
@@ -138,6 +127,13 @@ const DashboardPage = () => {
               <Loader2 className="h-5 w-5 animate-spin" />
               <span>Carregando...</span>
             </div>
+          ) : favoritesQuery.isError ? (
+            <div className="py-4 text-sm text-destructive">
+              <p>{monitoradosErrorMessage}</p>
+              {favoritesQuery.error instanceof ApiError && favoritesQuery.error.status === 401 && (
+                <p className="mt-1 text-[#383838]/80">Faça login para ver os parlamentares que você monitora.</p>
+              )}
+            </div>
           ) : (
             <div className="flex flex-wrap gap-[27px]">
               {monitorados.map((parlamentar) => (
@@ -167,7 +163,7 @@ const DashboardPage = () => {
                   </div>
                 </Link>
               ))}
-              {monitorados.length === 0 && !isLoadingMonitorados && (
+              {monitorados.length === 0 && (
                 <p className="text-sm text-[#383838]/60 py-4">Nenhum parlamentar monitorado.</p>
               )}
             </div>

@@ -30,6 +30,12 @@ interface ParlamentarSelectorProps {
   parlamentaresSelecionados: Parlamentar[];
   onAddParlamentar: (parlamentar: Parlamentar) => void;
   onRemoveParlamentar: (id: string) => void;
+  /** When true, shows a loading state in the “Parlamentares monitorados” column. */
+  monitoradosLoading?: boolean;
+  /** Shown in the monitorados column when favorites failed to load from the API. */
+  monitoradosError?: string | null;
+  /** Disables add/remove while a favorite mutation is in flight. */
+  favoritosMutating?: boolean;
 }
 
 export function ParlamentarSelector({
@@ -37,6 +43,9 @@ export function ParlamentarSelector({
   parlamentaresSelecionados,
   onAddParlamentar,
   onRemoveParlamentar,
+  monitoradosLoading = false,
+  monitoradosError = null,
+  favoritosMutating = false,
 }: ParlamentarSelectorProps) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -277,6 +286,7 @@ export function ParlamentarSelector({
                   <Button
                     variant="ghost"
                     size="icon"
+                    disabled={favoritosMutating}
                     onClick={() => onAddParlamentar(parlamentar)}
                     className="text-accent hover:text-accent hover:bg-accent/10"
                   >
@@ -309,6 +319,16 @@ export function ParlamentarSelector({
         
         <CardContent className="flex-1 overflow-hidden">
           <ScrollArea className="h-full pr-4">
+            {monitoradosLoading ? (
+              <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Carregando favoritos...</span>
+              </div>
+            ) : monitoradosError ? (
+              <div className="text-center py-8 text-destructive">
+                <p>{monitoradosError}</p>
+              </div>
+            ) : (
             <div className="space-y-2">
               {parlamentaresSelecionados.map((parlamentar) => (
                 <div
@@ -337,6 +357,7 @@ export function ParlamentarSelector({
                     <Button
                       variant="ghost"
                       size="icon"
+                      disabled={favoritosMutating}
                       className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -348,6 +369,7 @@ export function ParlamentarSelector({
                     <Button
                       variant="ghost"
                       size="icon"
+                      disabled={favoritosMutating}
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -367,6 +389,7 @@ export function ParlamentarSelector({
                 </div>
               )}
             </div>
+            )}
           </ScrollArea>
         </CardContent>
       </Card>
