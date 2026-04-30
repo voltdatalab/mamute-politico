@@ -41,7 +41,6 @@ const PesquisaIAPage = () => {
     },
   ]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const messagesRef = useRef<Message[]>(messages);
   messagesRef.current = messages;
@@ -92,7 +91,6 @@ const PesquisaIAPage = () => {
 
     const controller = new AbortController();
     abortRef.current = controller;
-    setIsLoading(true);
 
     let pending = '';
     let rafId = 0;
@@ -147,8 +145,6 @@ const PesquisaIAPage = () => {
             : m
         )
       );
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -280,7 +276,7 @@ const PesquisaIAPage = () => {
                 />
                 <button
                   type="submit"
-                  disabled={!canSend || isLoading}
+                  disabled={!canSend}
                   className="flex items-center gap-2 rounded-full bg-[#1b76ff] px-6 py-2 text-[13px] font-bold uppercase text-white transition hover:opacity-90 disabled:opacity-50"
                 >
                   ENVIAR
