@@ -80,7 +80,7 @@ export function ProposicoesList({ limit = 5, parliamentarianId }: ProposicoesLis
           ].join(' ')}
         >
           {/* Row 1: bill + badge + status */}
-          <div className="mb-1.5 flex min-w-0 items-center gap-2">
+          <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2">
             <span className="min-w-0 truncate text-[18px] font-semibold leading-none text-[#383838]">
               {proposicao.tipo} {proposicao.numero}/{proposicao.ano}
             </span>
@@ -88,7 +88,7 @@ export function ProposicoesList({ limit = 5, parliamentarianId }: ProposicoesLis
               PROJETO
             </span>
             <span
-              className={`ml-auto shrink-0 text-[11px] font-semibold truncate max-w-[140px] ${getProposicaoSituacaoTextClass(proposicao.situacao)}`}
+              className={`basis-full text-[11px] font-semibold truncate md:ml-auto md:basis-auto md:max-w-[140px] ${getProposicaoSituacaoTextClass(proposicao.situacao)}`}
             >
               {toTitleCase(proposicao.situacao)}
             </span>
