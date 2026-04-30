@@ -248,7 +248,10 @@ const DashboardPage = () => {
             }}
           />
         </div>
-        <div className="absolute bottom-5 left-10 right-10 flex items-center justify-between" style={{ zIndex: 1 }}>
+        <div
+          className="absolute bottom-5 left-4 right-4 flex flex-col items-start gap-2 sm:left-10 sm:right-10 sm:flex-row sm:items-center sm:justify-between"
+          style={{ zIndex: 1 }}
+        >
           <img src={logoMamute} alt="Mamute Político" style={{ height: '47px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
           <span className="mp-footer-note text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
