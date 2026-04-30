@@ -2,18 +2,71 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import SelecaoPage from "./pages/SelecaoPage";
 import ParlamentarDashboard from "./pages/ParlamentarDashboard";
 import DashboardPage from "./pages/DashboardPage";
 import PesquisaIAPage from "./pages/PesquisaIAPage";
 import NotFound from "./pages/NotFound";
+import { useGhostAuth } from "@/components/auth/ghost-auth/react/useGhostAuth";
+import { LOGIN_URL } from "@/components/auth/config";
 
 const queryClient = new QueryClient();
 
 const routerBasename =
   import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
+
+// Keeps path comparisons stable for `/app` and `/app/`.
+const normalizePath = (path: string) => {
+  const normalized = path.replace(/\/+$/, "");
+  return normalized === "" ? "/" : normalized;
+};
+
+const initialPathname =
+  typeof window !== "undefined" ? normalizePath(window.location.pathname) : "/";
+
+const initialBasePath = normalizePath(routerBasename ?? "/");
+
+const shouldCheckInitialRootRedirect = initialPathname === initialBasePath;
+
+let hasHandledInitialRootRoute = false;
+
+function shouldRunInitialRootRedirect(token: string | null) {
+  return (
+    !hasHandledInitialRootRoute &&
+    shouldCheckInitialRootRedirect &&
+    Boolean(token)
+  );
+}
+
+function markInitialRootRouteAsHandled() {
+  // Redirect should be evaluated only once, during the very first root render.
+  hasHandledInitialRootRoute = true;
+}
+
+function RootRoute() {
+  const token = useGhostAuth();
+  const shouldRedirectNow = shouldRunInitialRootRedirect(token);
+  markInitialRootRouteAsHandled();
+
+  if (shouldRedirectNow) {
+    return <Navigate to="/selecao" replace />;
+  }
+
+  return <Index />;
+}
+
+function RequireAuth({ children }: { children: JSX.Element }) {
+  const token = useGhostAuth();
+
+  if (!token) {
+    window.location.href = LOGIN_URL;
+    return null;
+  }
+
+  return children;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -22,11 +75,39 @@ const App = () => (
       <Sonner />
       <BrowserRouter basename={routerBasename}>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/selecao" element={<SelecaoPage />} />
-          <Route path="/parlamentar/:id" element={<ParlamentarDashboard />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/pesquisa" element={<PesquisaIAPage />} />
+          <Route path="/" element={<RootRoute />} />
+          <Route
+            path="/selecao"
+            element={
+              <RequireAuth>
+                <SelecaoPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/parlamentar/:id"
+            element={
+              <RequireAuth>
+                <ParlamentarDashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <DashboardPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/pesquisa"
+            element={
+              <RequireAuth>
+                <PesquisaIAPage />
+              </RequireAuth>
+            }
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
