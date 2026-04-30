@@ -141,7 +141,7 @@ const SelecaoPage = () => {
           </div>
 
           {/* Gray bottom section with parlamentar selector */}
-          <div className="px-6 py-8">
+          <div className="md:px-6 py-8">
             <div className="container">
               <ParlamentarSelector
                 casaSelecionada={casaSelecionada}
