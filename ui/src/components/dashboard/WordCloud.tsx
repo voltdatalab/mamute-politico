@@ -120,10 +120,10 @@ export function WordCloud({ parliamentarianId }: WordCloudProps) {
     return 14 + weight * 30;
   };
 
-  const getOpacity = (frequency: number, rank: number) => {
-    const weight = getWeight(frequency, rank);
-    return 0.45 + weight * 0.55;
-  };
+  // const getOpacity = (frequency: number, rank: number) => {
+  //   const weight = getWeight(frequency, rank);
+  //   return 0.45 + weight * 0.55;
+  // };
 
   const colors = [
     'text-primary',
@@ -138,13 +138,20 @@ export function WordCloud({ parliamentarianId }: WordCloudProps) {
       {words.map((word, index) => (
         <span
           key={word.text}
-          className={`${colors[index % colors.length]} font-medium hover:scale-110 transition-transform cursor-default`}
+          className={`${colors[index % colors.length]} font-medium uppercase hover:scale-110 transition-transform cursor-default`}
           style={{
             fontSize: `${getFontSize(word.frequency, word.rank)}px`,
-            opacity: getOpacity(word.frequency, word.rank),
+            // opacity: getOpacity(word.frequency, word.rank),
           }}
         >
-          {word.text} <small><small><small><small>({word.frequency})</small></small></small></small>
+          {word.text}{' '}
+          <small>
+            <small>
+              <small>
+                <small>({word.frequency})</small>
+              </small>
+            </small>
+          </small>
         </span>
       ))}
     </div>
