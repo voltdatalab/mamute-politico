@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { listPropositions, listPropositionsByParliamentarian } from '@/api/endpoints';
 import { mapPropositionOutToProposicao } from '@/api/mappers';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -70,8 +69,7 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
         </Button>
       </div> */}
 
-      <ScrollArea className="h-[400px]">
-        <div className="w-full overflow-x-auto">
+      <div className="max-h-[400px] w-full overflow-auto">
         <Table className="min-w-[760px]">
           <TableHeader>
             <TableRow>
@@ -132,13 +130,12 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
             ))}
           </TableBody>
         </Table>
-        </div>
         {proposicoes.length === 0 && (
           <div className="text-center py-8 text-muted-foreground text-sm">
             Nenhuma proposição encontrada.
           </div>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 }

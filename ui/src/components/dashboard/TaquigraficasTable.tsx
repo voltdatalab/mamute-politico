@@ -1,7 +1,6 @@
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { getSpeechAnalysis, listSpeechesTranscripts } from '@/api/endpoints';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -41,28 +40,27 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
 
   if (isLoading) {
     return (
-      <ScrollArea className="h-full">
+      <div className="h-full w-full overflow-auto">
         <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span>Carregando notas taquigráficas...</span>
         </div>
-      </ScrollArea>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <ScrollArea className="h-full">
+      <div className="h-full w-full overflow-auto">
         <div className="text-center py-8 text-muted-foreground text-sm">
           Falha ao carregar notas taquigráficas.
         </div>
-      </ScrollArea>
+      </div>
     );
   }
 
   return (
-    <ScrollArea className="h-full">
-      <div className="w-full overflow-x-auto">
+    <div className="h-full w-full overflow-auto">
       <Table className="min-w-[760px]">
         <TableHeader>
           <TableRow>
@@ -135,12 +133,11 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
           ))}
         </TableBody>
       </Table>
-      </div>
       {(speeches ?? []).length === 0 && (
         <div className="text-center py-8 text-muted-foreground text-sm">
           Nenhuma nota taquigráfica encontrada.
         </div>
       )}
-    </ScrollArea>
+    </div>
   );
 }

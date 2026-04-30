@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { listRollCallVotes } from '@/api/endpoints';
 import { mapRollCallVoteOutToVotacao } from '@/api/mappers';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -63,28 +62,27 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
 
   if (isLoading) {
     return (
-      <ScrollArea className="h-full">
+      <div className="h-full w-full overflow-auto">
         <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span>Carregando votações...</span>
         </div>
-      </ScrollArea>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <ScrollArea className="h-full">
+      <div className="h-full w-full overflow-auto">
         <div className="text-center py-8 text-muted-foreground text-sm">
           Falha ao carregar votações.
         </div>
-      </ScrollArea>
+      </div>
     );
   }
 
   return (
-    <ScrollArea className="h-full">
-      <div className="w-full overflow-x-auto">
+    <div className="h-full w-full overflow-auto">
       <Table className="min-w-[720px]">
         <TableHeader>
           <TableRow>
@@ -139,12 +137,11 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
           ))}
         </TableBody>
       </Table>
-      </div>
       {votacoes.length === 0 && (
         <div className="text-center py-8 text-muted-foreground text-sm">
           Nenhuma votação encontrada.
         </div>
       )}
-    </ScrollArea>
+    </div>
   );
 }
