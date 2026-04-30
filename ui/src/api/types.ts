@@ -87,6 +87,13 @@ export interface ProjectFavoriteOut {
   updated_at: string;
 }
 
+export interface DashboardStatsOut {
+  propositions_this_week: number;
+  attendance_avg_percent?: number | null;
+  recent_votes_count: number;
+  speeches_count: number;
+}
+
 export interface AuthorsPropositionOut {
   id: number;
   parliamentarian_id: number;
