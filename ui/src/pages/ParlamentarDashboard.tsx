@@ -165,7 +165,7 @@ const ParlamentarDashboard = () => {
                   TAQUIGRÁFICAS
                 </TabsTrigger>
               </TabsList>
-              <h2 className="text-[37px] font-bold text-[#090909]">Atividades do Parlamentar</h2>
+              <h2 className="text-[32px] font-bold text-[#090909]">Atividades do Parlamentar</h2>
             </div>
             <TabsContent value="proposicoes" className="mt-0 p-6 pt-4">
               <ProposicoesTable parliamentarianId={id} />
