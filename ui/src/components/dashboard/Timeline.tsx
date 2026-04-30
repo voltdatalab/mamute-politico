@@ -13,6 +13,7 @@ interface TimelineItem {
   data: string;
   autor: string;
   status: string;
+  link?: string;
 }
 
 function extractAutor(details: Record<string, unknown> | null | undefined): string {
@@ -99,6 +100,7 @@ export function Timeline() {
       data: p.presentation_date ?? p.created_at?.slice(0, 10) ?? '',
       autor: extractAutor(p.details),
       status: p.current_status ?? '—',
+      link: p.link ?? undefined,
     })),
     ...votes.map((v) => ({
       id: `v-${v.id}`,
@@ -108,6 +110,7 @@ export function Timeline() {
       data: v.created_at?.slice(0, 10) ?? '',
       autor: '—',
       status: voteStatusLabel(v.vote),
+      link: v.proposition_votes_link ?? v.link ?? undefined,
     })),
   ]
     .filter((i) => i.data)
@@ -144,7 +147,25 @@ export function Timeline() {
         timelineItems.map((item) => (
           <div
             key={item.id}
-            className="flex items-start gap-5 rounded-[28px] bg-white px-6 py-[22px] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
+            role={item.link ? 'link' : undefined}
+            tabIndex={item.link ? 0 : -1}
+            onClick={() => {
+              if (!item.link) return;
+              window.open(item.link, '_blank', 'noopener,noreferrer');
+            }}
+            onKeyDown={(e) => {
+              if (!item.link) return;
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                window.open(item.link, '_blank', 'noopener,noreferrer');
+              }
+            }}
+            className={[
+              'flex items-start gap-5 rounded-[28px] bg-white px-6 py-[22px] shadow-[0_4px_4px_rgba(0,0,0,0.25)]',
+              item.link
+                ? 'cursor-pointer transition-colors hover:bg-[#f9f9f9] focus:outline-none focus:ring-2 focus:ring-[#1b76ff] focus:ring-offset-2'
+                : 'cursor-default',
+            ].join(' ')}
           >
             {/* Icon */}
             <div className="shrink-0 flex items-start pt-0.5">
