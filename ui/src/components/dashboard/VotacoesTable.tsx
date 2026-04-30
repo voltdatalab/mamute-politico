@@ -84,7 +84,8 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
 
   return (
     <ScrollArea className="h-full">
-      <Table>
+      <div className="w-full overflow-x-auto">
+      <Table className="min-w-[720px]">
         <TableHeader>
           <TableRow>
             <TableHead>Votação</TableHead>
@@ -138,6 +139,7 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
           ))}
         </TableBody>
       </Table>
+      </div>
       {votacoes.length === 0 && (
         <div className="text-center py-8 text-muted-foreground text-sm">
           Nenhuma votação encontrada.

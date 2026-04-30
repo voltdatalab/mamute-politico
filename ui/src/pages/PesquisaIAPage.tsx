@@ -305,7 +305,7 @@ const PesquisaIAPage = () => {
         <div className="container flex items-center justify-between">
           <img src={logoMamute} alt="Mamute Político" className="h-[47px] w-auto brightness-0 invert" />
           <span className="text-[12px] font-medium text-white">
-            © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
+            2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
           </span>
         </div>
       </footer>

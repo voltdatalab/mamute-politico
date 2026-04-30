@@ -108,7 +108,7 @@ const Index = () => {
             />
           </div>
 
-          <div className="container relative z-10 grid min-h-[560px] items-center py-8">
+          <div className="container relative z-10 grid min-h-[700px] md:min-h-[560px] 2xl:min-h-[800px] items-center py-8">
             <div className="max-w-[610px] space-y-5">
               <p className="flex items-center gap-2 text-[15px] font-extrabold italic leading-normal tracking-[0.02em] text-[#393939] uppercase">
                 <TempoRealIcon />
@@ -134,7 +134,7 @@ const Index = () => {
       </div>
 
       <section className="pb-16 relative z-10">
-        <div className="container -mt-12">
+        <div className="container mt-4 md:-mt-12">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
               <div
@@ -145,7 +145,7 @@ const Index = () => {
                   <img
                     src={stat.iconSrc}
                     alt={stat.iconAlt}
-                    className={`h-auto w-[clamp(64px,18vw,96px)] object-contain transition-transform duration-300 ease-out ${
+                    className={`h-auto w-auto max-h-[96px] max-w-[clamp(64px,18vw,96px)] object-contain transition-transform duration-300 ease-out ${
                       stat.liftIconOnHover ? 'group-hover:-translate-y-1' : ''
                     }`}
                   />
@@ -214,7 +214,7 @@ const Index = () => {
         <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
           <img src={logoMamute} alt="Mamute Político" className="h-[47px] w-auto" />
           <p className="mp-footer-note text-black">
-            © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
+            2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
           </p>
         </div>
       </footer>

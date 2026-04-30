@@ -89,7 +89,7 @@ export function Header() {
             )}
             aria-label={token ? 'Sair' : 'Iniciar Sessão'}
           >
-            {token ? <div className="flex items-center gap-2"><User className="h-5 w-5" />{" "}CONTA</div> : 'INICIAR SESSÃO'}
+            {token ? <div className="flex items-center gap-2"><User className="h-5 w-5" /><span className="hidden md:block">{" "}CONTA</span></div> : 'INICIAR SESSÃO'}
           </button>}
         </div>
       </div>

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
 import { CongressoSelector } from '@/components/selecao/CongressoSelector';
 import { ParlamentarSelector } from '@/components/selecao/ParlamentarSelector';
+import { SelecaoFooter } from '@/components/selecao/SelecaoFooter';
 import { CasaLegislativa, Parlamentar } from '@/types/parlamentar';
 import {
   listMyProjectFavorites,
@@ -15,7 +16,6 @@ import {
 import { ApiError } from '@/api/client';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import logoMamute from '@/assets/logo-mamute.png';
 
 const SelecaoPage = () => {
   const queryClient = useQueryClient();
@@ -141,7 +141,7 @@ const SelecaoPage = () => {
           </div>
 
           {/* Gray bottom section with parlamentar selector */}
-          <div className="px-6 py-8">
+          <div className="md:px-6 py-8">
             <div className="container">
               <ParlamentarSelector
                 casaSelecionada={casaSelecionada}
@@ -155,15 +155,7 @@ const SelecaoPage = () => {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="bg-[#4b8b60] px-6 py-6">
-            <div className="container flex items-center justify-between">
-              <img src={logoMamute} alt="Mamute Político" className="h-7 w-auto brightness-0 invert" />
-              <span className="text-[12px] font-medium text-white">
-                © 2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
-              </span>
-            </div>
-          </div>
+          <SelecaoFooter />
         </main>
       )}
     </div>

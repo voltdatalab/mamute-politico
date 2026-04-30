@@ -1,4 +1,4 @@
-import { useRef, useState, type MouseEventHandler } from 'react';
+import { useEffect, useRef, useState, type MouseEventHandler } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
@@ -13,14 +13,30 @@ import banner3 from '@/assets/banner3-semfundo.png';
 import logoMamute from '@/assets/logo-mamute.png';
 
 const DashboardPage = () => {
+  const MOBILE_BREAKPOINT_PX = 768;
   const FOOTER_PERSPECTIVE_PX = 1200;
   const FOOTER_MAX_ROTATE_Y_DEG = 2;
   const FOOTER_MAX_TRANSLATE_X_PX = 20;
   const FOOTER_SCALE = 1.02;
+  const [isMobileViewport, setIsMobileViewport] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < MOBILE_BREAKPOINT_PX : false
+  );
   const footerImageRef = useRef<HTMLDivElement | null>(null);
   const [footerImageTransform, setFooterImageTransform] = useState(
     `perspective(${FOOTER_PERSPECTIVE_PX}px) rotateY(0deg) translateX(0px) scale(${FOOTER_SCALE})`
   );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileViewport(window.innerWidth < MOBILE_BREAKPOINT_PX);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleFooterMouseMove: MouseEventHandler<HTMLElement> = (event) => {
     const rect = footerImageRef.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
@@ -174,7 +190,7 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Linha do tempo — 2 cols */}
           <div className="mp-card lg:col-span-2 bg-white p-6">
-            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Linha do tempo</h2>
+            <h2 className="mb-4 truncate text-[32px] font-bold text-[#090909]">Linha do tempo</h2>
             <div className="h-[560px]">
               <Timeline />
             </div>
@@ -184,7 +200,7 @@ const DashboardPage = () => {
           <div className="space-y-6">
             {/* Últimos projetos */}
             <div className="mp-card bg-white p-6">
-              <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
+              <h2 className="mb-4 truncate text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
               <ProposicoesList limit={2} />
             </div>
 
@@ -211,11 +227,16 @@ const DashboardPage = () => {
       {/* Dashboard footer with congress + mammoth illustration */}
       <div
         ref={footerImageRef}
-        className="relative overflow-hidden"
-        onMouseMove={handleFooterMouseMove}
-        onMouseLeave={handleFooterMouseLeave}
+        className="relative overflow-visible md:overflow-hidden"
+        onMouseMove={isMobileViewport ? undefined : handleFooterMouseMove}
+        onMouseLeave={isMobileViewport ? undefined : handleFooterMouseLeave}
       >
-        <div style={{ transform: footerImageTransform, transformOrigin: 'center center' }}>
+        <div
+          style={{
+            transform: isMobileViewport ? 'none' : footerImageTransform,
+            transformOrigin: 'center center',
+          }}
+        >
           <img
             src={banner3}
             alt=""
@@ -223,14 +244,17 @@ const DashboardPage = () => {
               display: 'block',
               width: '100%',
               height: 'auto',
-              marginBottom: '-250px',
+              marginBottom: isMobileViewport ? '0' : '-250px',
             }}
           />
         </div>
-        <div className="absolute bottom-5 left-10 right-10 flex items-center justify-between" style={{ zIndex: 1 }}>
+        <div
+          className="absolute bottom-5 left-4 right-4 flex flex-col items-start gap-2 sm:left-10 sm:right-10 sm:flex-row sm:items-center sm:justify-between"
+          style={{ zIndex: 1 }}
+        >
           <img src={logoMamute} alt="Mamute Político" style={{ height: '47px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
           <span className="mp-footer-note text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-            © 2024 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
+            2026 Mamute Político. Dados obtidos via API aberta do Congresso Nacional.
           </span>
         </div>
       </div>
