@@ -123,9 +123,12 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
                 {votacao.data ? new Date(votacao.data).toLocaleDateString('pt-BR') : '—'}
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 whitespace-nowrap">
                   {getVotoIcon(votacao.voto)}
-                  <Badge variant={getVotoBadge(votacao.voto) as 'success' | 'destructive' | 'warning' | 'secondary'} className="text-[10px]">
+                  <Badge
+                    variant={getVotoBadge(votacao.voto) as 'success' | 'destructive' | 'warning' | 'secondary'}
+                    className="whitespace-nowrap text-[10px]"
+                  >
                     {votacao.voto}
                   </Badge>
                 </div>

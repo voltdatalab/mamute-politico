@@ -109,7 +109,7 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
                   {proposicao.ementa}
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="text-[10px]">
+                  <Badge variant="secondary" className="whitespace-nowrap text-[10px]">
                     {proposicao.tema}
                   </Badge>
                 </TableCell>
@@ -121,7 +121,7 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
                 <TableCell>
                   <Badge
                     variant={getProposicaoSituacaoBadgeVariant(proposicao.situacao)}
-                    className="text-[10px]"
+                    className="whitespace-nowrap text-[10px]"
                   >
                     {proposicao.situacao}
                   </Badge>
