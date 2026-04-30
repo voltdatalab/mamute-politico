@@ -88,7 +88,7 @@ export function ProposicoesList({ limit = 5, parliamentarianId }: ProposicoesLis
               PROJETO
             </span>
             <span
-              className={`basis-full text-[11px] font-semibold truncate md:ml-auto md:basis-auto md:max-w-[140px] ${getProposicaoSituacaoTextClass(proposicao.situacao)}`}
+              className={`basis-full text-[11px] font-semibold truncate md:basis-auto md:max-w-[140px] ${getProposicaoSituacaoTextClass(proposicao.situacao)}`}
             >
               {toTitleCase(proposicao.situacao)}
             </span>

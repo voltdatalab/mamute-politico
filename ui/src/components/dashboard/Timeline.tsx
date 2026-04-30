@@ -185,7 +185,7 @@ export function Timeline() {
                   {item.tipo === 'proposicao' ? 'PROJETO' : 'VOTAÇÃO'}
                 </span>
                 <span
-                  className={`basis-full text-[13px] font-semibold truncate md:ml-auto md:basis-auto md:max-w-[140px] ${getStatusClass(item.status)}`}
+                  className={`basis-full text-[13px] font-semibold truncate md:basis-auto md:max-w-[140px] ${getStatusClass(item.status)}`}
                 >
                   {toTitleCase(item.status)}
                 </span>
