@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -30,6 +30,7 @@ const exampleQuestions = [
 const MIN_QUESTION_LEN = 3;
 
 const PesquisaIAPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -42,6 +43,9 @@ const PesquisaIAPage = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const messagesRef = useRef<Message[]>(messages);
+  messagesRef.current = messages;
+  const urlAutoSendConsumed = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -49,8 +53,8 @@ const PesquisaIAPage = () => {
     };
   }, []);
 
-  const handleSend = async () => {
-    const question = input.trim();
+  const sendQuestion = useCallback(async (questionRaw: string) => {
+    const question = questionRaw.trim();
     if (!question) return;
     if (question.length < MIN_QUESTION_LEN) {
       toast.error(`Digite pelo menos ${MIN_QUESTION_LEN} caracteres.`);
@@ -59,7 +63,7 @@ const PesquisaIAPage = () => {
 
     abortRef.current?.abort();
 
-    const historyForApi: ChatMessagePayload[] = messages.map(({ role, content }) => ({
+    const historyForApi: ChatMessagePayload[] = messagesRef.current.map(({ role, content }) => ({
       role,
       content,
     }));
@@ -146,6 +150,24 @@ const PesquisaIAPage = () => {
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    if (searchParams.get('autoSend') !== '1') {
+      urlAutoSendConsumed.current = false;
+      return;
+    }
+    const pergunta = searchParams.get('pergunta')?.trim();
+    if (!pergunta || pergunta.length < MIN_QUESTION_LEN) return;
+    if (urlAutoSendConsumed.current) return;
+
+    urlAutoSendConsumed.current = true;
+    setSearchParams({}, { replace: true });
+    void sendQuestion(pergunta);
+  }, [searchParams, setSearchParams, sendQuestion]);
+
+  const handleSend = () => {
+    void sendQuestion(input);
   };
 
   const canSend = input.trim().length >= MIN_QUESTION_LEN;

@@ -140,7 +140,7 @@ const ParlamentarDashboard = () => {
           {/* Temas do discurso */}
           <div className="mp-card bg-white p-6">
             <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Temas do discurso</h2>
-            <WordCloud parliamentarianId={parliamentarianCode} />
+            <WordCloud parliamentarianId={parliamentarianCode} parlamentarNome={parlamentar.nome} />
           </div>
 
           {/* Últimos projetos */}
