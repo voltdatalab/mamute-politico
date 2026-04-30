@@ -22,7 +22,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Search, Filter, Plus, X, ExternalLink, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, Filter, PlusCircle, X, ExternalLink, ChevronRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ParlamentarSelectorProps {
@@ -290,7 +290,7 @@ export function ParlamentarSelector({
                     onClick={() => onAddParlamentar(parlamentar)}
                     className="text-accent hover:text-accent hover:bg-accent/10"
                   >
-                    <Plus className="h-4 w-4" />
+                    <PlusCircle className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
