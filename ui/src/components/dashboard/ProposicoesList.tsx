@@ -80,8 +80,8 @@ export function ProposicoesList({ limit = 5, parliamentarianId }: ProposicoesLis
           ].join(' ')}
         >
           {/* Row 1: bill + badge + status */}
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[18px] font-semibold leading-none text-[#383838]">
+          <div className="mb-1.5 flex min-w-0 items-center gap-2">
+            <span className="min-w-0 truncate text-[18px] font-semibold leading-none text-[#383838]">
               {proposicao.tipo} {proposicao.numero}/{proposicao.ano}
             </span>
             <span className="shrink-0 rounded-full px-3 py-0.5 text-[11px] font-bold text-white bg-[#1b76ff]">
@@ -100,12 +100,12 @@ export function ProposicoesList({ limit = 5, parliamentarianId }: ProposicoesLis
           </p>
 
           {/* Date + Theme */}
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-4">
             <span className="text-[11px] font-semibold text-[#383838]">
               {formatDate(proposicao.dataApresentacao)}
             </span>
             {proposicao.tema && proposicao.tema !== '—' && (
-              <span className="text-[11px] font-semibold text-[#383838]">{proposicao.tema}</span>
+              <span className="min-w-0 truncate text-[11px] font-semibold text-[#383838]">{proposicao.tema}</span>
             )}
           </div>
         </div>

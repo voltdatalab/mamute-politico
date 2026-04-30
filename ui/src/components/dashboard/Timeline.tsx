@@ -175,8 +175,8 @@ export function Timeline() {
             {/* Content */}
             <div className="flex-1 min-w-0">
               {/* Row 1: bill + badge + status */}
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[18px] font-semibold leading-none text-[#383838] shrink-0">
+              <div className="mb-1.5 flex min-w-0 items-center gap-2">
+                <span className="min-w-0 truncate text-[18px] font-semibold leading-none text-[#383838]">
                   {item.titulo}
                 </span>
                 <span
@@ -197,8 +197,8 @@ export function Timeline() {
               </p>
 
               {/* Row 3: author + date */}
-              <div className="flex items-center justify-between">
-                <span className="text-[13px] font-semibold text-[#383838]">{item.autor}</span>
+              <div className="flex min-w-0 items-center justify-between gap-3">
+                <span className="min-w-0 truncate text-[13px] font-semibold text-[#383838]">{item.autor}</span>
                 <span className="text-[13px] font-semibold text-[#383838]">
                   {formatDate(item.data)}
                 </span>
