@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import select
+from sqlalchemy import asc, desc, select
 from sqlalchemy.orm import Session
 
 try:
@@ -92,6 +92,42 @@ def list_propositions(
     acronym: Optional[str] = Query(
         None, description="Filtra pela sigla da proposição (ex: PEC, PL, etc)."
     ),
+    presentation_date_from: Optional[date] = Query(
+        None,
+        description="Filtra por data de apresentação a partir desta data (inclusive).",
+    ),
+    presentation_date_to: Optional[date] = Query(
+        None,
+        description="Filtra por data de apresentação até esta data (inclusive).",
+    ),
+    created_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros criados a partir deste instante (inclusive).",
+    ),
+    created_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros criados até este instante (inclusive).",
+    ),
+    updated_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros atualizados a partir deste instante (inclusive).",
+    ),
+    updated_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros atualizados até este instante (inclusive).",
+    ),
+    sort_by: Literal[
+        "created_at",
+        "updated_at",
+        "title",
+        "presentation_date",
+        "presentation_year",
+        "proposition_number",
+    ] = Query(default="created_at", description="Campo usado para ordenação."),
+    sort_order: Literal["asc", "desc"] = Query(
+        default="desc",
+        description="Direção da ordenação.",
+    ),
 ) -> List[PropositionOut]:
     """Retorna uma lista paginada de proposições."""
     stmt = select(Proposition).offset(offset).limit(limit)
@@ -100,6 +136,29 @@ def list_propositions(
         stmt = stmt.where(Proposition.presentation_year == year)
     if acronym:
         stmt = stmt.where(Proposition.proposition_acronym.ilike(f"%{acronym}%"))
+    if presentation_date_from is not None:
+        stmt = stmt.where(Proposition.presentation_date >= presentation_date_from)
+    if presentation_date_to is not None:
+        stmt = stmt.where(Proposition.presentation_date <= presentation_date_to)
+    if created_from is not None:
+        stmt = stmt.where(Proposition.created_at >= created_from)
+    if created_to is not None:
+        stmt = stmt.where(Proposition.created_at <= created_to)
+    if updated_from is not None:
+        stmt = stmt.where(Proposition.updated_at >= updated_from)
+    if updated_to is not None:
+        stmt = stmt.where(Proposition.updated_at <= updated_to)
+
+    sortable_columns = {
+        "created_at": Proposition.created_at,
+        "updated_at": Proposition.updated_at,
+        "title": Proposition.title,
+        "presentation_date": Proposition.presentation_date,
+        "presentation_year": Proposition.presentation_year,
+        "proposition_number": Proposition.proposition_number,
+    }
+    sort_column = sortable_columns[sort_by]
+    stmt = stmt.order_by(asc(sort_column) if sort_order == "asc" else desc(sort_column))
 
     result = db.execute(stmt)
     propositions = result.scalars().all()

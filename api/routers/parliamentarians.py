@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import or_, select
+from sqlalchemy import asc, desc, or_, select
 from sqlalchemy.orm import Session
 
 try:
@@ -65,6 +65,30 @@ def list_parliamentarians(
         default=None,
         description="Filtrar por tipo de parlamentar: deputado, senado (pode repetir para ambos).",
     ),
+    created_from: Optional[datetime] = Query(
+        default=None,
+        description="Filtra por registros criados a partir deste instante (inclusive).",
+    ),
+    created_to: Optional[datetime] = Query(
+        default=None,
+        description="Filtra por registros criados até este instante (inclusive).",
+    ),
+    updated_from: Optional[datetime] = Query(
+        default=None,
+        description="Filtra por registros atualizados a partir deste instante (inclusive).",
+    ),
+    updated_to: Optional[datetime] = Query(
+        default=None,
+        description="Filtra por registros atualizados até este instante (inclusive).",
+    ),
+    sort_by: Literal["created_at", "updated_at", "name", "full_name", "party"] = Query(
+        default="created_at",
+        description="Campo usado para ordenação.",
+    ),
+    sort_order: Literal["asc", "desc"] = Query(
+        default="desc",
+        description="Direção da ordenação.",
+    ),
 ) -> List[Parliamentarian]:
     """Retorna uma lista paginada de parlamentares."""
     stmt = select(Parliamentarian).offset(offset).limit(limit)
@@ -82,6 +106,25 @@ def list_parliamentarians(
             type_filters.append(Parliamentarian.type.ilike("%Senad%"))
         if type_filters:
             stmt = stmt.where(or_(*type_filters))
+
+    if created_from is not None:
+        stmt = stmt.where(Parliamentarian.created_at >= created_from)
+    if created_to is not None:
+        stmt = stmt.where(Parliamentarian.created_at <= created_to)
+    if updated_from is not None:
+        stmt = stmt.where(Parliamentarian.updated_at >= updated_from)
+    if updated_to is not None:
+        stmt = stmt.where(Parliamentarian.updated_at <= updated_to)
+
+    sortable_columns = {
+        "created_at": Parliamentarian.created_at,
+        "updated_at": Parliamentarian.updated_at,
+        "name": Parliamentarian.name,
+        "full_name": Parliamentarian.full_name,
+        "party": Parliamentarian.party,
+    }
+    sort_column = sortable_columns[sort_by]
+    stmt = stmt.order_by(asc(sort_column) if sort_order == "asc" else desc(sort_column))
 
     result = db.execute(stmt)
     return result.scalars().all()

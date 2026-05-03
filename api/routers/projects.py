@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta
-from typing import List, Optional
+from typing import List, Literal, Optional
 from zoneinfo import ZoneInfo
 import unicodedata
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import func, select
+from sqlalchemy import asc, desc, func, select
 from sqlalchemy.orm import Session
 
 try:
@@ -271,15 +271,51 @@ def list_my_project_favorites(
     db: Session = Depends(get_db),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
+    created_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por favoritos criados a partir deste instante (inclusive).",
+    ),
+    created_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por favoritos criados até este instante (inclusive).",
+    ),
+    updated_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por favoritos atualizados a partir deste instante (inclusive).",
+    ),
+    updated_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por favoritos atualizados até este instante (inclusive).",
+    ),
+    sort_by: Literal["created_at", "updated_at", "id", "parliamentarian_id"] = Query(
+        default="created_at",
+        description="Campo usado para ordenação.",
+    ),
+    sort_order: Literal["asc", "desc"] = Query(
+        default="desc",
+        description="Direção da ordenação.",
+    ),
 ) -> List[ProjetosParliamentarian]:
     """Retorna os favoritos do projeto identificado pelo e-mail do token JWT."""
     project = _get_project_from_token_email(request, db)
-    stmt = (
-        select(ProjetosParliamentarian)
-        .where(ProjetosParliamentarian.projeto_id == project.id)
-        .offset(offset)
-        .limit(limit)
-    )
+    stmt = select(ProjetosParliamentarian).where(ProjetosParliamentarian.projeto_id == project.id)
+    if created_from is not None:
+        stmt = stmt.where(ProjetosParliamentarian.created_at >= created_from)
+    if created_to is not None:
+        stmt = stmt.where(ProjetosParliamentarian.created_at <= created_to)
+    if updated_from is not None:
+        stmt = stmt.where(ProjetosParliamentarian.updated_at >= updated_from)
+    if updated_to is not None:
+        stmt = stmt.where(ProjetosParliamentarian.updated_at <= updated_to)
+    sortable_columns = {
+        "created_at": ProjetosParliamentarian.created_at,
+        "updated_at": ProjetosParliamentarian.updated_at,
+        "id": ProjetosParliamentarian.id,
+        "parliamentarian_id": ProjetosParliamentarian.parliamentarian_id,
+    }
+    sort_column = sortable_columns[sort_by]
+    stmt = stmt.order_by(asc(sort_column) if sort_order == "asc" else desc(sort_column))
+    stmt = stmt.offset(offset).limit(limit)
     favorites = db.execute(stmt)
     return favorites.scalars().all()
 
@@ -326,16 +362,52 @@ def list_project_favorites(
     db: Session = Depends(get_db),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
+    created_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por favoritos criados a partir deste instante (inclusive).",
+    ),
+    created_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por favoritos criados até este instante (inclusive).",
+    ),
+    updated_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por favoritos atualizados a partir deste instante (inclusive).",
+    ),
+    updated_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por favoritos atualizados até este instante (inclusive).",
+    ),
+    sort_by: Literal["created_at", "updated_at", "id", "parliamentarian_id"] = Query(
+        default="created_at",
+        description="Campo usado para ordenação.",
+    ),
+    sort_order: Literal["asc", "desc"] = Query(
+        default="desc",
+        description="Direção da ordenação.",
+    ),
 ) -> List[ProjetosParliamentarian]:
     """Retorna os parlamentares marcados como favoritos por um projeto específico."""
     _ensure_active_project(db, project_id)
 
-    stmt = (
-        select(ProjetosParliamentarian)
-        .where(ProjetosParliamentarian.projeto_id == project_id)
-        .offset(offset)
-        .limit(limit)
-    )
+    stmt = select(ProjetosParliamentarian).where(ProjetosParliamentarian.projeto_id == project_id)
+    if created_from is not None:
+        stmt = stmt.where(ProjetosParliamentarian.created_at >= created_from)
+    if created_to is not None:
+        stmt = stmt.where(ProjetosParliamentarian.created_at <= created_to)
+    if updated_from is not None:
+        stmt = stmt.where(ProjetosParliamentarian.updated_at >= updated_from)
+    if updated_to is not None:
+        stmt = stmt.where(ProjetosParliamentarian.updated_at <= updated_to)
+    sortable_columns = {
+        "created_at": ProjetosParliamentarian.created_at,
+        "updated_at": ProjetosParliamentarian.updated_at,
+        "id": ProjetosParliamentarian.id,
+        "parliamentarian_id": ProjetosParliamentarian.parliamentarian_id,
+    }
+    sort_column = sortable_columns[sort_by]
+    stmt = stmt.order_by(asc(sort_column) if sort_order == "asc" else desc(sort_column))
+    stmt = stmt.offset(offset).limit(limit)
     favorites = db.execute(stmt)
     return favorites.scalars().all()
 

@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from datetime import date as date_type, datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import select
+from sqlalchemy import asc, desc, select
 from sqlalchemy.orm import Session
 
 try:
@@ -57,6 +57,33 @@ def list_speeches_transcripts(
     date_to: Optional[date_type] = Query(
         None, description="Filtra discursos ocorridos até esta data (inclusive)."
     ),
+    created_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros criados a partir deste instante (inclusive).",
+    ),
+    created_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros criados até este instante (inclusive).",
+    ),
+    updated_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros atualizados a partir deste instante (inclusive).",
+    ),
+    updated_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros atualizados até este instante (inclusive).",
+    ),
+    sort_by: Literal[
+        "created_at",
+        "updated_at",
+        "date",
+        "id",
+        "parliamentarian_id",
+    ] = Query(default="date", description="Campo usado para ordenação."),
+    sort_order: Literal["asc", "desc"] = Query(
+        default="desc",
+        description="Direção da ordenação.",
+    ),
 ) -> List[SpeechesTranscript]:
     """Retorna uma lista paginada de discursos."""
     stmt = select(SpeechesTranscript).offset(offset).limit(limit)
@@ -67,6 +94,24 @@ def list_speeches_transcripts(
         stmt = stmt.where(SpeechesTranscript.date >= date_from)
     if date_to is not None:
         stmt = stmt.where(SpeechesTranscript.date <= date_to)
+    if created_from is not None:
+        stmt = stmt.where(SpeechesTranscript.created_at >= created_from)
+    if created_to is not None:
+        stmt = stmt.where(SpeechesTranscript.created_at <= created_to)
+    if updated_from is not None:
+        stmt = stmt.where(SpeechesTranscript.updated_at >= updated_from)
+    if updated_to is not None:
+        stmt = stmt.where(SpeechesTranscript.updated_at <= updated_to)
+
+    sortable_columns = {
+        "created_at": SpeechesTranscript.created_at,
+        "updated_at": SpeechesTranscript.updated_at,
+        "date": SpeechesTranscript.date,
+        "id": SpeechesTranscript.id,
+        "parliamentarian_id": SpeechesTranscript.parliamentarian_id,
+    }
+    sort_column = sortable_columns[sort_by]
+    stmt = stmt.order_by(asc(sort_column) if sort_order == "asc" else desc(sort_column))
 
     result = db.execute(stmt)
     return result.scalars().all()

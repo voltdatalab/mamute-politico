@@ -163,6 +163,18 @@ def list_parliamentarian_speech_analysis(
         le=100,
         description="Quantidade de discursos por página.",
     ),
+    date_from: Optional[date_type] = Query(
+        None,
+        description="Filtra discursos a partir desta data (inclusive).",
+    ),
+    date_to: Optional[date_type] = Query(
+        None,
+        description="Filtra discursos até esta data (inclusive).",
+    ),
+    sort_order: Literal["asc", "desc"] = Query(
+        "desc",
+        description="Direção da ordenação temporal dos discursos.",
+    ),
 ) -> List[SpeechAnalysisSummaryOut]:
     """Lista os discursos de um parlamentar com metadados das análises."""
     offset = (page - 1) * page_size
@@ -174,10 +186,20 @@ def list_parliamentarian_speech_analysis(
             SpeechesTranscript.parliamentarian_id == Parliamentarian.id,
         )
         .where(Parliamentarian.parliamentarian_code == code)
-        .order_by(SpeechesTranscript.date.desc(), SpeechesTranscript.id.desc())
-        .offset(offset)
-        .limit(page_size)
     )
+    if date_from is not None:
+        speech_stmt = speech_stmt.where(SpeechesTranscript.date >= date_from)
+    if date_to is not None:
+        speech_stmt = speech_stmt.where(SpeechesTranscript.date <= date_to)
+
+    if sort_order == "asc":
+        speech_stmt = speech_stmt.order_by(SpeechesTranscript.date.asc(), SpeechesTranscript.id.asc())
+    else:
+        speech_stmt = speech_stmt.order_by(
+            SpeechesTranscript.date.desc(),
+            SpeechesTranscript.id.desc(),
+        )
+    speech_stmt = speech_stmt.offset(offset).limit(page_size)
 
     if analysis_type is not None:
         keyword_exists = (

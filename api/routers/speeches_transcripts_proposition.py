@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import select
+from sqlalchemy import asc, desc, select
 from sqlalchemy.orm import Session
 
 try:
@@ -53,6 +53,33 @@ def list_speeches_transcripts_propositions(
     speeches_transcripts_id: Optional[int] = Query(
         None, description="Filtra pelo discurso relacionado."
     ),
+    created_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros criados a partir deste instante (inclusive).",
+    ),
+    created_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros criados até este instante (inclusive).",
+    ),
+    updated_from: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros atualizados a partir deste instante (inclusive).",
+    ),
+    updated_to: Optional[datetime] = Query(
+        None,
+        description="Filtra por registros atualizados até este instante (inclusive).",
+    ),
+    sort_by: Literal[
+        "created_at",
+        "updated_at",
+        "id",
+        "proposition_id",
+        "speeches_transcripts_id",
+    ] = Query(default="created_at", description="Campo usado para ordenação."),
+    sort_order: Literal["asc", "desc"] = Query(
+        default="desc",
+        description="Direção da ordenação.",
+    ),
 ) -> List[SpeechesTranscriptsProposition]:
     """Retorna uma lista paginada de vínculos entre discursos e proposições."""
     stmt = select(SpeechesTranscriptsProposition).offset(offset).limit(limit)
@@ -64,6 +91,24 @@ def list_speeches_transcripts_propositions(
             SpeechesTranscriptsProposition.speeches_transcripts_id
             == speeches_transcripts_id
         )
+    if created_from is not None:
+        stmt = stmt.where(SpeechesTranscriptsProposition.created_at >= created_from)
+    if created_to is not None:
+        stmt = stmt.where(SpeechesTranscriptsProposition.created_at <= created_to)
+    if updated_from is not None:
+        stmt = stmt.where(SpeechesTranscriptsProposition.updated_at >= updated_from)
+    if updated_to is not None:
+        stmt = stmt.where(SpeechesTranscriptsProposition.updated_at <= updated_to)
+
+    sortable_columns = {
+        "created_at": SpeechesTranscriptsProposition.created_at,
+        "updated_at": SpeechesTranscriptsProposition.updated_at,
+        "id": SpeechesTranscriptsProposition.id,
+        "proposition_id": SpeechesTranscriptsProposition.proposition_id,
+        "speeches_transcripts_id": SpeechesTranscriptsProposition.speeches_transcripts_id,
+    }
+    sort_column = sortable_columns[sort_by]
+    stmt = stmt.order_by(asc(sort_column) if sort_order == "asc" else desc(sort_column))
 
     result = db.execute(stmt)
     return result.scalars().all()
