@@ -155,7 +155,7 @@ export function listMyProjectFavorites(
 export function addMyProjectFavorite(parliamentarianId: number): Promise<ProjectFavoriteOut> {
   return request<ProjectFavoriteOut>('/projects/me/favorites', {
     method: 'POST',
-    body: { parliamentarian_id: parliamentarianId },
+    body: JSON.stringify({ parliamentarian_id: parliamentarianId }),
   });
 }
 
