@@ -8,6 +8,7 @@ import type {
   AuthorsPropositionOut,
   SpeechAnalysisSummaryOut,
   SpeechAnalysisOut,
+  DashboardStatsOut,
 } from './types';
 
 export interface ListParliamentariansParams {
@@ -162,6 +163,11 @@ export function removeMyProjectFavorite(parliamentarianId: number): Promise<void
   return request<void>(`/projects/me/favorites/${parliamentarianId}`, {
     method: 'DELETE',
   });
+}
+
+/** Estatísticas da semana atual para parlamentares favoritados no projeto autenticado. */
+export function getMyDashboardStats(): Promise<DashboardStatsOut> {
+  return request<DashboardStatsOut>('/projects/me/dashboard-stats');
 }
 
 export interface ListAuthorsPropositionParams {
