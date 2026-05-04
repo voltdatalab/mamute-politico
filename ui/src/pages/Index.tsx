@@ -121,7 +121,10 @@ const Index = () => {
                 Monitore parlamentares, analise votações, acompanhe proposições e mantenha-se informado sobre a atividade legislativa brasileira.
               </p>
               <div className="flex flex-wrap gap-4 pt-2">
-                <Link to="/selecao" className="mp-pill-blue inline-flex h-9 items-center px-9 text-[13px] font-bold uppercase leading-normal tracking-normal transition hover:opacity-90">
+                <Link
+                  to="/selecao"
+                  className="inline-flex h-9 items-center rounded-[76px] bg-[#ff0004] px-9 text-[13px] font-bold uppercase leading-normal tracking-normal text-white transition hover:opacity-90"
+                >
                     COMEÇAR AGORA
                 </Link>
                 <Link to="/dashboard" className="mp-pill-light inline-flex h-9 items-center px-7 text-[13px] font-semibold uppercase leading-normal tracking-normal text-[#4b4b4b] transition hover:opacity-90">
