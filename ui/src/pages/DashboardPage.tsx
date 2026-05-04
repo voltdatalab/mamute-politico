@@ -129,10 +129,13 @@ const DashboardPage = () => {
               Acompanhe a atividade dos parlamentares monitorados
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start rounded-full bg-[#1b76ff] px-5 py-2 text-[13px] font-semibold text-white">
-            <Users className="h-4 w-4" />
+          <Link
+            to="/selecao#selector-ambas-casas"
+            className="flex items-center gap-2 self-start rounded-full bg-[#1b76ff] px-5 py-2 text-[13px] font-semibold text-white no-underline transition-opacity hover:opacity-90"
+          >
+            <Users className="h-4 w-4 shrink-0" />
             {monitorados.length} PARLAMENTAR{monitorados.length !== 1 ? 'ES' : ''} MONITORADO{monitorados.length !== 1 ? 'S' : ''}
-          </div>
+          </Link>
         </div>
 
         {/* Parlamentares monitorados */}
