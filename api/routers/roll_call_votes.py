@@ -38,6 +38,9 @@ class RollCallVoteOut(BaseModel):
     date_vote: Optional[date] = None
     created_at: datetime
     updated_at: datetime
+    parliamentarian_name: Optional[str] = None
+    parliamentarian_party: Optional[str] = None
+    parliamentarian_state_elected: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -65,6 +68,18 @@ def _serialize_roll_call_vote(vote: RollCallVote) -> RollCallVoteOut:
     if vote.proposition and isinstance(vote.proposition.link, str) and vote.proposition.link:
         proposition_votes_link = f"{vote.proposition.link.rstrip('/')}/votacoes"
 
+    mp_name: Optional[str] = None
+    mp_party: Optional[str] = None
+    mp_uf: Optional[str] = None
+    if vote.parliamentarian is not None:
+        p = vote.parliamentarian
+        raw_name = (p.full_name or p.name or "").strip()
+        mp_name = raw_name or None
+        if p.party and str(p.party).strip():
+            mp_party = str(p.party).strip()
+        if p.state_elected and str(p.state_elected).strip():
+            mp_uf = str(p.state_elected).strip()
+
     return RollCallVoteOut(
         id=vote.id,
         parliamentarian_id=vote.parliamentarian_id,
@@ -77,6 +92,9 @@ def _serialize_roll_call_vote(vote: RollCallVote) -> RollCallVoteOut:
         date_vote=_extract_date_vote(vote.proposition),
         created_at=vote.created_at,
         updated_at=vote.updated_at,
+        parliamentarian_name=mp_name,
+        parliamentarian_party=mp_party,
+        parliamentarian_state_elected=mp_uf,
     )
 
 
@@ -97,7 +115,10 @@ def list_roll_call_votes(
     """Retorna uma lista paginada de votações nominais."""
     stmt = (
         select(RollCallVote)
-        .options(selectinload(RollCallVote.proposition))
+        .options(
+            selectinload(RollCallVote.proposition),
+            selectinload(RollCallVote.parliamentarian),
+        )
         .offset(offset)
         .limit(limit)
     )
@@ -120,7 +141,10 @@ def get_roll_call_vote(
     """Busca uma votação nominal pelo identificador."""
     stmt = (
         select(RollCallVote)
-        .options(selectinload(RollCallVote.proposition))
+        .options(
+            selectinload(RollCallVote.proposition),
+            selectinload(RollCallVote.parliamentarian),
+        )
         .where(RollCallVote.id == vote_id)
     )
     result = db.execute(stmt).scalar_one_or_none()
