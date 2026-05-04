@@ -8,7 +8,7 @@ import { listMyProjectFavorites, getParliamentarian, getMyDashboardStats } from 
 import { ApiError } from '@/api/client';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Users } from 'lucide-react';
+import { Loader2, Pencil, Users } from 'lucide-react';
 import banner3 from '@/assets/banner3-semfundo.png';
 import logoMamute from '@/assets/logo-mamute.png';
 
@@ -129,10 +129,16 @@ const DashboardPage = () => {
               Acompanhe a atividade dos parlamentares monitorados
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start rounded-full bg-[#1b76ff] px-5 py-2 text-[13px] font-semibold text-white">
-            <Users className="h-4 w-4" />
+          <Link
+            to="/selecao#selector-ambas-casas"
+            className="group flex items-center gap-2 self-start rounded-full bg-[#1b76ff] px-5 py-2 text-[13px] font-semibold text-white no-underline transition-opacity hover:opacity-90"
+          >
+            <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center">
+              <Users className="h-4 w-4 transition-opacity duration-150 group-hover:opacity-0" />
+              <Pencil className="absolute h-4 w-4 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+            </span>
             {monitorados.length} PARLAMENTAR{monitorados.length !== 1 ? 'ES' : ''} MONITORADO{monitorados.length !== 1 ? 'S' : ''}
-          </div>
+          </Link>
         </div>
 
         {/* Parlamentares monitorados */}

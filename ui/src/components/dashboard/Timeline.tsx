@@ -1,5 +1,7 @@
 import { useQueries } from '@tanstack/react-query';
 import { listPropositions, listRollCallVotes } from '@/api/endpoints';
+import { votoFromApi } from '@/api/mappers';
+import type { RollCallVoteOut } from '@/api/types';
 import { Loader2 } from 'lucide-react';
 import iconProjeto from '@/assets/icon-timeline-projeto.svg';
 import iconVotacaoAprovado from '@/assets/icon-timeline-votacao-aprovado.svg';
@@ -14,6 +16,16 @@ interface TimelineItem {
   autor: string;
   status: string;
   link?: string;
+}
+
+function formatVoteParliamentarianAutor(v: RollCallVoteOut): string {
+  const nome = v.parliamentarian_name?.trim();
+  const partido = v.parliamentarian_party?.trim();
+  const uf = v.parliamentarian_state_elected?.trim();
+  if (nome && partido && uf) return `${nome} ${partido} - ${uf}`;
+  if (nome && partido) return `${nome} ${partido}`;
+  if (nome) return nome;
+  return '—';
 }
 
 function extractAutor(details: Record<string, unknown> | null | undefined): string {
@@ -31,37 +43,42 @@ function extractAutor(details: Record<string, unknown> | null | undefined): stri
   return '—';
 }
 
-function voteStatusLabel(vote: string | null | undefined): string {
-  if (!vote) return '—';
-  const v = vote.toLowerCase();
-  if (v === 'sim' || v === 's' || v === 'yes') return 'Aprovado';
-  if (v === 'não' || v === 'nao' || v === 'n' || v === 'no') return 'Rejeitado';
-  return vote;
-}
-
 function getItemIcon(item: TimelineItem): string {
   if (item.tipo === 'proposicao') return iconProjeto;
-  if (item.status === 'Aprovado') return iconVotacaoAprovado;
-  if (item.status === 'Rejeitado') return iconVotacaoRejeitado;
+  if (item.status === 'Sim') return iconVotacaoAprovado;
+  if (item.status === 'Não') return iconVotacaoRejeitado;
   return iconVotacaoAprovado;
 }
 
 function getBadgeClass(item: TimelineItem): string {
   if (item.tipo === 'proposicao') return 'bg-[#1b76ff]';
-  if (item.status === 'Aprovado') return 'bg-[#09e03b]';
-  if (item.status === 'Rejeitado') return 'bg-[#ff0004]';
+  if (item.tipo === 'votacao') {
+    if (item.status === 'Sim') return 'bg-[#09e03b]';
+    if (item.status === 'Não') return 'bg-[#ff0004]';
+    if (item.status === 'Abstenção') return 'bg-[#f59e0b]';
+    return 'bg-[#6b7280]';
+  }
   return 'bg-[#1b76ff]';
 }
 
+const VOTO_LABELS_NO_TITLECASE = new Set(['Sim', 'Não', 'Abstenção', 'Obstrução', 'Ausente']);
+
 function toTitleCase(str: string): string {
   if (!str || str === '—') return str;
+  if (VOTO_LABELS_NO_TITLECASE.has(str)) return str;
   if (str === 'Aprovado' || str === 'Rejeitado') return str;
   return str.toLowerCase().split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-function getStatusClass(status: string): string {
-  if (status === 'Aprovado') return 'text-[#09e03b]';
-  if (status === 'Rejeitado') return 'text-[#ff0004]';
+function getStatusClass(item: TimelineItem): string {
+  if (item.tipo === 'votacao') {
+    if (item.status === 'Sim') return 'text-[#09e03b]';
+    if (item.status === 'Não') return 'text-[#ff0004]';
+    if (item.status === 'Abstenção') return 'text-[#d97706]';
+    return 'text-[#383838]';
+  }
+  if (item.status === 'Aprovado') return 'text-[#09e03b]';
+  if (item.status === 'Rejeitado') return 'text-[#ff0004]';
   return 'text-[#383838]';
 }
 
@@ -107,9 +124,9 @@ export function Timeline() {
       tipo: 'votacao' as const,
       titulo: v.proposition_title?.trim() || `Votação #${v.proposition_id}`,
       descricao: v.description?.trim() || '—',
-      data: v.created_at?.slice(0, 10) ?? '',
-      autor: '—',
-      status: voteStatusLabel(v.vote),
+      data: v.date_vote?.slice(0, 10) ?? v.created_at?.slice(0, 10) ?? '',
+      autor: formatVoteParliamentarianAutor(v),
+      status: votoFromApi(v.vote),
       link: v.proposition_votes_link ?? v.link ?? undefined,
     })),
   ]
@@ -185,7 +202,7 @@ export function Timeline() {
                   {item.tipo === 'proposicao' ? 'PROJETO' : 'VOTAÇÃO'}
                 </span>
                 <span
-                  className={`basis-full text-[13px] font-semibold truncate md:basis-auto md:max-w-[140px] ${getStatusClass(item.status)}`}
+                  className={`basis-full text-[13px] font-semibold truncate md:basis-auto md:max-w-[140px] ${getStatusClass(item)}`}
                 >
                   {toTitleCase(item.status)}
                 </span>

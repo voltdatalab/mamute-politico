@@ -36,7 +36,7 @@ function casaFromType(type: string | null | undefined): Parlamentar['casa'] {
   return 'camara';
 }
 
-function votoFromApi(vote: string | null | undefined): Votacao['voto'] {
+export function votoFromApi(vote: string | null | undefined): Votacao['voto'] {
   if (!vote) return 'Abstenção';
   const v = vote.toLowerCase();
   if (v.includes('sim') || v === 'yes') return 'Sim';

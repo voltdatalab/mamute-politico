@@ -61,6 +61,9 @@ export interface RollCallVoteOut {
   date_vote?: string | null;
   created_at: string;
   updated_at: string;
+  parliamentarian_name?: string | null;
+  parliamentarian_party?: string | null;
+  parliamentarian_state_elected?: string | null;
 }
 
 export interface SpeechesTranscriptOut {
