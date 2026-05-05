@@ -12,10 +12,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import logoMamute from "@/assets/logo-mamute.png";
-import { fetchCurrentMember, signOut as revokeGhostSessionOnServer } from "./fetchCurrentMember";
+import {
+  deleteMyAccount,
+  fetchCurrentMember,
+  isDeleteAccountNotSupportedError,
+  signOut as revokeGhostSessionOnServer,
+} from "./fetchCurrentMember";
 import { ghostSignOut } from "@/components/auth/ghost-auth/react/useGhostAuth";
 import type { CurrentMember } from "./fetchCurrentMember";
+import { ACCOUNT_URL } from "./config";
 
 export type AccountModalProps = {
   open: boolean;
@@ -38,6 +54,8 @@ export function AccountModal({ open, onOpenChange, launchKey }: AccountModalProp
   >("idle");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const loadMember = useCallback(
     async (signal: AbortSignal) => {
@@ -82,6 +100,8 @@ export function AccountModal({ open, onOpenChange, launchKey }: AccountModalProp
       setLoadState("idle");
       setLoadError(null);
       setSigningOut(false);
+      setDeletingAccount(false);
+      setConfirmDeleteOpen(false);
       return;
     }
 
@@ -106,6 +126,28 @@ export function AccountModal({ open, onOpenChange, launchKey }: AccountModalProp
       toast.error("Não foi possível encerrar a sessão. Tente novamente.");
     } finally {
       setSigningOut(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await deleteMyAccount();
+      ghostSignOut();
+      setConfirmDeleteOpen(false);
+      onOpenChange(false);
+      toast.success("Conta excluída com sucesso");
+    } catch (error) {
+      if (isDeleteAccountNotSupportedError(error)) {
+        toast.info(
+          "Seu Ghost não suporta exclusão de conta por API. Abrindo a página de conta…"
+        );
+        window.location.href = ACCOUNT_URL;
+        return;
+      }
+      toast.error("Não foi possível excluir sua conta. Tente novamente.");
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -195,9 +237,18 @@ export function AccountModal({ open, onOpenChange, launchKey }: AccountModalProp
           <DialogFooter className="gap-2 sm:justify-end">
             <Button
               type="button"
+              variant="outline"
+              className="rounded-full border-destructive/50 text-destructive hover:bg-destructive/10"
+              disabled={signingOut || deletingAccount}
+              onClick={() => setConfirmDeleteOpen(true)}
+            >
+              Excluir minha conta
+            </Button>
+            <Button
+              type="button"
               variant="destructive"
               className="rounded-full bg-[#ff0004] hover:bg-[#ff0004]/90"
-              disabled={signingOut}
+              disabled={signingOut || deletingAccount}
               onClick={() => void handleSignOut()}
             >
               {signingOut ? "Saindo…" : "Sair"}
@@ -205,6 +256,34 @@ export function AccountModal({ open, onOpenChange, launchKey }: AccountModalProp
           </DialogFooter>
         ) : null}
       </DialogContent>
+
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir minha conta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação é permanente e removerá seu acesso ao Mamute Político.
+              Você poderá criar uma nova conta depois, mas os dados atuais
+              poderão ser perdidos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingAccount}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deletingAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(event) => {
+                event.preventDefault();
+                void handleDeleteAccount();
+              }}
+            >
+              {deletingAccount ? "Excluindo…" : "Sim, excluir conta"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
