@@ -113,7 +113,7 @@ export function AccountModal({ open, onOpenChange, launchKey }: AccountModalProp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md border-black/10 sm:rounded-2xl">
         <DialogHeader className="space-y-3 text-left">
-          <div className="flex items-start gap-3 pr-8">
+          <div className="flex flex-col items-start gap-3 pr-8">
             <img
               src={logoMamute}
               alt=""

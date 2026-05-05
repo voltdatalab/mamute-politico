@@ -189,7 +189,7 @@ export function LoginModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md border-black/10 sm:rounded-2xl">
         <DialogHeader className="space-y-3 text-left">
-          <div className="flex items-center gap-3 pr-8">
+          <div className="flex flex-col items-center gap-3 pr-8">
             <img
               src={logoMamute}
               alt="Mamute Político"
