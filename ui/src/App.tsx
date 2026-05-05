@@ -11,6 +11,7 @@ import DashboardPage from "./pages/DashboardPage";
 import PesquisaIAPage from "./pages/PesquisaIAPage";
 import NotFound from "./pages/NotFound";
 import { useGhostAuth } from "@/components/auth/ghost-auth/react/useGhostAuth";
+import { AccountModalProvider } from "@/components/auth/AccountModalProvider";
 import { LoginModalProvider } from "@/components/auth/LoginModalProvider";
 import { useLoginModal } from "@/components/auth/useLoginModal";
 
@@ -82,45 +83,47 @@ const App = () => (
       <Toaster />
       <Sonner />
       <LoginModalProvider>
-        <BrowserRouter basename={routerBasename}>
-          <Routes>
-            <Route path="/" element={<RootRoute />} />
-            <Route
-              path="/selecao"
-              element={
-                <RequireAuth>
-                  <SelecaoPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/parlamentar/:id"
-              element={
-                <RequireAuth>
-                  <ParlamentarDashboard />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <RequireAuth>
-                  <DashboardPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/pesquisa"
-              element={
-                <RequireAuth>
-                  <PesquisaIAPage />
-                </RequireAuth>
-              }
-            />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <AccountModalProvider>
+          <BrowserRouter basename={routerBasename}>
+            <Routes>
+              <Route path="/" element={<RootRoute />} />
+              <Route
+                path="/selecao"
+                element={
+                  <RequireAuth>
+                    <SelecaoPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/parlamentar/:id"
+                element={
+                  <RequireAuth>
+                    <ParlamentarDashboard />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <RequireAuth>
+                    <DashboardPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/pesquisa"
+                element={
+                  <RequireAuth>
+                    <PesquisaIAPage />
+                  </RequireAuth>
+                }
+              />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AccountModalProvider>
       </LoginModalProvider>
     </TooltipProvider>
   </QueryClientProvider>
