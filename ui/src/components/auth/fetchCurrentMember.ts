@@ -74,3 +74,26 @@ export async function signOut(): Promise<void> {
   (err as Error & { status?: number }).status = res.status;
   throw err;
 }
+
+/**
+ * Deletes the currently authenticated Ghost member account.
+ */
+export async function deleteMyAccount(): Promise<void> {
+  const res = await axios.delete(MEMBER_ENDPOINT, {
+    withCredentials: true,
+    headers: { ...membersApiHeaders },
+    validateStatus: () => true,
+  });
+
+  if (res.status === 204 || res.status === 200 || res.status === 202) {
+    return;
+  }
+
+  const err = new Error("Não foi possível excluir sua conta");
+  (err as Error & { status?: number }).status = res.status;
+  throw err;
+}
+
+export function isDeleteAccountNotSupportedError(error: unknown): boolean {
+  return (error as { status?: number })?.status === 404;
+}
