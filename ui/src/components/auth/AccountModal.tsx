@@ -235,6 +235,7 @@ export function AccountModal({ open, onOpenChange, launchKey }: AccountModalProp
 
         {loadState === "ready" && member ? (
           <DialogFooter className="gap-2 sm:justify-end">
+            {/* Temporarily hidden per request:
             <Button
               type="button"
               variant="outline"
@@ -244,6 +245,7 @@ export function AccountModal({ open, onOpenChange, launchKey }: AccountModalProp
             >
               Excluir minha conta
             </Button>
+            */}
             <Button
               type="button"
               variant="destructive"
