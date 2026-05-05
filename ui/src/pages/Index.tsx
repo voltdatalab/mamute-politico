@@ -115,10 +115,10 @@ const Index = () => {
                 TEMPO REAL
               </p>
               <h1 className="text-[48px] font-bold leading-[1.08] text-[#393939]">
-                Acompanhe o Congresso Nacional de perto
+                Monitore políticos do Congresso
               </h1>
               <p className="max-w-[565px] text-[18px] font-normal leading-normal text-[#393939]">
-                Monitore parlamentares, analise votações, acompanhe proposições e mantenha-se informado sobre a atividade legislativa brasileira.
+              Memória de elefante: saiba como vota, o que propõe e até o que diz em discurso o(s) congressista(s) da sua escolha.
               </p>
               <div className="flex flex-wrap gap-4 pt-2">
                 <Link
