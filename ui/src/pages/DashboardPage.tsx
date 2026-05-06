@@ -12,6 +12,8 @@ import { Loader2, Pencil, Users } from 'lucide-react';
 import banner3 from '@/assets/banner3-semfundo.png';
 import logoMamute from '@/assets/logo-mamute.png';
 
+const MONITORADOS_AMBAS_CASAS_LINK = '/selecao#selector-ambas-casas';
+
 const DashboardPage = () => {
   const MOBILE_BREAKPOINT_PX = 768;
   const FOOTER_PERSPECTIVE_PX = 1200;
@@ -130,7 +132,7 @@ const DashboardPage = () => {
             </p>
           </div>
           <Link
-            to="/selecao#selector-ambas-casas"
+            to={MONITORADOS_AMBAS_CASAS_LINK}
             className="group flex items-center gap-2 self-start rounded-full bg-[#1b76ff] px-5 py-2 text-[13px] font-semibold text-white no-underline transition-opacity hover:opacity-90"
           >
             <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center">
@@ -145,12 +147,12 @@ const DashboardPage = () => {
         <div className="mp-card bg-white p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-[32px] leading-none font-bold text-[#090909]">
-              <Link to="/selecao#selector-ambas-casas" className="underline-offset-4 transition hover:underline">
+              <Link to={MONITORADOS_AMBAS_CASAS_LINK} className="underline-offset-4 transition hover:underline">
                 Parlamentares monitorados
               </Link>
             </h2>
             <Link
-              to="/selecao#selector-ambas-casas"
+              to={MONITORADOS_AMBAS_CASAS_LINK}
               className="rounded-full border border-[#383838]/20 px-3 py-1 text-[12px] font-semibold text-[#383838] transition-colors hover:bg-[#383838]/10"
             >
               Editar

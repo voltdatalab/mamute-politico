@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useMutation, useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
@@ -17,9 +17,26 @@ import { ApiError } from '@/api/client';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
+const getCasaFromHash = (hash: string): CasaLegislativa | null => {
+  if (hash === '#selector-ambas-casas') {
+    return 'ambas';
+  }
+  return null;
+};
+
 const SelecaoPage = () => {
   const queryClient = useQueryClient();
-  const [casaSelecionada, setCasaSelecionada] = useState<CasaLegislativa | null>(null);
+  const location = useLocation();
+  const [casaSelecionada, setCasaSelecionada] = useState<CasaLegislativa | null>(() =>
+    typeof window !== 'undefined' ? getCasaFromHash(window.location.hash) : null
+  );
+
+  useEffect(() => {
+    const casaFromHash = getCasaFromHash(location.hash);
+    if (casaFromHash != null) {
+      setCasaSelecionada(casaFromHash);
+    }
+  }, [location.hash]);
 
   const favoritesQuery = useQuery({
     queryKey: ['project-favorites', 'me'],
