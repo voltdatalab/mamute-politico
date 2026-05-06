@@ -117,25 +117,25 @@ const SelecaoPage = () => {
           {/* Yellow top section with title */}
           <div className="bg-textura-gold px-6 py-10">
             <div className="container">
-              <h1 className="text-center text-[56px] font-bold text-[#393939]">{casaLabel}</h1>
+              <h1 className="text-center text-[36px] md:text-[48px] leading-none font-bold text-[#393939]">{casaLabel}</h1>
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="flex items-center gap-2 rounded-[76px] bg-white px-6 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90"
+                  className="flex items-center min-w-[250px] gap-2 rounded-[76px] bg-white px-6 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   VOLTAR À SELEÇÃO DE CASA
                 </button>
-                {parlamentaresMonitorados.length > 0 && (
-                  <Link
-                    to="/dashboard"
-                    className="flex items-center gap-2 rounded-[76px] bg-[#393939] px-6 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90"
-                  >
-                    VER DASHBOARD GERAL
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                )}
+                
+                <Link
+                  to="/dashboard"
+                  className="flex items-center min-w-[250px] gap-2 rounded-[76px] bg-[#393939] px-6 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90"
+                >
+                  VER DASHBOARD GERAL
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                
               </div>
             </div>
           </div>

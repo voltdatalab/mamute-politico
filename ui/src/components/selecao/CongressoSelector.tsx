@@ -83,7 +83,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
 
       <div className="relative flex min-h-[calc(100vh-88px)] flex-col py-14 px-6">
         <div className="space-y-3 text-center">
-          <h2 className="text-[56px] font-bold text-[#393939]">
+          <h2 className="text-[36px] md:text-[48px] leading-none font-bold text-[#393939]">
             Selecione a Casa Legislativa
           </h2>
           <p className="mx-auto max-w-2xl text-[18px] font-normal text-[#383838]">
