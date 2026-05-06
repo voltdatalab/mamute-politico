@@ -303,10 +303,10 @@ const PesquisaIAPage = () => {
                 <button
                   type="submit"
                   disabled={!canSend}
-                  className="flex items-center gap-2 rounded-full bg-[#1b76ff] px-6 py-2 text-[13px] font-bold uppercase text-white transition hover:opacity-90 disabled:opacity-50"
+                  className="flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#1b76ff] px-4 md:px-3 py-2 text-[13px] font-bold uppercase text-white transition hover:opacity-90 disabled:opacity-50 sm:px-6"
                 >
-                  ENVIAR
-                  <Send className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:inline">ENVIAR</span>
+                  <Send className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 </button>
               </form>
             </div>
