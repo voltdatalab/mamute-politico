@@ -169,12 +169,12 @@ const DashboardPage = () => {
               )}
             </div>
           ) : (
-            <div className="flex flex-wrap gap-[27px]">
+            <div className="flex flex-col gap-[27px] md:flex-row md:flex-wrap">
               {monitorados.map((parlamentar) => (
                 <Link
                   key={parlamentar.id}
                   to={`/parlamentar/${parlamentar.id}`}
-                  className="flex items-center gap-3 rounded-[28px] bg-white px-4 py-3 shadow-[0_4px_4px_rgba(0,0,0,0.25)] hover:opacity-90 transition-opacity min-w-[200px]"
+                  className="flex min-w-0 w-full items-center gap-3 rounded-[28px] bg-white px-4 py-3 shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition-opacity hover:opacity-90 md:w-auto md:min-w-[200px]"
                 >
                   <Avatar className="h-[50px] w-[50px] shrink-0">
                     <AvatarImage src={parlamentar.foto} alt={parlamentar.nome} />
