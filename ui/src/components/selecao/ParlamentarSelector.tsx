@@ -22,7 +22,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Search, Filter, PlusCircle, X, ExternalLink, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, Filter, PlusCircle, X, ExternalLink, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ParlamentarSelectorProps {
@@ -378,7 +378,6 @@ export function ParlamentarSelector({
                     >
                       <X className="h-4 w-4" />
                     </Button>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </div>
               ))}
