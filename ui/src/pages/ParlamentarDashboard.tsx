@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
 import { SelecaoFooter } from '@/components/selecao/SelecaoFooter';
@@ -11,10 +11,12 @@ import { ProposicoesList } from '@/components/dashboard/ProposicoesList';
 import { ProposicoesTable } from '@/components/dashboard/ProposicoesTable';
 import { VotacoesTable } from '@/components/dashboard/VotacoesTable';
 import { TaquigraficasTable } from '@/components/dashboard/TaquigraficasTable';
-import { getParliamentarian } from '@/api/endpoints';
+import { getParliamentarian, listMyProjectFavorites } from '@/api/endpoints';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ApiError } from '@/api/client';
-import { ArrowLeft, Cloud, FileText, Vote, Loader2 } from 'lucide-react';
+import { ArrowLeft, Cloud, FileText, Vote, Loader2, Users, Pencil } from 'lucide-react';
+
+const MONITORADOS_AMBAS_CASAS_LINK = '/selecao#ambas-casas';
 
 const parlamentarSectionTabTriggerClass =
   'shrink-0 rounded-full border-0 px-6 py-2.5 text-[13px] font-semibold uppercase tracking-wide text-[#090909] shadow-none ring-offset-0 transition-all focus-visible:ring-2 focus-visible:ring-black/25 focus-visible:ring-offset-0 data-[state=active]:bg-[#090909] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-[#f5f5f5] data-[state=inactive]:text-[#090909] data-[state=inactive]:shadow-[0_2px_8px_rgba(0,0,0,0.12)]';
@@ -47,6 +49,7 @@ const toErrorMessage = (value: unknown): string => {
 
 const ParlamentarDashboard = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const numericId = id != null ? Number(id) : NaN;
   const isIdValid = Number.isInteger(numericId) && numericId > 0;
 
@@ -61,6 +64,11 @@ const ParlamentarDashboard = () => {
     raw?.parliamentarian_code != null && raw.parliamentarian_code > 0
       ? raw.parliamentarian_code
       : numericId;
+  const favoritesQuery = useQuery({
+    queryKey: ['project-favorites', 'me'],
+    queryFn: () => listMyProjectFavorites(),
+  });
+  const monitoradosCount = favoritesQuery.data?.length ?? 0;
 
   if (!isIdValid) {
     return (
@@ -125,13 +133,27 @@ const ParlamentarDashboard = () => {
       <Header />
 
       <main className="container py-8 space-y-6">
-        {/* Back button */}
-        <Link to="/dashboard">
-          <button className="flex items-center gap-2 rounded-[76px] bg-white px-5 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90">
+        {/* Top action buttons */}
+        <div className="flex flex-wrap items-center justify-center gap-[16px] md:justify-between">
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center min-w-[295px] gap-2 rounded-[76px] bg-white px-6 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90"
+          >
             <ArrowLeft className="h-4 w-4" />
             VOLTAR AO DASHBOARD GERAL
           </button>
-        </Link>
+          <Link
+            to={MONITORADOS_AMBAS_CASAS_LINK}
+            className="group flex items-center min-w-[295px] gap-2 rounded-[76px] bg-[#1b76ff] px-6 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90"
+          >
+            <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center">
+              <Users className="h-4 w-4 transition-opacity duration-150 group-hover:opacity-0" />
+              <Pencil className="absolute h-4 w-4 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+            </span>
+            {monitoradosCount} PARLAMENTAR{monitoradosCount !== 1 ? 'ES' : ''} MONITORADO{monitoradosCount !== 1 ? 'S' : ''}
+          </Link>
+        </div>
 
         {/* Top Row: Dados cadastrais | Temas do discurso | Últimos projetos */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
