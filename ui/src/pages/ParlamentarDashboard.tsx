@@ -134,18 +134,18 @@ const ParlamentarDashboard = () => {
 
       <main className="container py-8 space-y-6">
         {/* Top action buttons */}
-        <div className="flex flex-wrap items-center gap-[16px] md:justify-between">
+        <div className="flex flex-wrap items-center justify-center gap-[16px] md:justify-between">
           <button
             type="button"
             onClick={() => navigate('/dashboard')}
-            className="flex items-center min-w-[250px] gap-2 rounded-[76px] bg-white px-6 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90"
+            className="flex items-center min-w-[295px] gap-2 rounded-[76px] bg-white px-6 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90"
           >
             <ArrowLeft className="h-4 w-4" />
             VOLTAR AO DASHBOARD GERAL
           </button>
           <Link
             to={MONITORADOS_AMBAS_CASAS_LINK}
-            className="group flex items-center min-w-[250px] gap-2 rounded-[76px] bg-[#1b76ff] px-6 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90"
+            className="group flex items-center min-w-[295px] gap-2 rounded-[76px] bg-[#1b76ff] px-6 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90"
           >
             <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center">
               <Users className="h-4 w-4 transition-opacity duration-150 group-hover:opacity-0" />
