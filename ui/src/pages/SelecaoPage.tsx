@@ -17,9 +17,9 @@ import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const CASA_HASH: Record<CasaLegislativa, string> = {
-  senado: '#selector-senado-federal',
-  ambas: '#selector-ambas-casas',
-  camara: '#selector-camara-dos-deputados',
+  senado: '#senado-federal',
+  ambas: '#ambas-casas',
+  camara: '#camara-dos-deputados',
 };
 
 const getCasaFromHash = (hash: string): CasaLegislativa | null =>

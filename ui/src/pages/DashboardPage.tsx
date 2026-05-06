@@ -12,7 +12,7 @@ import { Loader2, Pencil, Users } from 'lucide-react';
 import banner3 from '@/assets/banner3-semfundo.png';
 import logoMamute from '@/assets/logo-mamute.png';
 
-const MONITORADOS_AMBAS_CASAS_LINK = '/selecao#selector-ambas-casas';
+const MONITORADOS_AMBAS_CASAS_LINK = '/selecao#ambas-casas';
 
 const DashboardPage = () => {
   const MOBILE_BREAKPOINT_PX = 768;

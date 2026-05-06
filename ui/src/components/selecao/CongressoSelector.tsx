@@ -35,9 +35,9 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
     { key: 'camara', label: 'CÂMARA DOS DEPUTADOS' },
   ];
   const optionIdMap: Record<CasaLegislativa, string> = {
-    senado: 'selector-senado-federal',
-    ambas: 'selector-ambas-casas',
-    camara: 'selector-camara-dos-deputados',
+    senado: 'senado-federal',
+    ambas: 'ambas-casas',
+    camara: 'camara-dos-deputados',
   };
 
   return (
