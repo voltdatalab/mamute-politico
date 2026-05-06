@@ -6,6 +6,13 @@ import {
   type SortOrder,
   type SpeechesTranscriptSortBy,
 } from '@/api/endpoints';
+import {
+  buildFilterChips,
+  formatDateOnlyLabel,
+  formatDateTimeLabel,
+  toIsoOrUndefined,
+  useDraftAppliedFilters,
+} from '@/components/dashboard/filterUtils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -64,24 +71,17 @@ const VISIBLE_SORT_KEYS: SpeechesTranscriptSortBy[] = [
   'id',
 ];
 
-function toIsoOrUndefined(value: string): string | undefined {
-  if (!value) return undefined;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return undefined;
-  return d.toISOString();
-}
-
-function formatLabelDate(value: string): string {
-  if (!value) return '';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
-
 export function TaquigraficasTable({ limit = 20, parliamentarianId }: TaquigraficasTableProps) {
-  const [draftFilters, setDraftFilters] = useState<SpeechFilters>(EMPTY_FILTERS);
-  const [appliedFilters, setAppliedFilters] = useState<SpeechFilters>(EMPTY_FILTERS);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const {
+    draftFilters,
+    setDraftFilters,
+    appliedFilters,
+    filtersOpen,
+    onFiltersOpenChange,
+    applyFilters,
+    clearAllFilters,
+    clearFilter,
+  } = useDraftAppliedFilters(EMPTY_FILTERS);
   const [sortBy, setSortBy] = useState<SpeechesTranscriptSortBy>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -118,7 +118,8 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
     (speeches ?? []).map((speech, index) => [speech.id, analysisQueries[index]?.data])
   );
 
-  const activeFilterChips = (
+  const activeFilterChips = buildFilterChips(
+    appliedFilters,
     [
       ['date_from', 'Data a partir de'],
       ['date_to', 'Data até'],
@@ -127,30 +128,13 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
       ['updated_from', 'Atualizado a partir de'],
       ['updated_to', 'Atualizado até'],
     ] as const
-  )
-    .map(([key, label]) => ({ key, label, value: appliedFilters[key] }))
-    .filter((c) => Boolean(c.value));
+  );
 
   const renderChipValue = (key: keyof SpeechFilters, value: string) => {
     if (key === 'date_from' || key === 'date_to') {
-      return new Date(value + 'T00:00:00').toLocaleDateString('pt-BR');
+      return formatDateOnlyLabel(value);
     }
-    return formatLabelDate(value);
-  };
-
-  const clearFilter = (key: keyof SpeechFilters) => {
-    setDraftFilters((prev) => ({ ...prev, [key]: '' }));
-    setAppliedFilters((prev) => ({ ...prev, [key]: '' }));
-  };
-
-  const applyFilters = () => {
-    setAppliedFilters(draftFilters);
-    setFiltersOpen(false);
-  };
-
-  const clearAllFilters = () => {
-    setDraftFilters(EMPTY_FILTERS);
-    setAppliedFilters(EMPTY_FILTERS);
+    return formatDateTimeLabel(value);
   };
 
   return (
@@ -158,10 +142,7 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
       <div className="flex flex-wrap items-center gap-2">
         <Popover
           open={filtersOpen}
-          onOpenChange={(open) => {
-            setFiltersOpen(open);
-            if (open) setDraftFilters(appliedFilters);
-          }}
+          onOpenChange={onFiltersOpenChange}
         >
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
@@ -299,7 +280,7 @@ export function TaquigraficasTable({ limit = 20, parliamentarianId }: Taquigrafi
             </span>
             <X
               className="h-3 w-3 cursor-pointer"
-              onClick={() => clearFilter(chip.key)}
+              onClick={() => clearFilter(chip.key as keyof SpeechFilters)}
             />
           </Badge>
         ))}

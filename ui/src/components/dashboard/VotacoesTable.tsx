@@ -2,6 +2,12 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { listRollCallVotes, type RollCallVoteSortBy, type SortOrder } from '@/api/endpoints';
 import { mapRollCallVoteOutToVotacao } from '@/api/mappers';
+import {
+  buildFilterChips,
+  formatDateTimeLabel,
+  toIsoOrUndefined,
+  useDraftAppliedFilters,
+} from '@/components/dashboard/filterUtils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -61,24 +67,17 @@ const SORT_BY_LABELS: Record<RollCallVoteSortBy, string> = {
 
 const VISIBLE_SORT_KEYS: RollCallVoteSortBy[] = ['created_at', 'updated_at', 'id'];
 
-function toIsoOrUndefined(value: string): string | undefined {
-  if (!value) return undefined;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return undefined;
-  return d.toISOString();
-}
-
-function formatLabelDate(value: string): string {
-  if (!value) return '';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
-
 export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTableProps) {
-  const [draftFilters, setDraftFilters] = useState<DateRangeFilters>(EMPTY_FILTERS);
-  const [appliedFilters, setAppliedFilters] = useState<DateRangeFilters>(EMPTY_FILTERS);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const {
+    draftFilters,
+    setDraftFilters,
+    appliedFilters,
+    filtersOpen,
+    onFiltersOpenChange,
+    applyFilters,
+    clearAllFilters,
+    clearFilter,
+  } = useDraftAppliedFilters(EMPTY_FILTERS);
   const [sortBy, setSortBy] = useState<RollCallVoteSortBy>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -104,31 +103,15 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
 
   const votacoes = rawList != null ? rawList.map(mapRollCallVoteOutToVotacao) : [];
 
-  const activeFilterChips = (
+  const activeFilterChips = buildFilterChips(
+    appliedFilters,
     [
       ['created_from', 'Criado a partir de'],
       ['created_to', 'Criado até'],
       ['updated_from', 'Atualizado a partir de'],
       ['updated_to', 'Atualizado até'],
     ] as const
-  )
-    .map(([key, label]) => ({ key, label, value: appliedFilters[key] }))
-    .filter((c) => Boolean(c.value));
-
-  const clearFilter = (key: keyof DateRangeFilters) => {
-    setDraftFilters((prev) => ({ ...prev, [key]: '' }));
-    setAppliedFilters((prev) => ({ ...prev, [key]: '' }));
-  };
-
-  const applyFilters = () => {
-    setAppliedFilters(draftFilters);
-    setFiltersOpen(false);
-  };
-
-  const clearAllFilters = () => {
-    setDraftFilters(EMPTY_FILTERS);
-    setAppliedFilters(EMPTY_FILTERS);
-  };
+  );
 
   const getVotoIcon = (voto: string) => {
     switch (voto) {
@@ -165,10 +148,7 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
       <div className="flex flex-wrap items-center gap-2">
         <Popover
           open={filtersOpen}
-          onOpenChange={(open) => {
-            setFiltersOpen(open);
-            if (open) setDraftFilters(appliedFilters);
-          }}
+          onOpenChange={onFiltersOpenChange}
         >
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
@@ -277,11 +257,11 @@ export function VotacoesTable({ limit = 10, parliamentarianId }: VotacoesTablePr
         {activeFilterChips.map((chip) => (
           <Badge key={chip.key} variant="secondary" className="gap-1">
             <span className="text-[11px]">
-              {chip.label}: {formatLabelDate(chip.value)}
+              {chip.label}: {formatDateTimeLabel(chip.value)}
             </span>
             <X
               className="h-3 w-3 cursor-pointer"
-              onClick={() => clearFilter(chip.key)}
+              onClick={() => clearFilter(chip.key as keyof DateRangeFilters)}
             />
           </Badge>
         ))}

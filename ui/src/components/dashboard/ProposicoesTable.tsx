@@ -7,6 +7,13 @@ import {
   type SortOrder,
 } from '@/api/endpoints';
 import { mapPropositionOutToProposicao } from '@/api/mappers';
+import {
+  buildFilterChips,
+  formatDateOnlyLabel,
+  formatDateTimeLabel,
+  toIsoOrUndefined,
+  useDraftAppliedFilters,
+} from '@/components/dashboard/filterUtils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,27 +81,20 @@ const SORT_KEYS: PropositionSortBy[] = [
   'proposition_number',
 ];
 
-function toIsoOrUndefined(value: string): string | undefined {
-  if (!value) return undefined;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return undefined;
-  return d.toISOString();
-}
-
-function formatLabelDate(value: string): string {
-  if (!value) return '';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
-
 export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesTableProps) {
   const numericId = parliamentarianId != null && parliamentarianId !== '' ? Number(parliamentarianId) : NaN;
   const isParliamentarianScope = Number.isInteger(numericId) && numericId > 0;
 
-  const [draftFilters, setDraftFilters] = useState<PropositionsFilters>(EMPTY_FILTERS);
-  const [appliedFilters, setAppliedFilters] = useState<PropositionsFilters>(EMPTY_FILTERS);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const {
+    draftFilters,
+    setDraftFilters,
+    appliedFilters,
+    filtersOpen,
+    onFiltersOpenChange,
+    applyFilters,
+    clearAllFilters,
+    clearFilter,
+  } = useDraftAppliedFilters(EMPTY_FILTERS);
   const [sortBy, setSortBy] = useState<PropositionSortBy>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -130,7 +130,8 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
 
   const proposicoes = rawList != null ? rawList.map(mapPropositionOutToProposicao) : [];
 
-  const activeFilterChips = (
+  const activeFilterChips = buildFilterChips(
+    appliedFilters,
     [
       ['year', 'Ano'],
       ['acronym', 'Sigla'],
@@ -141,31 +142,14 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
       ['updated_from', 'Atualizado a partir de'],
       ['updated_to', 'Atualizado até'],
     ] as const
-  )
-    .map(([key, label]) => ({ key, label, value: appliedFilters[key] }))
-    .filter((c) => Boolean(c.value));
+  );
 
   const renderChipValue = (key: keyof PropositionsFilters, value: string) => {
     if (key === 'year' || key === 'acronym') return value;
     if (key === 'presentation_date_from' || key === 'presentation_date_to') {
-      return new Date(value + 'T00:00:00').toLocaleDateString('pt-BR');
+      return formatDateOnlyLabel(value);
     }
-    return formatLabelDate(value);
-  };
-
-  const clearFilter = (key: keyof PropositionsFilters) => {
-    setDraftFilters((prev) => ({ ...prev, [key]: '' }));
-    setAppliedFilters((prev) => ({ ...prev, [key]: '' }));
-  };
-
-  const applyFilters = () => {
-    setAppliedFilters(draftFilters);
-    setFiltersOpen(false);
-  };
-
-  const clearAllFilters = () => {
-    setDraftFilters(EMPTY_FILTERS);
-    setAppliedFilters(EMPTY_FILTERS);
+    return formatDateTimeLabel(value);
   };
 
   return (
@@ -173,10 +157,7 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
       <div className="flex flex-wrap items-center gap-2">
         <Popover
           open={filtersOpen}
-          onOpenChange={(open) => {
-            setFiltersOpen(open);
-            if (open) setDraftFilters(appliedFilters);
-          }}
+          onOpenChange={onFiltersOpenChange}
         >
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
@@ -343,7 +324,7 @@ export function ProposicoesTable({ limit = 10, parliamentarianId }: ProposicoesT
             </span>
             <X
               className="h-3 w-3 cursor-pointer"
-              onClick={() => clearFilter(chip.key)}
+              onClick={() => clearFilter(chip.key as keyof PropositionsFilters)}
             />
           </Badge>
         ))}
