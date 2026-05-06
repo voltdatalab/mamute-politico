@@ -137,19 +137,19 @@ const ParlamentarDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Dados cadastrais */}
           <div className="mp-card bg-white p-6">
-            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Dados cadastrais</h2>
+            <h2 className="mb-4 text-[32px] leading-none font-bold text-[#090909]">Dados cadastrais</h2>
             <ParlamentarInfo parlamentar={parlamentar} />
           </div>
 
           {/* Temas do discurso */}
           <div className="mp-card bg-white p-6">
-            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Temas do discurso</h2>
+            <h2 className="mb-4 text-[32px] leading-none font-bold text-[#090909]">Temas do discurso</h2>
             <WordCloud parliamentarianId={parliamentarianCode} parlamentarNome={parlamentar.nome} />
           </div>
 
           {/* Últimos projetos */}
           <div className="mp-card bg-white p-6">
-            <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
+            <h2 className="mb-4 text-[32px] leading-none font-bold text-[#090909]">Últimos projetos</h2>
             <ProposicoesList limit={4} parliamentarianId={id} />
           </div>
         </div>
@@ -169,7 +169,7 @@ const ParlamentarDashboard = () => {
                   TAQUIGRÁFICAS
                 </TabsTrigger>
               </TabsList>
-              <h2 className="text-[32px] font-bold text-[#090909]">Atividades do Parlamentar</h2>
+              <h2 className="text-[32px] leading-none font-bold text-[#090909]">Atividades do Parlamentar</h2>
             </div>
             <TabsContent value="votacoes" className="mt-0 p-6 pt-4 h-[500px]">
               <VotacoesTable parliamentarianId={numericId} />

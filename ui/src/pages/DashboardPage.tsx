@@ -122,7 +122,7 @@ const DashboardPage = () => {
         {/* Page header */}
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-[48px] font-bold leading-none text-[#393939]">
+            <h1 className="text-[36px] md:text-[48px] font-bold leading-none text-[#393939]">
               Dashboard Geral
             </h1>
             <p className="mt-1 text-[18px] font-normal text-[#383838]">
@@ -144,7 +144,7 @@ const DashboardPage = () => {
         {/* Parlamentares monitorados */}
         <div className="mp-card bg-white p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-[32px] font-bold text-[#090909]">
+            <h2 className="text-[32px] leading-none font-bold text-[#090909]">
               <Link to="/selecao#selector-ambas-casas" className="underline-offset-4 transition hover:underline">
                 Parlamentares monitorados
               </Link>
@@ -208,7 +208,7 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Linha do tempo — 2 cols */}
           <div className="mp-card lg:col-span-2 bg-white p-6">
-            <h2 className="mb-4 truncate text-[32px] font-bold text-[#090909]">Linha do tempo</h2>
+            <h2 className="mb-4 truncate text-[32px] leading-none font-bold text-[#090909]">Linha do tempo</h2>
             <div className="h-[560px]">
               <Timeline />
             </div>
@@ -218,13 +218,13 @@ const DashboardPage = () => {
           <div className="space-y-6">
             {/* Últimos projetos */}
             <div className="mp-card bg-white p-6">
-              <h2 className="mb-4 truncate text-[32px] font-bold text-[#090909]">Últimos projetos</h2>
+              <h2 className="mb-4 truncate text-[32px] leading-none font-bold text-[#090909]">Últimos projetos</h2>
               <ProposicoesList limit={2} />
             </div>
 
             {/* Estatísticas */}
             <div className="mp-card bg-white p-6">
-              <h2 className="mb-4 text-[32px] font-bold text-[#090909]">Estatísticas</h2>
+              <h2 className="mb-4 text-[32px] leading-none font-bold text-[#090909]">Estatísticas</h2>
               <div className="flex items-start justify-between gap-2">
                 {statsItems.map((stat) => (
                   <div key={stat.label} className="flex flex-col items-center gap-2">

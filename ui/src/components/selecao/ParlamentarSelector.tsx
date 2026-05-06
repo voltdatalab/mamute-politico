@@ -134,7 +134,7 @@ export function ParlamentarSelector({
       <Card className="mp-card flex h-[564px] flex-col border-none bg-white">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-[32px] font-bold text-[#090909]">Parlamentares disponíveis</CardTitle>
+            <CardTitle className="text-[32px] leading-none font-bold text-[#090909]">Parlamentares disponíveis</CardTitle>
             <Badge variant="secondary" className="bg-transparent text-[18px] font-medium text-[#7f7c7c]">+{parlamentaresDisponiveis.length}</Badge>
           </div>
           
@@ -309,7 +309,7 @@ export function ParlamentarSelector({
       <Card className="mp-card flex h-[564px] flex-col border-none bg-white">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-[32px] font-bold text-[#090909]">Parlamentares monitorados</CardTitle>
+            <CardTitle className="text-[32px] leading-none font-bold text-[#090909]">Parlamentares monitorados</CardTitle>
             <Badge variant="secondary" className="bg-transparent text-[18px] font-medium text-[#7f7c7c]">+{parlamentaresSelecionados.length}</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
