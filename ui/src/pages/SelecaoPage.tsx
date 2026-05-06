@@ -118,7 +118,7 @@ const SelecaoPage = () => {
           <div className="bg-textura-gold px-6 py-10">
             <div className="container">
               <h1 className="text-center text-[36px] md:text-[48px] leading-none font-bold text-[#393939]">{casaLabel}</h1>
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-[16px] md:justify-between">
                 <button
                   type="button"
                   onClick={handleBack}
