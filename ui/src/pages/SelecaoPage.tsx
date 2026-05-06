@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
@@ -17,26 +16,20 @@ import { ApiError } from '@/api/client';
 import { mapParliamentarianOutToParlamentar } from '@/api/mappers';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
-const getCasaFromHash = (hash: string): CasaLegislativa | null => {
-  if (hash === '#selector-ambas-casas') {
-    return 'ambas';
-  }
-  return null;
+const CASA_HASH: Record<CasaLegislativa, string> = {
+  senado: '#selector-senado-federal',
+  ambas: '#selector-ambas-casas',
+  camara: '#selector-camara-dos-deputados',
 };
+
+const getCasaFromHash = (hash: string): CasaLegislativa | null =>
+  (Object.entries(CASA_HASH).find(([, casaHash]) => casaHash === hash)?.[0] as CasaLegislativa | undefined) ?? null;
 
 const SelecaoPage = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const location = useLocation();
-  const [casaSelecionada, setCasaSelecionada] = useState<CasaLegislativa | null>(() =>
-    typeof window !== 'undefined' ? getCasaFromHash(window.location.hash) : null
-  );
-
-  useEffect(() => {
-    const casaFromHash = getCasaFromHash(location.hash);
-    if (casaFromHash != null) {
-      setCasaSelecionada(casaFromHash);
-    }
-  }, [location.hash]);
+  const casaSelecionada = getCasaFromHash(location.hash);
 
   const favoritesQuery = useQuery({
     queryKey: ['project-favorites', 'me'],
@@ -99,7 +92,7 @@ const SelecaoPage = () => {
   });
 
   const handleSelectCasa = (casa: CasaLegislativa) => {
-    setCasaSelecionada(casa);
+    navigate({ pathname: '/selecao', hash: CASA_HASH[casa] });
   };
 
   const handleAddParlamentar = (parlamentar: Parlamentar) => {
@@ -111,7 +104,7 @@ const SelecaoPage = () => {
   };
 
   const handleBack = () => {
-    setCasaSelecionada(null);
+    navigate('/selecao');
   };
 
   const favoritosMutating = addMutation.isPending || removeMutation.isPending;

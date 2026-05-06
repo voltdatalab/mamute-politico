@@ -34,6 +34,11 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
     { key: 'ambas', label: 'AMBAS AS CASAS' },
     { key: 'camara', label: 'CÂMARA DOS DEPUTADOS' },
   ];
+  const optionIdMap: Record<CasaLegislativa, string> = {
+    senado: 'selector-senado-federal',
+    ambas: 'selector-ambas-casas',
+    camara: 'selector-camara-dos-deputados',
+  };
 
   return (
     <>
@@ -99,7 +104,7 @@ export function CongressoSelector({ onSelect, selected }: CongressoSelectorProps
             return (
               <button
                 key={option.key}
-                id={option.key === 'ambas' ? 'selector-ambas-casas' : undefined}
+                id={optionIdMap[option.key]}
                 type="button"
                 onClick={() => onSelect(option.key)}
                 onMouseEnter={() => { setTilt(tiltMap[option.key]); setIsHovering(true); }}
