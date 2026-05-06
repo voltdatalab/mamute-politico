@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
 import { SelecaoFooter } from '@/components/selecao/SelecaoFooter';
@@ -47,6 +47,7 @@ const toErrorMessage = (value: unknown): string => {
 
 const ParlamentarDashboard = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const numericId = id != null ? Number(id) : NaN;
   const isIdValid = Number.isInteger(numericId) && numericId > 0;
 
@@ -126,12 +127,14 @@ const ParlamentarDashboard = () => {
 
       <main className="container py-8 space-y-6">
         {/* Back button */}
-        <Link to="/dashboard">
-          <button className="flex items-center gap-2 rounded-[76px] bg-white px-5 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90">
-            <ArrowLeft className="h-4 w-4" />
-            VOLTAR AO DASHBOARD GERAL
-          </button>
-        </Link>
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-2 rounded-[76px] bg-white px-5 py-2 text-[13px] font-semibold text-[#383838] shadow-sm transition hover:opacity-90"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          VOLTAR AO DASHBOARD GERAL
+        </button>
 
         {/* Top Row: Dados cadastrais | Temas do discurso | Últimos projetos */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
