@@ -67,12 +67,19 @@ O ficheiro [`environments/production/docker-compose.yml`](environments/productio
 3. `chatbot_backend` → indexação vetorial + serviço de chat.
 4. `ui` → front-end (após API e, se usar o chat na interface, o chatbot).
 
+## Configurar o Ghost
+
+Após subir a stack, configure o Ghost para redirecionar a home para a aplicação e aplicar os ajustes visuais recomendados.
+
+- Guia completo: [`environments/ghost.md`](environments/ghost.md)
+- Inclui: script de redirecionamento no Code Injection
 ## Links rápidos
 
 - [README dos Scrappers](mamute_scrappers/README.md)
 - [README da API](api/README.md)
 - [README do Chatbot Backend](chatbot_backend/README.md)
 - [README da interface (UI)](ui/README.md)
+- [Configuração do Ghost](environments/ghost.md)
 - [Compose de produção](environments/production/docker-compose.yml) · [Compose de desenvolvimento](environments/development/docker-compose.yml)
 
 ## Diagrama
