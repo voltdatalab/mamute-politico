@@ -1,0 +1,8 @@
+/* Stabilize motion for visual regression and Storybook preview. */
+html[data-storybook-reduced-motion="true"] *,
+html[data-storybook-reduced-motion="true"] *::before,
+html[data-storybook-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
