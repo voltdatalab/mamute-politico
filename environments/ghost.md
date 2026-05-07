@@ -1,7 +1,7 @@
 Configuracao Ghost
 
 - Visite https://meu-endereco-aqui.com/ghost/#/settings/code-injection
-- Em code injection, clique em open, copie no `header` e cole o codigo abaixo:
+- Em code injection, clique em open, copie e cole em `header` o codigo abaixo, que redireciona o Ghost para o app:
 
 ```
 <script>
