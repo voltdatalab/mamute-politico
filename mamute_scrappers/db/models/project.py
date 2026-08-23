@@ -193,5 +193,42 @@ class ProjetosParliamentarian(Base):
     )
 
 
-__all__ = ["Projetos", "ProjetosParliamentarian", "Tiers"]
+class ProjetosCandidacy(Base):
+    """Candidatura que o assinante escolheu acompanhar (eleicao 2026).
+
+    Apenas o REGISTRO da escolha: nenhuma feature consome este vinculo ainda
+    (decisao de produto em 2026-08-23). Sem cota e sem soft-delete: desmarcar
+    apaga a linha. Espelho do modelo da API, dono da migration.
+    """
+
+    __tablename__ = "projetos_candidacy"
+    __table_args__ = (
+        UniqueConstraint(
+            "projeto_id",
+            "candidacy_id",
+            name="uq_projetos_candidacy_unique",
+        ),
+    )
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    projeto_id = Column(
+        BigInteger,
+        ForeignKey("projetos.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    candidacy_id = Column(
+        BigInteger,
+        ForeignKey("candidacy.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+__all__ = ["Projetos", "ProjetosCandidacy", "ProjetosParliamentarian", "Tiers"]
 

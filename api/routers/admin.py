@@ -52,6 +52,8 @@ try:
         get_usd_brl_rate,
         metrics_emails,
         metrics_ia,
+        metrics_candidacy_favorites,
+        metrics_mamutometro,
         metrics_overview,
         metrics_parliamentarians,
         metrics_sections,
@@ -97,6 +99,8 @@ except ImportError:  # execução dentro de api/
         get_usd_brl_rate,
         metrics_emails,
         metrics_ia,
+        metrics_candidacy_favorites,
+        metrics_mamutometro,
         metrics_overview,
         metrics_parliamentarians,
         metrics_sections,
@@ -410,6 +414,23 @@ def metrics_parliamentarians_route(
     _admin: str = Depends(require_ghost_admin),
 ) -> dict[str, Any]:
     return metrics_parliamentarians(db, limit=limit)
+
+
+@router.get("/metrics/mamutometro")
+def metrics_mamutometro_route(
+    db: Session = Depends(get_db),
+    _admin: str = Depends(require_ghost_admin),
+) -> dict[str, Any]:
+    return metrics_mamutometro(db)
+
+
+@router.get("/metrics/candidacies")
+def metrics_candidacies_route(
+    limit: int = 20,
+    db: Session = Depends(get_db),
+    _admin: str = Depends(require_ghost_admin),
+) -> dict[str, Any]:
+    return metrics_candidacy_favorites(db, limit=limit)
 
 
 @router.get("/metrics/ia")

@@ -57,12 +57,16 @@ const SEM_VINCULO = candidatura({
 });
 
 const listCandidacies = vi.fn();
-const addMyProjectFavorite = vi.fn();
+const addMyCandidacyFavorite = vi.fn();
+const removeMyCandidacyFavorite = vi.fn();
+const listMyCandidacyFavorites = vi.fn();
 
 vi.mock('@/api/endpoints', async (importOriginal) => ({
   ...(await importOriginal<typeof endpointsModule>()),
   listCandidacies: (...args: unknown[]) => listCandidacies(...args),
-  addMyProjectFavorite: (...args: unknown[]) => addMyProjectFavorite(...args),
+  addMyCandidacyFavorite: (...args: unknown[]) => addMyCandidacyFavorite(...args),
+  removeMyCandidacyFavorite: (...args: unknown[]) => removeMyCandidacyFavorite(...args),
+  listMyCandidacyFavorites: (...args: unknown[]) => listMyCandidacyFavorites(...args),
   getCandidacyFilters: vi.fn().mockResolvedValue({
     election_years: [2026],
     states: ['CE', 'SP'],
@@ -71,7 +75,6 @@ vi.mock('@/api/endpoints', async (importOriginal) => ({
       { code: 6, name: 'Deputado Federal' },
     ],
   }),
-  listMyProjectFavorites: vi.fn().mockResolvedValue([]),
 }));
 
 class MockIntersectionObserver {
@@ -100,8 +103,12 @@ beforeEach(() => {
   acessoState.valor = 'liberada';
   toastInfo.mockReset();
   toastSuccess.mockReset();
-  addMyProjectFavorite.mockReset();
-  addMyProjectFavorite.mockResolvedValue({ id: 1, parliamentarian_id: 77 });
+  addMyCandidacyFavorite.mockReset();
+  addMyCandidacyFavorite.mockResolvedValue({ id: 1, projeto_id: 10, candidacy_id: 1 });
+  removeMyCandidacyFavorite.mockReset();
+  removeMyCandidacyFavorite.mockResolvedValue(undefined);
+  listMyCandidacyFavorites.mockReset();
+  listMyCandidacyFavorites.mockResolvedValue([]);
 });
 
 describe('BuscarCandidaturasPage', () => {
@@ -115,15 +122,12 @@ describe('BuscarCandidaturasPage', () => {
     expect(screen.getByText('CÂMARA')).toBeInTheDocument();
   });
 
-  it('busca por nome só ao submeter, e vira chip removível', async () => {
+  it('digitar já busca (debounce), e o nome vira chip removível', async () => {
     await renderPagina();
     await screen.findByText('Luciana Ferreira');
 
     fireEvent.change(screen.getByLabelText('Busca por nome'), { target: { value: 'luciana' } });
-    // Digitar não busca: o design tem botão PESQUISAR explícito.
-    expect(listCandidacies).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(screen.getByRole('button', { name: 'PESQUISAR' }));
+    // Busca reativa: sem clicar em nada, o debounce dispara a busca.
     await waitFor(() =>
       expect(listCandidacies).toHaveBeenLastCalledWith(
         expect.objectContaining({ name: 'luciana' }),
@@ -139,7 +143,7 @@ describe('BuscarCandidaturasPage', () => {
     );
   });
 
-  it('avisa e não busca quando o nome tem só um caractere', async () => {
+  it('nome com um caractere não vira filtro (e PESQUISAR avisa)', async () => {
     await renderPagina();
     await screen.findByText('Luciana Ferreira');
 
@@ -157,31 +161,75 @@ describe('BuscarCandidaturasPage', () => {
     );
   });
 
-  it('"+" monitora a candidatura vinculada a um parlamentar', async () => {
+  it('selecionar estado aplica o filtro na hora, sem PESQUISAR', async () => {
     await renderPagina();
     await screen.findByText('Luciana Ferreira');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Adicionar Luciana Ferreira aos monitorados' }));
-    await waitFor(() => expect(addMyProjectFavorite).toHaveBeenCalledWith(77));
+    fireEvent.click(screen.getByLabelText('Selecionar estado'));
+    fireEvent.click(await screen.findByRole('option', { name: 'CE' }));
+
     await waitFor(() =>
-      expect(toastSuccess).toHaveBeenCalledWith(
-        'Luciana Ferreira adicionado(a) aos monitorados.',
+      expect(listCandidacies).toHaveBeenLastCalledWith(
+        expect.objectContaining({ state: 'CE' }),
       ),
     );
   });
 
-  it('"+" fica desabilitado quando a candidatura não tem parlamentar vinculado', async () => {
+  it('"+" registra o acompanhamento de qualquer candidatura', async () => {
     await renderPagina();
-    await screen.findByText('João do Ceará');
+    await screen.findByText('Luciana Ferreira');
 
-    const botao = screen.getByRole('button', {
-      name: 'Adicionar João do Ceará aos monitorados',
-    });
-    expect(botao).toBeDisabled();
-    expect(botao).toHaveAttribute(
-      'title',
-      expect.stringContaining('não está vinculada a um parlamentar'),
+    fireEvent.click(screen.getByRole('button', { name: 'Acompanhar Luciana Ferreira' }));
+    await waitFor(() => expect(addMyCandidacyFavorite).toHaveBeenCalledWith(1));
+    await waitFor(() =>
+      expect(toastSuccess).toHaveBeenCalledWith(
+        'Você está acompanhando Luciana Ferreira.',
+      ),
     );
+
+    // Candidatura SEM parlamentar vinculado também pode ser acompanhada — é o
+    // registro da escolha, não o monitoramento por parlamentar.
+    fireEvent.click(screen.getByRole('button', { name: 'Acompanhar João do Ceará' }));
+    await waitFor(() => expect(addMyCandidacyFavorite).toHaveBeenCalledWith(2));
+  });
+
+  it('candidatura já acompanhada mostra o check e o clique desfaz', async () => {
+    listMyCandidacyFavorites.mockResolvedValue([
+      { id: 9, projeto_id: 10, candidacy_id: 1, created_at: '2026-08-23' },
+    ]);
+    await renderPagina();
+    await screen.findByText('Luciana Ferreira');
+
+    const botao = await screen.findByRole('button', {
+      name: 'Deixar de acompanhar Luciana Ferreira',
+    });
+    fireEvent.click(botao);
+    await waitFor(() => expect(removeMyCandidacyFavorite).toHaveBeenCalledWith(1));
+    await waitFor(() =>
+      expect(toastSuccess).toHaveBeenCalledWith(
+        'Você deixou de acompanhar Luciana Ferreira.',
+      ),
+    );
+  });
+
+  it('página cheia oferece "Carregar mais"; página curta encerra a lista', async () => {
+    // 50 resultados = página cheia = provavelmente há mais.
+    listCandidacies.mockResolvedValue(
+      Array.from({ length: 50 }, (_, i) => candidatura({ id: i + 1, tse_candidate_id: i + 1 })),
+    );
+    await renderPagina();
+
+    const carregarMais = await screen.findByRole('button', { name: 'Carregar mais' });
+
+    listCandidacies.mockResolvedValue([SEM_VINCULO]);
+    fireEvent.click(carregarMais);
+
+    await waitFor(() =>
+      expect(listCandidacies).toHaveBeenLastCalledWith(
+        expect.objectContaining({ offset: 50 }),
+      ),
+    );
+    expect(await screen.findByText(/Fim da lista — 51 candidaturas\./)).toBeInTheDocument();
   });
 
   it('mostra recado próprio quando a busca não devolve nada', async () => {

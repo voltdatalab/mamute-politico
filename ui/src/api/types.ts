@@ -362,6 +362,14 @@ export interface CandidacyOfficeOut {
   name: string;
 }
 
+/** Vínculo de acompanhamento entre o assinante e uma candidatura (2026). */
+export interface CandidacyFavoriteOut {
+  id: number;
+  projeto_id: number;
+  candidacy_id: number;
+  created_at: string;
+}
+
 export interface CandidacyFiltersOut {
   election_years: number[];
   states: string[];

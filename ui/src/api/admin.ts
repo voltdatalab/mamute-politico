@@ -161,6 +161,49 @@ export function fetchParliamentarians(): Promise<ParliamentariansMetrics> {
   return request<ParliamentariansMetrics>('/admin/metrics/parliamentarians');
 }
 
+export interface MamutometroRow {
+  parliamentarian_id: number;
+  name: string | null;
+  house: 'camara' | 'senado';
+  state: string;
+  /** Quantas pessoas marcaram (1 marcação por assinante). */
+  people: number;
+  /** Soma dos níveis — o total de mamutinhos. */
+  total: number;
+  /** Média de mamutinhos por pessoa que marcou. */
+  average: number;
+}
+
+export interface MamutometroMetrics {
+  top: MamutometroRow[];
+  totals: { parliamentarians: number; marks: number; mamutinhos: number };
+}
+
+export function fetchMamutometro(): Promise<MamutometroMetrics> {
+  return request<MamutometroMetrics>('/admin/metrics/mamutometro');
+}
+
+export interface CandidacyMonitorRow {
+  candidacy_id: number;
+  name: string | null;
+  office: string | null;
+  office_code: number | null;
+  state: string;
+  party: string | null;
+  monitors: number;
+}
+
+export interface CandidacyMonitorsMetrics {
+  top: CandidacyMonitorRow[];
+  by_office: { office: string; monitors: number }[];
+  by_state: { state: string; monitors: number }[];
+  totals: { links: number; candidacies: number; users: number };
+}
+
+export function fetchCandidacyMonitors(): Promise<CandidacyMonitorsMetrics> {
+  return request<CandidacyMonitorsMetrics>('/admin/metrics/candidacies');
+}
+
 export interface IaSaude {
   /** Consultas completed com resposta entregue ao usuário. */
   respostas_ok: number;
