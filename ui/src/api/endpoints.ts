@@ -24,6 +24,7 @@ import type {
   ExpenseOut,
   ExpenseSummaryOut,
   CandidacyOut,
+  CandidacyFavoriteOut,
   CandidacyFiltersOut,
 } from './types';
 
@@ -625,4 +626,21 @@ export function listCandidacies(
 /** Anos, UFs e cargos que existem na base — alimenta os dropdowns da busca. */
 export function getCandidacyFilters(): Promise<CandidacyFiltersOut> {
   return request<CandidacyFiltersOut>('/candidacies/filters');
+}
+
+export function listMyCandidacyFavorites(): Promise<CandidacyFavoriteOut[]> {
+  return request<CandidacyFavoriteOut[]>('/projects/me/candidacy-favorites');
+}
+
+export function addMyCandidacyFavorite(candidacyId: number): Promise<CandidacyFavoriteOut> {
+  return request<CandidacyFavoriteOut>('/projects/me/candidacy-favorites', {
+    method: 'POST',
+    body: JSON.stringify({ candidacy_id: candidacyId }),
+  });
+}
+
+export function removeMyCandidacyFavorite(candidacyId: number): Promise<void> {
+  return request<void>(`/projects/me/candidacy-favorites/${candidacyId}`, {
+    method: 'DELETE',
+  });
 }

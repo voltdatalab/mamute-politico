@@ -408,6 +408,132 @@ def metrics_parliamentarians(db: Session, limit: int = 20) -> dict[str, Any]:
     return {"top": top[:limit], "by_house": by_house, "by_state": by_state_list}
 
 
+def metrics_mamutometro(db: Session, limit: int = 200) -> dict[str, Any]:
+    """Parlamentares por marcações do mamutômetro, nas três leituras.
+
+    `project_mamutometro` tem no máximo uma linha por (assinante, parlamentar),
+    então COUNT(*) é "quantas pessoas marcaram", SUM(level) é o total de
+    mamutinhos e AVG(level) a média por pessoa. Devolve a lista inteira (o teto
+    de linhas é o nº de parlamentares) e o front escolhe a ordenação — top-N
+    por visão mudaria a composição da lista a cada aba.
+
+    Só agregados saem daqui: nível é privado por spec, e nada aqui responde
+    "quem marcou o político X".
+    """
+    rows = (
+        db.execute(
+            text(
+                """
+                SELECT p.id AS pid, p.name AS name, p.type AS ptype,
+                       COALESCE(p.state_elected, '') AS state,
+                       COUNT(*) AS people,
+                       SUM(pm.level) AS total,
+                       AVG(pm.level) AS media
+                FROM project_mamutometro pm
+                JOIN parliamentarian p ON p.id = pm.parliamentarian_id
+                GROUP BY p.id, p.name, p.type, p.state_elected
+                ORDER BY people DESC, total DESC
+                """
+            )
+        )
+        .mappings()
+        .all()
+    )
+
+    top = [
+        {
+            "parliamentarian_id": row["pid"],
+            "name": row["name"],
+            "house": _house_of(row["ptype"]),
+            "state": row["state"] or "?",
+            "people": int(row["people"]),
+            "total": int(row["total"]),
+            "average": round(float(row["media"]), 2),
+        }
+        for row in rows[:limit]
+    ]
+    # Totais sobre TODAS as linhas, não só as devolvidas — senão o corte do
+    # limit faria os cards de total mentirem.
+    totals = {
+        "parliamentarians": len(rows),
+        "marks": sum(int(row["people"]) for row in rows),
+        "mamutinhos": sum(int(row["total"]) for row in rows),
+    }
+    return {"top": top, "totals": totals}
+
+
+def metrics_candidacy_favorites(db: Session, limit: int = 20) -> dict[str, Any]:
+    """Candidaturas mais acompanhadas (projetos_candidacy), com recortes.
+
+    Recortes por cargo e por UF saem do MESMO conjunto de vínculos, para os
+    números baterem entre si na tela.
+    """
+    rows = (
+        db.execute(
+            text(
+                """
+                SELECT c.id AS cid,
+                       COALESCE(c.ballot_name, c.full_name) AS name,
+                       c.office AS office, c.office_code AS office_code,
+                       COALESCE(c.state, '?') AS state, c.party AS party,
+                       COUNT(*) AS monitors
+                FROM projetos_candidacy pc
+                JOIN candidacy c ON c.id = pc.candidacy_id
+                GROUP BY c.id, c.ballot_name, c.full_name, c.office,
+                         c.office_code, c.state, c.party
+                ORDER BY monitors DESC, name ASC
+                """
+            )
+        )
+        .mappings()
+        .all()
+    )
+
+    by_office: dict[str, int] = {}
+    by_state: dict[str, int] = {}
+    total_links = 0
+    for row in rows:
+        monitors = int(row["monitors"])
+        total_links += monitors
+        office = row["office"] or "?"
+        by_office[office] = by_office.get(office, 0) + monitors
+        by_state[row["state"]] = by_state.get(row["state"], 0) + monitors
+
+    top = [
+        {
+            "candidacy_id": row["cid"],
+            "name": row["name"],
+            "office": row["office"],
+            "office_code": row["office_code"],
+            "state": row["state"],
+            "party": row["party"],
+            "monitors": int(row["monitors"]),
+        }
+        for row in rows[:limit]
+    ]
+    users = db.execute(
+        text("SELECT COUNT(DISTINCT projeto_id) FROM projetos_candidacy")
+    ).scalar()
+    return {
+        "top": top,
+        "by_office": sorted(
+            ({"office": o, "monitors": n} for o, n in by_office.items()),
+            key=lambda x: x["monitors"],
+            reverse=True,
+        ),
+        "by_state": sorted(
+            ({"state": s, "monitors": n} for s, n in by_state.items()),
+            key=lambda x: x["monitors"],
+            reverse=True,
+        ),
+        "totals": {
+            "links": total_links,
+            "candidacies": len(rows),
+            "users": int(users or 0),
+        },
+    }
+
+
 def _ia_saude(db: Session, period_start: Optional[date]) -> dict[str, Any]:
     """Saúde do chatbot no período: respostas vazias, falhas e tempo de resposta.
 

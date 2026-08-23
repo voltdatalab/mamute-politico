@@ -31,7 +31,8 @@ try:
     from ..db.models.committee_attendance import CommitteeAttendance
     from ..db.models.plenary_attendance import PlenaryAttendance
     from ..db.models.proposition import Proposition
-    from ..db.models.project import Projetos, ProjetosParliamentarian
+    from ..db.models.candidacy import Candidacy
+    from ..db.models.project import Projetos, ProjetosCandidacy, ProjetosParliamentarian
     from ..db.models.personal_marks import (
         ParliamentarianTag,
         ProjectMamutometro,
@@ -63,7 +64,8 @@ except (ImportError, ValueError):  # pragma: no cover - caminho alternativo
     from db.models.committee_attendance import CommitteeAttendance
     from db.models.plenary_attendance import PlenaryAttendance
     from db.models.proposition import Proposition
-    from db.models.project import Projetos, ProjetosParliamentarian
+    from db.models.candidacy import Candidacy
+    from db.models.project import Projetos, ProjetosCandidacy, ProjetosParliamentarian
     from db.models.personal_marks import (
         ParliamentarianTag,
         ProjectMamutometro,
@@ -118,6 +120,23 @@ class ProjectFavoriteOrderUpdate(BaseModel):
     """Nova ordem pessoal: a lista completa de monitorados, já ordenada."""
 
     ordered_parliamentarian_ids: List[int]
+
+
+class CandidacyFavoriteOut(BaseModel):
+    """Vínculo de acompanhamento entre o projeto e uma candidatura (2026)."""
+
+    id: int
+    projeto_id: int
+    candidacy_id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CandidacyFavoriteCreate(BaseModel):
+    """Dados para registrar o acompanhamento de uma candidatura."""
+
+    candidacy_id: int
 
 
 class HouseFavoriteQuotaOut(BaseModel):
@@ -750,6 +769,34 @@ def _ensure_project_favorite_quota_available(
         )
 
 
+CANDIDACY_FAVORITE_DEFAULT_LIMIT = 10  # mesmo default do seed de qtd_candidatos
+
+
+def _ensure_candidacy_favorite_quota_available(
+    db: Session, project: Projetos
+) -> None:
+    if _is_admin_project(project):
+        return
+    limit = _tier_limit_from_env(project, "qtd_candidatos")
+    if limit is None:
+        limit = _tier_limit_from_db(project, "qtd_candidatos")
+    if limit is None:
+        limit = CANDIDACY_FAVORITE_DEFAULT_LIMIT
+    used = db.execute(
+        select(func.count())
+        .select_from(ProjetosCandidacy)
+        .where(ProjetosCandidacy.projeto_id == project.id)
+    ).scalar_one()
+    if int(used) >= limit:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                f"Limite de candidaturas acompanhadas atingido para seu "
+                f"plano ({used}/{limit})."
+            ),
+        )
+
+
 def _log_favorite_event(
     db: Session,
     project: Projetos,
@@ -982,6 +1029,99 @@ def remove_my_project_favorite(
     """Remove favorito usando o projeto identificado pelo e-mail do token JWT."""
     project = _get_project_from_token_email(request, db)
     _delete_project_favorite(db, project.id, parliamentarian_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/me/candidacy-favorites",
+    response_model=List[CandidacyFavoriteOut],
+    summary="Lista as candidaturas acompanhadas pelo usuário autenticado",
+)
+def list_my_candidacy_favorites(
+    request: Request,
+    db: Session = Depends(get_db),
+) -> List[ProjetosCandidacy]:
+    """Só o registro da escolha — nenhuma feature consome o vínculo ainda."""
+    project = _get_project_from_token_email(request, db)
+    return (
+        db.execute(
+            select(ProjetosCandidacy)
+            .where(ProjetosCandidacy.projeto_id == project.id)
+            .order_by(asc(ProjetosCandidacy.id))
+        )
+        .scalars()
+        .all()
+    )
+
+
+@router.post(
+    "/me/candidacy-favorites",
+    response_model=CandidacyFavoriteOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registra o acompanhamento de uma candidatura",
+)
+def add_my_candidacy_favorite(
+    request: Request,
+    payload: CandidacyFavoriteCreate,
+    db: Session = Depends(get_db),
+) -> ProjetosCandidacy:
+    """Registra a escolha. A única regra é a cota `qtd_candidatos` do plano —
+    semeada pela migration e1f2a3b4c5d6 justamente esperando este endpoint."""
+    project = _get_project_from_token_email(request, db)
+    _ensure_candidacy_favorite_quota_available(db, project)
+
+    candidacy = db.get(Candidacy, payload.candidacy_id)
+    if candidacy is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Candidatura não encontrada.",
+        )
+
+    existing = db.execute(
+        select(ProjetosCandidacy).where(
+            ProjetosCandidacy.projeto_id == project.id,
+            ProjetosCandidacy.candidacy_id == payload.candidacy_id,
+        )
+    ).scalar_one_or_none()
+    if existing is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Você já acompanha esta candidatura.",
+        )
+
+    favorite = ProjetosCandidacy(
+        projeto_id=project.id, candidacy_id=payload.candidacy_id
+    )
+    db.add(favorite)
+    db.commit()
+    db.refresh(favorite)
+    return favorite
+
+
+@router.delete(
+    "/me/candidacy-favorites/{candidacy_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Deixa de acompanhar uma candidatura",
+)
+def remove_my_candidacy_favorite(
+    request: Request,
+    candidacy_id: int,
+    db: Session = Depends(get_db),
+) -> Response:
+    project = _get_project_from_token_email(request, db)
+    favorite = db.execute(
+        select(ProjetosCandidacy).where(
+            ProjetosCandidacy.projeto_id == project.id,
+            ProjetosCandidacy.candidacy_id == candidacy_id,
+        )
+    ).scalar_one_or_none()
+    if favorite is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Você não acompanha esta candidatura.",
+        )
+    db.delete(favorite)
+    db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

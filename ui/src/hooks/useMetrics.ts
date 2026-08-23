@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import {
+  fetchCandidacyMonitors,
   fetchEmails,
   fetchCredits,
   fetchIa,
+  fetchMamutometro,
   fetchMetricsOverview,
   fetchMetricsUsers,
   fetchParliamentarians,
@@ -45,6 +47,20 @@ export function useParliamentarians() {
   return useQuery({
     queryKey: ['admin', 'metrics', 'parliamentarians'],
     queryFn: fetchParliamentarians,
+  });
+}
+
+export function useMamutometro() {
+  return useQuery({
+    queryKey: ['admin', 'metrics', 'mamutometro'],
+    queryFn: fetchMamutometro,
+  });
+}
+
+export function useCandidacyMonitors() {
+  return useQuery({
+    queryKey: ['admin', 'metrics', 'candidacies'],
+    queryFn: fetchCandidacyMonitors,
   });
 }
 

@@ -1,5 +1,10 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState, type ReactNode, type UIEvent } from 'react';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Check, Filter, Loader2, Plus, X } from 'lucide-react';
 
@@ -17,19 +22,26 @@ import { PaywallOverlay } from '@/components/paywall/PaywallOverlay';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { cn } from '@/lib/utils';
 import {
-  addMyProjectFavorite,
+  addMyCandidacyFavorite,
   getCandidacyFilters,
   listCandidacies,
-  listMyProjectFavorites,
+  listMyCandidacyFavorites,
+  removeMyCandidacyFavorite,
 } from '@/api/endpoints';
 import type { CandidacyOut } from '@/api/types';
 import { ApiError } from '@/api/client';
 
-/** Página de resultados. O backend limita a 200; 50 cobre a lista com scroll do design. */
+/** Tamanho de cada página do scroll infinito (o backend limita a 200 por request). */
 const RESULTS_LIMIT = 50;
 
 /** O backend exige 2+ caracteres — barra aqui para não gastar request num 422. */
 const MIN_NOME = 2;
+
+/** Espera após a última tecla antes de buscar — digitar já pesquisa, sem botão. */
+const DEBOUNCE_MS = 350;
+
+/** Distância do fim do scroll (px) que dispara o carregamento da próxima página. */
+const SCROLL_THRESHOLD_PX = 200;
 
 /**
  * O Radix não aceita `value=""` num item, então "sem filtro" tem valor próprio.
@@ -104,53 +116,79 @@ const BuscarCandidaturasPage = () => {
   const acesso = useFeatureAccess('busca_candidaturas');
   const cadeado = acesso === 'bloqueada';
 
-  // Estado do formulário do herói (o design tem botão PESQUISAR explícito, então
-  // digitar não dispara busca) e o estado efetivamente aplicado à listagem.
+  // Estado do formulário do herói e o estado efetivamente aplicado à listagem.
+  // A busca é reativa: digitar aplica com debounce e os selects aplicam na hora;
+  // o botão PESQUISAR vira atalho de "aplicar já" (e submit por Enter).
   const [nomeInput, setNomeInput] = useState('');
   const [estadoInput, setEstadoInput] = useState<string>(SEM_SELECAO);
   const [cargoInput, setCargoInput] = useState<string>(SEM_SELECAO);
   const [filtros, setFiltros] = useState<FiltrosAplicados>({});
   const [painelFiltrosAberto, setPainelFiltrosAberto] = useState(false);
 
+  // Digitar já busca: aplica o nome DEBOUNCE_MS depois da última tecla. Nome com
+  // 1 caractere não vira filtro (o backend exige 2+), mas também não apaga o
+  // filtro anterior no meio da digitação — apagar tudo, sim, limpa.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const nome = nomeInput.trim();
+      setFiltros((atual) => {
+        const novoNome = nome.length >= MIN_NOME ? nome : undefined;
+        if (nome.length === 1 && atual.nome) return atual;
+        if (atual.nome === novoNome) return atual;
+        return { ...atual, nome: novoNome };
+      });
+    }, DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [nomeInput]);
+
   const filtersQuery = useQuery({
     queryKey: ['candidacy-filters'],
     queryFn: () => getCandidacyFilters(),
   });
 
-  const candidaciesQuery = useQuery({
+  // Scroll infinito por offset: cada página traz RESULTS_LIMIT linhas; página
+  // cheia = provavelmente há mais. A lista NUNCA é cortada — chegou perto do
+  // fim, a próxima página carrega e a rolagem continua.
+  const candidaciesQuery = useInfiniteQuery({
     queryKey: ['candidacies', filtros],
-    queryFn: () =>
+    queryFn: ({ pageParam }) =>
       listCandidacies({
         limit: RESULTS_LIMIT,
+        offset: pageParam,
         name: filtros.nome,
         state: filtros.estado,
         office_code: filtros.officeCode,
       }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === RESULTS_LIMIT ? allPages.length * RESULTS_LIMIT : undefined,
   });
 
   const favoritesQuery = useQuery({
-    queryKey: ['project-favorites', 'me'],
-    queryFn: () => listMyProjectFavorites(),
+    queryKey: ['candidacy-favorites', 'me'],
+    queryFn: () => listMyCandidacyFavorites(),
   });
 
-  const monitoradosIds = useMemo(
-    () => new Set((favoritesQuery.data ?? []).map((f) => f.parliamentarian_id)),
+  const acompanhadasIds = useMemo(
+    () => new Set((favoritesQuery.data ?? []).map((f) => f.candidacy_id)),
     [favoritesQuery.data]
   );
 
+  const invalidarAcompanhadas = () =>
+    void queryClient.invalidateQueries({ queryKey: ['candidacy-favorites', 'me'] });
+
   const addMutation = useMutation({
-    mutationFn: ({ id }: { id: number; nome: string }) => addMyProjectFavorite(id),
+    mutationFn: ({ id }: { id: number; nome: string }) => addMyCandidacyFavorite(id),
     onSuccess: (_favorite, { nome }) => {
-      toast.success(`${nome} adicionado(a) aos monitorados.`);
-      void queryClient.invalidateQueries({ queryKey: ['project-favorites', 'me'] });
-      void queryClient.invalidateQueries({ queryKey: ['project-favorites-quota', 'me'] });
+      toast.success(`Você está acompanhando ${nome}.`);
+      invalidarAcompanhadas();
     },
     onError: (error) => {
-      // Mesmo tratamento da Seleção: 409 é "já monitorado" e 403 é cota cheia —
-      // nenhum dos dois é erro para o usuário.
+      // 409 é "já acompanha" e 403 é cota do plano cheia — nenhum dos dois é
+      // erro para o usuário (mesmo tratamento da Seleção).
       if (error instanceof ApiError && error.status === 409) {
-        toast.info('Este parlamentar já está nos monitorados.');
-        void queryClient.invalidateQueries({ queryKey: ['project-favorites', 'me'] });
+        toast.info('Você já acompanha esta candidatura.');
+        invalidarAcompanhadas();
         return;
       }
       if (error instanceof ApiError && error.status === 403) {
@@ -158,10 +196,37 @@ const BuscarCandidaturasPage = () => {
         return;
       }
       toast.error(
-        error instanceof Error ? error.message : 'Não foi possível adicionar aos monitorados.'
+        error instanceof Error ? error.message : 'Não foi possível acompanhar a candidatura.'
       );
     },
   });
+
+  const removeMutation = useMutation({
+    mutationFn: ({ id }: { id: number; nome: string }) => removeMyCandidacyFavorite(id),
+    onSuccess: (_void, { nome }) => {
+      toast.success(`Você deixou de acompanhar ${nome}.`);
+      invalidarAcompanhadas();
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 404) {
+        invalidarAcompanhadas();
+        return;
+      }
+      toast.error(
+        error instanceof Error ? error.message : 'Não foi possível deixar de acompanhar.'
+      );
+    },
+  });
+
+  /** Perto do fim do scroll, carrega a próxima página — a lista nunca corta. */
+  const aoRolarLista = (event: UIEvent<HTMLDivElement>) => {
+    const alvo = event.currentTarget;
+    const pertoDoFim =
+      alvo.scrollTop + alvo.clientHeight >= alvo.scrollHeight - SCROLL_THRESHOLD_PX;
+    if (pertoDoFim && candidaciesQuery.hasNextPage && !candidaciesQuery.isFetchingNextPage) {
+      void candidaciesQuery.fetchNextPage();
+    }
+  };
 
   /** `undefined` mantém o placeholder do design enquanto nada foi escolhido. */
   const valorSelect = (v: string) => (v === SEM_SELECAO ? undefined : v);
@@ -224,7 +289,10 @@ const BuscarCandidaturasPage = () => {
     });
   }
 
-  const candidaturas = candidaciesQuery.data ?? [];
+  const candidaturas = useMemo(
+    () => (candidaciesQuery.data?.pages ?? []).flat(),
+    [candidaciesQuery.data]
+  );
 
   const pillInput =
     'h-10 rounded-[76px] border-0 bg-[#efeeee] px-5 text-[14px] text-[#383838] italic placeholder:italic placeholder:text-[#7f7b7b] focus:outline-none focus:ring-2 focus:ring-white/70';
@@ -259,7 +327,8 @@ const BuscarCandidaturasPage = () => {
               className={cn(pillInput, 'md:w-[360px]')}
             />
 
-            <Select value={valorSelect(estadoInput)} onValueChange={setEstadoInput}>
+            {/* Selecionar já aplica o filtro — sem depender do PESQUISAR. */}
+            <Select value={valorSelect(estadoInput)} onValueChange={aplicarEstado}>
               <SelectTrigger
                 aria-label="Selecionar estado"
                 className={cn(pillInput, 'justify-between md:w-[210px]')}
@@ -276,7 +345,7 @@ const BuscarCandidaturasPage = () => {
               </SelectContent>
             </Select>
 
-            <Select value={valorSelect(cargoInput)} onValueChange={setCargoInput}>
+            <Select value={valorSelect(cargoInput)} onValueChange={aplicarCargo}>
               <SelectTrigger
                 aria-label="Selecionar cargo"
                 className={cn(pillInput, 'justify-between md:w-[210px]')}
@@ -381,7 +450,7 @@ const BuscarCandidaturasPage = () => {
           )}
 
           <ComCadeado ativo={cadeado}>
-          <div className="mt-5 max-h-[420px] overflow-y-auto pr-1">
+          <div className="mt-5 max-h-[420px] overflow-y-auto pr-1" onScroll={aoRolarLista}>
             {candidaciesQuery.isLoading ? (
               <p className="flex items-center gap-2 py-10 text-center text-[14px] text-[#7f7b7b]">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -404,17 +473,15 @@ const BuscarCandidaturasPage = () => {
                   const partidoUf = [candidatura.party, candidatura.state]
                     .filter(Boolean)
                     .join(' - ');
-                  const monitorado =
-                    candidatura.parliamentarian_id != null &&
-                    monitoradosIds.has(candidatura.parliamentarian_id);
-                  // Monitoramento é por parlamentar; candidatura sem vínculo na
-                  // base não tem o que monitorar ainda.
-                  const podeMonitorar = candidatura.parliamentarian_id != null;
+                  // Acompanhamento é POR CANDIDATURA: vale para qualquer
+                  // candidato, com ou sem vínculo de parlamentar na base.
+                  const acompanhada = acompanhadasIds.has(candidatura.id);
                   // Só o botão em voo desabilita — travar a lista toda a cada
                   // clique deixaria a impressão de tela congelada.
-                  const adicionando =
-                    addMutation.isPending &&
-                    addMutation.variables?.id === candidatura.parliamentarian_id;
+                  const emVoo =
+                    (addMutation.isPending && addMutation.variables?.id === candidatura.id) ||
+                    (removeMutation.isPending &&
+                      removeMutation.variables?.id === candidatura.id);
 
                   return (
                     <li
@@ -445,32 +512,31 @@ const BuscarCandidaturasPage = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          if (candidatura.parliamentarian_id != null) {
-                            addMutation.mutate({ id: candidatura.parliamentarian_id, nome });
+                          if (acompanhada) {
+                            removeMutation.mutate({ id: candidatura.id, nome });
+                          } else {
+                            addMutation.mutate({ id: candidatura.id, nome });
                           }
                         }}
-                        disabled={!podeMonitorar || monitorado || adicionando}
+                        disabled={emVoo}
                         title={
-                          !podeMonitorar
-                            ? 'Esta candidatura ainda não está vinculada a um parlamentar na base — monitoramento indisponível.'
-                            : monitorado
-                              ? 'Já está nos seus monitorados'
-                              : 'Adicionar aos monitorados'
+                          acompanhada
+                            ? 'Você acompanha esta candidatura — clique para deixar de acompanhar'
+                            : 'Acompanhar esta candidatura'
                         }
                         aria-label={
-                          monitorado
-                            ? `${nome} já está nos monitorados`
-                            : `Adicionar ${nome} aos monitorados`
+                          acompanhada
+                            ? `Deixar de acompanhar ${nome}`
+                            : `Acompanhar ${nome}`
                         }
                         className={cn(
                           'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition',
-                          monitorado
-                            ? 'border-[#09a03b] bg-[#09a03b] text-white'
-                            : 'border-[#09a03b] text-[#09a03b] hover:bg-[#09a03b]/10',
-                          !podeMonitorar && 'cursor-not-allowed border-[#d9d9d9] text-[#d9d9d9] hover:bg-transparent'
+                          acompanhada
+                            ? 'border-[#09a03b] bg-[#09a03b] text-white hover:opacity-80'
+                            : 'border-[#09a03b] text-[#09a03b] hover:bg-[#09a03b]/10'
                         )}
                       >
-                        {monitorado ? (
+                        {acompanhada ? (
                           <Check className="h-5 w-5" aria-hidden="true" />
                         ) : (
                           <Plus className="h-5 w-5" aria-hidden="true" />
@@ -479,6 +545,28 @@ const BuscarCandidaturasPage = () => {
                     </li>
                   );
                 })}
+                {/* Rodapé do scroll infinito: indicador em voo + fallback por
+                    clique para quem chega ao fim sem disparar o onScroll. */}
+                {candidaciesQuery.isFetchingNextPage ? (
+                  <li className="flex items-center justify-center gap-2 py-3 text-[13px] text-[#7f7b7b]">
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    Carregando mais candidaturas...
+                  </li>
+                ) : candidaciesQuery.hasNextPage ? (
+                  <li className="flex justify-center py-2">
+                    <button
+                      type="button"
+                      onClick={() => void candidaciesQuery.fetchNextPage()}
+                      className="rounded-[76px] border border-[#d9d9d9] px-5 py-1.5 text-[13px] text-[#7f7b7b] transition hover:border-[#1b76ff] hover:text-[#1b76ff]"
+                    >
+                      Carregar mais
+                    </button>
+                  </li>
+                ) : (
+                  <li className="py-2 text-center text-[12px] text-[#b5b2b2]">
+                    Fim da lista — {candidaturas.length} candidaturas.
+                  </li>
+                )}
               </ul>
             )}
           </div>

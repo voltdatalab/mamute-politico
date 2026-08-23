@@ -359,18 +359,37 @@ def test_resposta_nao_carrega_significado_nenhum(db: Session) -> None:
         assert proibido not in texto
 
 
+def test_metrica_admin_do_mamutometro_e_agregada_sem_identidade() -> None:
+    """A exceção sancionada: ranking agregado no painel admin.
+
+    Decisão de produto (Luiz, 2026-08-23): o admin PODE ver o agregado por
+    parlamentar — pessoas, soma e média — mas a promessa ao assinante segue de
+    pé: a função nunca toca `projeto_id`, então "quem marcou" continua
+    irrespondível também no painel.
+    """
+    import inspect
+
+    from api.services.admin_metrics import metrics_mamutometro
+
+    fonte = inspect.getsource(metrics_mamutometro)
+    assert "projeto_id" not in fonte, (
+        "metrics_mamutometro tocou projeto_id — o agregado deixaria de ser "
+        "anônimo e quebraria a promessa da SPEC-001."
+    )
+
+
 def test_servicos_de_metrica_nao_referenciam_mamutometro() -> None:
     """Regra negativa, verificada no código e não por inspeção visual.
 
-    O admin vê adoção, nunca escolha. O precedente é `_swaps_by_project`, que já
-    conta trocas de monitoramento sem nomear político — este teste impede que
-    alguém, meses à frente, adicione um join "inocente".
+    O admin vê adoção, nunca escolha — exceto o ranking agregado sancionado em
+    2026-08-23 (coberto pelo teste acima), `admin_metrics.py` saiu desta lista.
+    As demais superfícies seguem proibidas: este teste impede que alguém, meses
+    à frente, adicione um join "inocente" no chatbot ou nas notificações.
     """
     import pathlib
 
     raiz = pathlib.Path(__file__).resolve().parent.parent.parent
     alvos = [
-        raiz / "api" / "services" / "admin_metrics.py",
         raiz / "api" / "services" / "admin_coverage.py",
         raiz / "chatbot_backend" / "app",
         raiz / "mamute_scrappers" / "scripts" / "notificacao",
