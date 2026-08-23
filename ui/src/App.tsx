@@ -17,6 +17,7 @@ import AdminMetricsPage from "./pages/AdminMetricsPage";
 import AdminMetricsUsersPage from "./pages/AdminMetricsUsersPage";
 import AdminToolsPage from "./pages/AdminToolsPage";
 import AdminParliamentariansPage from "./pages/AdminParliamentariansPage";
+import AdminCandidaciesPage from "./pages/AdminCandidaciesPage";
 import AdminIaPage from "./pages/AdminIaPage";
 import AdminEmailsPage from "./pages/AdminEmailsPage";
 import AdminUserDetailPage from "./pages/AdminUserDetailPage";
@@ -178,6 +179,14 @@ const App = () => (
                 element={
                   <RequireAdmin>
                     <AdminParliamentariansPage />
+                  </RequireAdmin>
+                }
+              />
+              <Route
+                path="/admin/metrics/candidatos"
+                element={
+                  <RequireAdmin>
+                    <AdminCandidaciesPage />
                   </RequireAdmin>
                 }
               />

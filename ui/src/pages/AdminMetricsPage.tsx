@@ -143,6 +143,10 @@ export default function AdminMetricsPage() {
         <div className="mp-card bg-white p-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-[18px] font-bold text-[#090909]">Mamutômetro</h2>
+            <div className="flex items-center gap-3">
+            <Link to="/admin/metrics/parlamentares" className="text-[12px] font-semibold text-[#1b76ff] no-underline hover:underline">
+              ver tudo
+            </Link>
             <div className="flex gap-1" role="tablist" aria-label="Visão do ranking do mamutômetro">
               {VISOES_MAMUTOMETRO.map((visao) => (
                 <button
@@ -160,6 +164,7 @@ export default function AdminMetricsPage() {
                   {visao.rotulo}
                 </button>
               ))}
+            </div>
             </div>
           </div>
           {mamutometro.data && (
@@ -195,12 +200,17 @@ export default function AdminMetricsPage() {
         <div className="mp-card bg-white p-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-[18px] font-bold text-[#090909]">Candidatos acompanhados</h2>
-            {candidacies.data && (
-              <span className="text-[12px] text-[#383838]/60">
-                {num(candidacies.data.totals.users)} assinantes ·{' '}
-                {num(candidacies.data.totals.links)} acompanhamentos
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {candidacies.data && (
+                <span className="text-[12px] text-[#383838]/60">
+                  {num(candidacies.data.totals.users)} assinantes ·{' '}
+                  {num(candidacies.data.totals.links)} acompanhamentos
+                </span>
+              )}
+              <Link to="/admin/metrics/candidatos" className="text-[12px] font-semibold text-[#1b76ff] no-underline hover:underline">
+                ver tudo
+              </Link>
+            </div>
           </div>
           {candidacies.data && (
             <>
