@@ -1,289 +1,51 @@
-# 🐘 Mamute-Politico
+# 🐘 Mamute Político — núcleo aberto
 
-Monorepo do projeto Mamute Político (Correio Sabiá), com coleta de dados legislativos, API pública, interface web (SPA), backend de chatbot e integração com autenticação via **Ghost** (CMS / portal de membros).
+Núcleo de dados do [Mamute Político](https://mamutepolitico.com.br), plataforma de
+monitoramento da atividade parlamentar brasileira do [Correio Sabiá](https://correiosabia.com.br),
+desenvolvida com apoio do **Codesinfo — Fundo de Inovação para o Jornalismo** (Projor).
 
-## Programas do repositório
+Este repositório contém tudo que transforma dados públicos dispersos em uma base
+consultável — e é **software livre sob [AGPLv3](LICENSE)**: qualquer redação ou
+organização pode usar, auditar e derivar, desde que mantenha o derivado aberto.
 
-![Diagrama de arquitetura](environments/architecture.svg)
+## O que mora aqui
 
-- `mamute_scrappers` (coleta e sincronização de dados): [`mamute_scrappers/README.md`](mamute_scrappers/README.md)
-- `api` (API FastAPI de dados legislativos): [`api/README.md`](api/README.md)
-- `chatbot_backend` (chatbot com RAG + pgvector): [`chatbot_backend/README.md`](chatbot_backend/README.md)
-- `ui` (interface web React): [`ui/README.md`](ui/README.md)
-- `environments` (Caddy + Docker Compose por ambiente): pasta [`environments/`](environments/) 
+| Módulo | O quê |
+|---|---|
+| [`mamute_scrappers/`](mamute_scrappers/README.md) | Coletores de dados: Câmara, Senado, TSE (candidaturas, histórico eleitoral e perfil demográfico 1994→2026), Portal da Transparência (emendas), Transferegov, cota parlamentar. Inclui as **migrations Alembic** — o schema completo do banco. |
+| [`api/`](api/README.md) | API FastAPI de leitura dos dados legislativos e eleitorais. |
+| [`docs/arquitetura-ia.md`](docs/arquitetura-ia.md) | **Como funciona a IA do Mamute** — motor RAG, modelos, embeddings, limites. |
 
-## Inicializar a Stack
+A camada de **produto** (interface web, chatbot e deploy) é privada e vive em
+`correiosabia/mamute-politico-app`. A divisão é deliberada: o *como obtemos e
+tratamos os dados* é público e auditável; a experiência de produto financia o projeto.
 
-- Baixe e instale o Docker na máquina.
-- Clone o repositório, rode o script utilitário de configuração e forneça as informações requisitadas pelo script:
+## Rodando o núcleo
 
-```
-cd environments/tools && ./setup.sh
-```
+Requisitos: Python 3.11+, PostgreSQL 16+ com a extensão `pgvector`.
 
-- Rode o script para subir a aplicação
+```bash
+# banco
+createdb mamute_politico && psql mamute_politico -c "CREATE EXTENSION vector;"
 
-```
-./up.sh
-```
+# migrations (schema completo)
+cd mamute_scrappers && pip install -r requirements.txt && \
+  DATABASE_URL=postgresql+psycopg2://user:pass@localhost/mamute_politico alembic upgrade head
 
-- Para verificar o status, use:
+# um coletor, por exemplo o de candidaturas do TSE (dados abertos, 1994→2022)
+python -m mamute_scrappers.tse_crawler.consulta_cand --anos 2022
 
-```
-./status.sh
-```
-
-
-## Stack Docker em produção
-
-O ficheiro [`environments/production/docker-compose.yml`](environments/production/docker-compose.yml) define o compose **`prod-mamute-politico`** com os seguintes serviços:
-
-| Serviço | Função |
-|---------|--------|
-| **`caddy`** | Proxy reverso na porta `CADDY_HTTP_PORT` (por omissão 80). Monta o [`Caddyfile`](environments/production/Caddyfile) e volumes de dados/configuração do Caddy. |
-| **`ui`** | Imagem construída a partir de [`ui/Dockerfile`](ui/Dockerfile) (build estático do front). O Caddy encaminha o tráfego com prefixo `/app` para o contentor `ui:8080`. |
-| **`mamute-politico-api`** | API FastAPI de dados legislativos (build em `api`), com `api/.env` montado em `/app/.env`. O Caddy encaminha `/api*` para a porta 8000 deste serviço. |
-| **`mamute-politico-chatbot`** | Backend do chatbot (build em `chatbot_backend`), com `chatbot_backend/.env` montado em `/app/.env`. O Caddy encaminha `/chat*` para a porta 8000 deste serviço. |
-| **`mamute-politico-scrappers`** | Scheduler de coleta/sincronização (build em `mamute_scrappers`), com `mamute_scrappers/.env` montado em `/app/.env` e rotinas via cron. |
-| **`ghost-db`** | MySQL 8 para a base de dados do Ghost. Palavra-passe root e nome da BD vêm de variáveis (ver [`environments/production/.env.example`](environments/production/.env.example)). |
-| **`ghost`** | Ghost em produção; `url` definida por `PUBLIC_URL`; liga-se ao MySQL em `ghost-db`. Conteúdo persistente em volume `ghost_content`. |
-
-**Redes:** `frontend` agrega Caddy, UI, chatbot e Ghost (face ao utilizador). `backend` isola o MySQL; o Ghost está em `frontend` e `backend` para falar com a base de dados.
-
-**Nota:** os composes de **produção** e **desenvolvimento** incluem o serviço `mamute-politico-api`, e os Caddyfiles de ambos ambientes encaminham `/api*` para esse serviço.
-
-### Variáveis de Ambiente
-
-Favor substituir `mamute.voltdata.info` com o endereço desejado
-
-- `mamute-api`
-
-```
-GHOST_BASE_URL=https://mamute.voltdata.info/
-GHOST_MEMBERS_API_AUDIENCE=https://mamute.voltdata.info/members/api
-GHOST_MEMBERS_API_ISSUER=https://mamute.voltdata.info/members/api
-GHOST_JWKS_PATH=members/.well-known/jwks.json
-GHOST_WEBHOOK_SECRET=[[Mesmo segredo configurado no webhook da integração customizada do Ghost]]
-DATABASE_URL=postgresql://user:senha@host:porta/banco-db
-SQLALCHEMY_ECHO=0
-APPLICATION_NAME=MAMUTE_POLITICO_API
-GHOST_API_KEY=[[Criar uma API key nas integrações do Ghost e postar aqui]]
-GHOST_ADMIN_URL=https://mamute.voltdata.info/ghost/api/admin
-MAMUTE_TIER_LIMITS_JSON={"free":{"qtd_termos":1,"qtd_consultas_ia_mes":0},"default-product":{"qtd_termos":3,"qtd_consultas_ia_mes":50},"cidadao-mamute":{"qtd_termos":10,"qtd_consultas_ia_mes":200}}
-MAMUTE_GHOST_RECONCILE_ON_STARTUP=true
+# a API
+cd ../api && pip install -r requirements.txt && uvicorn main:app --reload
 ```
 
-Com `GHOST_API_KEY` e `GHOST_ADMIN_URL` configurados, a API faz uma
-reconciliação idempotente Ghost -> tiers/projetos no startup. Isso garante que
-mudanças em `MAMUTE_TIER_LIMITS_JSON` passem a valer após redeploy mesmo para
-usuários já existentes, desde que o tier atual esteja refletido no Ghost. O
-webhook `member.*` continua sincronizando alterações pontuais de tier.
+Cada módulo tem README próprio com os comandos de todos os coletores, os cronjobs
+recomendados e os gotchas de cada fonte (e são muitos — documentados conforme medidos
+ao vivo).
 
-- `mamute-chatbot`
+## Licença e uso por outras organizações
 
-```
-APP_ENV=local
-APPLICATION_NAME=mamute_chatbot_backend
-OPENAI_API_KEY=[[chave da OpenAI aqui]]
-# Opcional: use https://openrouter.ai/api/v1 para OpenRouter ou outro endpoint OpenAI-compatible
-# OPENAI_BASE_URL=https://openrouter.ai/api/v1
-OPENAI_MODEL=gpt-4o-mini
-OPENAI_TEMPERATURE=0.2
-OPENAI_MAX_TOKENS=1024
-OPENAI_EMBEDDINGS_MODEL=text-embedding-3-large
-DATABASE_URL=postgresql://user:senha@host:porta/banco-db
-GHOST_BASE_URL=https://mamute.voltdata.info/
-GHOST_MEMBERS_API_AUDIENCE=https://mamute.voltdata.info/members/api
-GHOST_MEMBERS_API_ISSUER=https://mamute.voltdata.info/members/api
-GHOST_JWKS_PATH=members/.well-known/jwks.json
-MAMUTE_CHATBOT_QUOTA_ENABLED=false
-MAMUTE_CHATBOT_DEFAULT_MONTHLY_LIMIT=0
-MAMUTE_TIER_LIMITS_JSON={"free":{"qtd_termos":1,"qtd_consultas_ia_mes":0},"default-product":{"qtd_termos":3,"qtd_consultas_ia_mes":50},"cidadao-mamute":{"qtd_termos":10,"qtd_consultas_ia_mes":200}}
-MAMUTE_CHATBOT_MONTHLY_LIMITS_JSON=
-MAMUTE_CHATBOT_QUOTA_FAIL_OPEN=false
-PGVECTOR_CONNECTION=postgresql+psycopg://user:senha@host:porta/banco-do-pgvector
-PGVECTOR_COLLECTION=mamute_chatbot_transcripts
-RETRIEVER_K=6
-RETRIEVER_SCORE_THRESHOLD=0.35
-RERANK_TOP_K=5
-SQL_CONTEXT_LIMIT=5
-SQL_MIN_KEYWORD_LENGTH=4
-SQL_FREQUENCY_LIMIT=5
-LANGCHAIN_TRACING_V2=false
-LANGCHAIN_PROJECT=mamute-chatbot
-```
-
-- `mamute-ghost`
-
-```
-database__client=mysql
-database__connection__host=[[host para conectar com db do ghost]]
-database__connection__port=3306
-database__connection__database=ghost
-database__connection__user=ghost
-database__connection__password=[[senha do db ghost aqui]]
-database__connection__ssl=false
-database__pool__min=0
-server__port=2368
-server__host=0.0.0.0
-mail__from=Mamute Político <email-do-remetente@aqui.com.br>
-mail__transport=SMTP
-mail__options__host=[[host do mailgun]]
-mail__options__port=2465
-mail__options__service=SES
-mail__options__auth__user=[[user do mailgun]]
-mail__options__auth__pass=[[password do mailgun]]
-url=https://mamute.voltdata.info
-security__staffDeviceVerification=false
-```
-
-- `mamute-ghost-db`
-
-```
-MYSQL_ROOT_PASSWORD=[[senha do root do banco]]
-MYSQL_USER=ghost
-MYSQL_PASSWORD=[[senha do banco]]
-MYSQL_DATABASE=ghost
-```
-
-- `mamute-pgvector`
-
-```
-POSTGRES_USER=pgvector
-POSTGRES_DB=pgvector
-POSTGRES_PASSWORD=[[senha do pgvector]]
-```
-
-- `mamute-politico-db`
-
-```
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=[[senha]]
-POSTGRES_DB=postgres
-POSTGRES_INITDB_ARGS=
-```
-
-- `mamute-proxy`
-Nenhuma env necessária
-
-- `mamute-ui`
-
-```
-VITE_BASE_URL=https://mamute.voltdata.info
-```
-
-## Inicialização rápida (local)
-
-1. Clone o repositório e entre na pasta raiz.
-2. Configure e execute os scrappers primeiro (para popular/atualizar o banco).
-3. Suba a API (`api`) para expor os dados coletados.
-4. Suba o backend do chatbot (`chatbot_backend`) para as rotas de pergunta e streaming.
-5. (Opcional) Rode a interface em `ui/` com `npm ci` e `npm run dev`, configurando `VITE_BASE_URL` para a mesma origem em que o navegador acessa a API e o Ghost (veja a seção [Interface web (ui)](#interface-web-ui)).
-
-## Ordem recomendada de execução
-
-1. `mamute_scrappers` → migrações + coleta/sincronização.
-2. `api` → leitura do banco.
-3. `chatbot_backend` → indexação vetorial + serviço de chat.
-4. `ui` → front-end (após API e, se usar o chat na interface, o chatbot).
-
-## Configurar o Ghost
-
-Após subir a stack, configure o Ghost para redirecionar a home para a aplicação e aplicar os ajustes visuais recomendados.
-
-- Guia completo: [`environments/ghost.md`](environments/ghost.md)
-- Inclui: script de redirecionamento no Code Injection e webhooks `member.*`
-  para sincronizar usuarios Ghost -> projetos
-
-## Tiers do Ghost e limites do app
-
-O Ghost é a fonte de autenticação e assinatura dos membros. No Mamute, cada membro sincronizado vira um projeto em `projetos`; o plano do membro é ligado por `projetos.tier_id` à tabela local `tiers`. Para membros gratuitos, o identificador operacional é `free`; para planos pagos, comped ou gift, o identificador vem do tier do Ghost sincronizado para a instância do ambiente.
-
-A forma recomendada de controlar limites por ambiente é `MAMUTE_TIER_LIMITS_JSON`. O JSON deve ser configurado tanto na API (`mamute-api`) quanto no chatbot (`mamute-chatbot`) quando os dois serviços precisarem respeitar os mesmos tiers. As chaves devem ser slugs do Ghost, com fallback para `product_id` quando o slug não existir em `tiers.detalhes.ghost.slug`.
-
-Exemplo completo:
-
-```json
-{
-  "free": {
-    "qtd_termos": 1,
-    "qtd_consultas_ia_mes": 0,
-    "qtd_email": 0,
-    "periodicidade_email": [],
-    "orgao": []
-  },
-  "default-product": {
-    "qtd_termos": 3,
-    "qtd_consultas_ia_mes": 50,
-    "qtd_email": 1,
-    "periodicidade_email": ["week"],
-    "orgao": []
-  },
-  "cidadao-mamute": {
-    "qtd_termos": 10,
-    "qtd_consultas_ia_mes": 200,
-    "qtd_email": 1,
-    "periodicidade_email": ["week", "month"],
-    "orgao": []
-  }
-}
-```
-
-Campos de limite:
-
-| Campo | O que controla | Onde é aplicado hoje |
-|-------|----------------|----------------------|
-| `qtd_termos` | Quantidade máxima de parlamentares monitorados pelo usuário. | API principal em `/api/projects/me/favorites`; a UI mostra o uso e bloqueia novas seleções quando o limite é atingido. |
-| `qtd_consultas_ia_mes` | Quantidade mensal de consultas ao chatbot/IA. | Chatbot quando `MAMUTE_CHATBOT_QUOTA_ENABLED=true`; as rotas de modelo continuam exigindo JWT mesmo com quota desligada. O uso é contado em `chatbot_usage`. |
-| `periodicidade_email` | Quais relatórios de e-mail o tier pode receber: `day`, `week` e/ou `month`. | Scripts de notificação filtram destinatários por esse campo. |
-| `qtd_email` | Quantidade de envios de e-mail prevista pelo plano. | Mantido como entitlement/metadado do tier; a elegibilidade atual do envio usa `periodicidade_email`. |
-| `qtd_mamutometro` | Quantos parlamentares o usuário pode marcar no mamutômetro. Ausente = sem teto. | API principal em `PUT /api/projects/me/parliamentarians/{id}/mamutometro`. O teto trava **criar** marcação nova; alterar o nível de uma que já existe nunca é bloqueado, para que reduzir o limite não prenda o assinante num nível escolhido antes. |
-| `orgao` | Lista de órgãos permitidos para o tier. Use `[]` para sem restrição. | Reservado para uma limitação futura por órgão; hoje não bloqueia consultas ou monitorados. |
-
-Precedência dos limites:
-
-1. Para parlamentares monitorados, a API usa `MAMUTE_TIER_LIMITS_JSON[slug].qtd_termos`; se ausente, cai para `tiers.detalhes.qtd_termos`; se também ausente, usa `projetos.qtd_termos`, que é preenchido pela sincronização do Ghost.
-2. Para o mamutômetro, a API usa `MAMUTE_TIER_LIMITS_JSON[slug].qtd_mamutometro`; se ausente, cai para `tiers.detalhes.qtd_mamutometro`; se também ausente, não há teto. **Quem tem** a feature é outra pergunta, respondida pelo recorte por plano das feature flags (`feature_flag_tier`), e não por este campo — de fábrica, só planos pagos.
-3. Para consultas de IA, o chatbot usa `MAMUTE_CHATBOT_MONTHLY_LIMITS_JSON` se existir; depois `MAMUTE_TIER_LIMITS_JSON[slug].qtd_consultas_ia_mes`; depois `tiers.detalhes.qtd_consultas_ia_mes`; depois `MAMUTE_CHATBOT_DEFAULT_MONTHLY_LIMIT`; sem configuração, o limite efetivo é `0`.
-
-`MAMUTE_CHATBOT_QUOTA_ENABLED=false` desliga apenas a reserva e gravação mensal de uso; não transforma `/chat/chatbot/query` ou `/chat/chatbot/stream` em endpoints públicos.
-
-O webhook Ghost atualiza usuários em tempo real, mas deploy/restart não depende
-dele: o container dos scrappers roda uma reconciliação idempotente no startup
-(`ghost_tiers_sync` seguido de `create_users`) para atualizar aliases de tiers e
-projetos já existentes. Desative com `MAMUTE_GHOST_RECONCILE_ON_STARTUP=false`
-somente se o ambiente tiver outro mecanismo de reconciliação.
-
-### Catálogo de planos: o Ghost manda
-
-O Ghost é a fonte da verdade do **catálogo** (nome, preço, slug e status). Os
-**limites** são do painel admin e o sync nunca os sobrescreve. O
-`ghost_tiers_sync` roda no cron das 04h15, na reconciliação de startup e sob
-demanda pelo botão "Sincronizar agora" do painel (`POST /api/admin/tiers/sync`,
-que executa o espelho em `api/services/ghost_tiers_sync.py`):
-
-| Situação no Ghost | O que acontece na tabela `tiers` |
-|-------------------|----------------------------------|
-| Plano novo, sem par local | Cria a linha herdando os limites do plano ativo mais caro entre os que custam até o preço do novo (ou do mais barato, se o novo for o menor de todos). Marca `ghost.pending_review` e `ghost.herdado_de` para o painel destacar que os limites precisam de revisão. |
-| Plano arquivado (`active: false`) | Marca `ghost.active = false`. Sai do ar (`deleted_at`) **apenas se não houver projeto ativo**; com assinantes, continua atendendo e recebe `ghost.archived_with_subscribers`. |
-| Plano reativado | Volta a valer aqui: `deleted_at` é limpo. Pelo painel, o botão "Reativar no Ghost" escreve o status **no Ghost** e depois re-sincroniza. |
-| Plano local sem par no Ghost | Recebe `ghost.orphan = true` e **nunca** é apagado automaticamente. |
-
-Quando um membro assina um plano criado no Ghost depois do último sync, o
-webhook busca o catálogo na hora antes de desistir, para ninguém ficar sem
-projeto (`missing_tier`).
-
-O arquivo local `mamute_scrappers/ghost_tier_entitlements.json` pode ser usado para preparar mapeamentos de tiers em uma máquina ou ambiente específico, mas não deve ser versionado. Em deploy, prefira configurar os limites por variáveis de ambiente.
-
-## Links rápidos
-
-- [README dos Scrappers](mamute_scrappers/README.md)
-- [README da API](api/README.md)
-- [README do Chatbot Backend](chatbot_backend/README.md)
-- [README da interface (UI)](ui/README.md)
-- [Configuração do Ghost](environments/ghost.md)
-- [Compose de produção](environments/production/docker-compose.yml) · [Compose de desenvolvimento](environments/development/docker-compose.yml)
-
-## Diagrama
-
-![Diagrama do banco de dados](mamute_scrappers/db/db.png)
+**AGPLv3**: uso, estudo e modificação livres; quem oferecer um serviço derivado deve
+abrir o código derivado. Dados coletados são públicos por natureza (fontes: dados
+abertos da Câmara, Senado, TSE e Portal da Transparência) — a licença cobre o código,
+não os dados. Dúvidas ou interesse em cooperação: contato@correiosabia.com.br.
