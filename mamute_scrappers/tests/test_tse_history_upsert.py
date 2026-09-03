@@ -39,7 +39,7 @@ class Candidacy(Base):
 
 class ElectoralHistory(Base):
     __tablename__ = "electoral_history"
-    __table_args__ = (UniqueConstraint("election_year", "tse_candidate_id"),)
+    __table_args__ = (UniqueConstraint("election_year", "state", "tse_candidate_id"),)
     id = Column(Integer, primary_key=True)
     election_year = Column(Integer, nullable=False)
     tse_candidate_id = Column(Integer, nullable=False)
@@ -112,6 +112,59 @@ def test_upsert_atualiza_resultado_sem_duplicar(session):
     session.commit()
     assert created is False
     assert session.query(ElectoralHistory).one().result == "Não eleito"
+
+
+def test_mesmo_id_do_tse_em_ues_diferentes_nao_colide(session):
+    """CS-69: ate 2008 o id do TSE so era unico dentro da unidade eleitoral.
+
+    Em 2006 o id 10354 pertence ao Flavio Bolsonaro no RJ E ao Manoel do Carmo
+    no AC. Com a chave antiga (ano, tse_id) as duas viravam uma linha so: os
+    dados da disputa eram sobrescritos pela segunda, mas o parliamentarian_id
+    da primeira ficava grudado — porque `_LINK_FIELDS` nunca limpa vinculo.
+    """
+    flavio = payload(
+        election_year=2006,
+        tse_candidate_id=10354,
+        state="RJ",
+        office="Deputado Estadual",
+        party="PP",
+        ballot_name="FLAVIO BOLSONARO",
+        full_name="FLAVIO NANTES BOLSONARO",
+        parliamentarian_id=1,
+        candidacy_id=1,
+    )
+    manoel = payload(
+        election_year=2006,
+        tse_candidate_id=10354,
+        state="AC",
+        office="Deputado Estadual",
+        party="PTC",
+        ballot_name="MANOEL DO CARMO",
+        full_name="MANOEL DO CARMO SILVA",
+        parliamentarian_id=None,
+        candidacy_id=None,
+    )
+
+    eh_mod.upsert_history(session, flavio)
+    session.commit()
+    _, created = eh_mod.upsert_history(session, manoel)
+    session.commit()
+
+    assert created is True, "a disputa do AC tem de virar linha propria"
+    assert session.query(ElectoralHistory).count() == 2
+
+    rj = session.query(ElectoralHistory).filter_by(state="RJ").one()
+    ac = session.query(ElectoralHistory).filter_by(state="AC").one()
+
+    # A linha do RJ preserva o parlamentar e nao e contaminada pela do AC.
+    assert rj.parliamentarian_id == 1
+    assert rj.party == "PP"
+    assert rj.ballot_name == "FLAVIO BOLSONARO"
+
+    # A do AC nasce sem vinculo — a candidatura dela esta unmatched.
+    assert ac.parliamentarian_id is None
+    assert ac.party == "PTC"
+    assert ac.ballot_name == "MANOEL DO CARMO"
 
 
 def test_reseed_sem_vinculo_nao_apaga_vinculo_existente(session):

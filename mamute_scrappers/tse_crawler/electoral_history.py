@@ -118,10 +118,16 @@ def upsert_history(session: Any, payload: Dict[str, Any]) -> Tuple[Any, bool]:
     if ElectoralHistory is None:
         _ensure_models()
 
+    # `state` (o sgUe do TSE) faz parte da chave natural: ate 2008 o
+    # tse_candidate_id era sequencial curto e so unico dentro da unidade
+    # eleitoral. Sem ele, duas disputas de pessoas diferentes no mesmo ano
+    # colidiam nesta linha — e como `_LINK_FIELDS` nunca limpa vinculo, o
+    # parliamentarian_id da primeira ficava grudado nos dados da segunda (CS-69).
     record = (
         session.query(ElectoralHistory)
         .filter(
             ElectoralHistory.election_year == payload["election_year"],
+            ElectoralHistory.state.is_not_distinct_from(payload.get("state")),
             ElectoralHistory.tse_candidate_id == payload["tse_candidate_id"],
         )
         .one_or_none()
@@ -131,6 +137,7 @@ def upsert_history(session: Any, payload: Dict[str, Any]) -> Tuple[Any, bool]:
     if record is None:
         record = ElectoralHistory(
             election_year=payload["election_year"],
+            state=payload.get("state"),
             tse_candidate_id=payload["tse_candidate_id"],
         )
         session.add(record)

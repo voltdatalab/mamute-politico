@@ -24,11 +24,16 @@ from ..base import Base
 
 class ElectoralHistory(Base):
     __tablename__ = "electoral_history"
+    # Espelha o modelo do scrappers: a chave natural do TSE inclui a unidade
+    # eleitoral, porque ate 2008 os ids de candidato so eram unicos dentro de
+    # (ano, UE). Ver CS-69.
     __table_args__ = (
         UniqueConstraint(
             "election_year",
+            "state",
             "tse_candidate_id",
-            name="uq_electoral_history_year_tse_id",
+            name="uq_electoral_history_year_state_tse_id",
+            postgresql_nulls_not_distinct=True,
         ),
     )
 
