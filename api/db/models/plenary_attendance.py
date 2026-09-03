@@ -17,6 +17,9 @@ class PlenaryAttendance(Base):
         BigInteger,
         ForeignKey("parliamentarian.id", ondelete="CASCADE"),
         nullable=False,
+        # Toda consulta de "o que este parlamentar fez" filtra por aqui
+        # (migration cs74a1b2c3d4).
+        index=True,
     )
     date = Column(Date)
     description = Column(Text)
