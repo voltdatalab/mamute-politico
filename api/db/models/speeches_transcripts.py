@@ -17,6 +17,9 @@ class SpeechesTranscript(Base):
         BigInteger,
         ForeignKey("parliamentarian.id", ondelete="CASCADE"),
         nullable=False,
+        # Toda consulta de "o que este parlamentar fez" filtra por aqui
+        # (migration cs74a1b2c3d4).
+        index=True,
     )
     date = Column(Date)
     session_number = Column(Text)
