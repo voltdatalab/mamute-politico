@@ -210,12 +210,26 @@ class MamutometroUpdate(BaseModel):
 
 
 class ProjectDashboardStatsOut(BaseModel):
-    """Estatísticas dos últimos 3 meses do dashboard do projeto autenticado."""
+    """Estatísticas do dashboard, em duas janelas: 3 meses e legislatura.
 
-    propositions_this_week: int
-    attendance_avg_percent: Optional[int] = None
+    Os 3 meses respondem "o que o parlamentar andou fazendo agora"; a
+    legislatura responde "que parlamentar ele é". A janela curta sozinha nao
+    diferencia ninguem: com ~17 sessoes deliberativas em 3 meses, dois tercos
+    da Camara marca 100% de presenca (CS-76).
+
+    `actions_*` conta proposicao de autoria de QUALQUER tipo — requerimento,
+    PEC, projeto de lei. Chamar isso de "projeto" superestimava quem so assina
+    requerimento, e era o bug da CS-75.
+    """
+
+    actions_last_3_months: int
+    actions_legislature: int
+    attendance_last_3_months_percent: Optional[int] = None
+    attendance_legislature_percent: Optional[int] = None
     recent_votes_count: int
     speeches_count: int
+    legislature_start_year: int
+    legislature_end_year: int
 
 
 class ProjectDashboardActivityAuthorOut(BaseModel):
@@ -267,6 +281,34 @@ def _subtract_months(value: date, months: int) -> date:
         target_year -= 1
     target_day = min(value.day, calendar.monthrange(target_year, target_month)[1])
     return date(target_year, target_month, target_day)
+
+
+# A 57a legislatura comecou em 01/02/2023. Legislatura dura 4 anos e sempre
+# comeca em 1o de fevereiro do ano seguinte a eleicao geral: 2019, 2023, 2027...
+_LEGISLATURA_ANO_REFERENCIA = 2023
+_LEGISLATURA_DURACAO_ANOS = 4
+
+
+def _current_legislature_range(today: Optional[date] = None) -> tuple[date, date]:
+    """Janela da legislatura vigente, derivada da data — nao hardcoded.
+
+    Quando virar a 58a em fev/2027 o recorte se ajusta sozinho, sem deploy.
+    """
+    if today is None:
+        today = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
+
+    delta = today.year - _LEGISLATURA_ANO_REFERENCIA
+    # `//` arredonda para baixo tambem em negativo, entao anos anteriores a 2023
+    # caem na legislatura correta sem caso especial.
+    ano_inicio = _LEGISLATURA_ANO_REFERENCIA + (delta // _LEGISLATURA_DURACAO_ANOS) * _LEGISLATURA_DURACAO_ANOS
+    if today < date(ano_inicio, 2, 1):
+        # Janeiro ainda pertence a legislatura anterior.
+        ano_inicio -= _LEGISLATURA_DURACAO_ANOS
+
+    inicio = date(ano_inicio, 2, 1)
+    fim = date(ano_inicio + _LEGISLATURA_DURACAO_ANOS, 1, 31)
+    # Nao adianta consultar futuro: corta em hoje para a janela ser comparavel.
+    return inicio, min(fim, today)
 
 
 def _last_three_months_range_sao_paulo() -> tuple[date, date, datetime, datetime]:
@@ -1717,10 +1759,60 @@ def remove_project_favorite(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+def _build_dashboard_stats(
+    db: Session, parliamentarian_ids: List[int]
+) -> ProjectDashboardStatsOut:
+    """Monta o card em duas janelas: ultimos 3 meses e legislatura vigente.
+
+    Votacoes e discursos seguem so na janela curta — sao "o que aconteceu
+    recentemente", e o card ja fica cheio demais com seis numeros.
+    """
+    leg_inicio, leg_fim = _current_legislature_range()
+
+    if not parliamentarian_ids:
+        return ProjectDashboardStatsOut(
+            actions_last_3_months=0,
+            actions_legislature=0,
+            attendance_last_3_months_percent=None,
+            attendance_legislature_percent=None,
+            recent_votes_count=0,
+            speeches_count=0,
+            legislature_start_year=leg_inicio.year,
+            legislature_end_year=leg_inicio.year + _LEGISLATURA_DURACAO_ANOS,
+        )
+
+    range_start, range_end, range_start_dt, range_end_dt_exclusive = (
+        _last_three_months_range_sao_paulo()
+    )
+
+    return ProjectDashboardStatsOut(
+        actions_last_3_months=_count_propositions_in_range(
+            db, parliamentarian_ids, range_start, range_end
+        ),
+        actions_legislature=_count_propositions_in_range(
+            db, parliamentarian_ids, leg_inicio, leg_fim
+        ),
+        attendance_last_3_months_percent=_calculate_attendance_avg_percent(
+            db, parliamentarian_ids, range_start, range_end
+        ),
+        attendance_legislature_percent=_calculate_attendance_avg_percent(
+            db, parliamentarian_ids, leg_inicio, leg_fim
+        ),
+        recent_votes_count=_count_recent_votes(
+            db, parliamentarian_ids, range_start_dt, range_end_dt_exclusive
+        ),
+        speeches_count=_count_speeches_in_range(
+            db, parliamentarian_ids, range_start, range_end
+        ),
+        legislature_start_year=leg_inicio.year,
+        legislature_end_year=leg_inicio.year + _LEGISLATURA_DURACAO_ANOS,
+    )
+
+
 @router.get(
     "/me/dashboard-stats",
     response_model=ProjectDashboardStatsOut,
-    summary="Estatísticas dos últimos 3 meses do dashboard do projeto autenticado",
+    summary="Estatísticas do dashboard em duas janelas (3 meses e legislatura)",
 )
 def get_my_dashboard_stats(
     request: Request,
@@ -1729,43 +1821,7 @@ def get_my_dashboard_stats(
     """Retorna estatísticas dos últimos 3 meses para parlamentares favoritados no projeto."""
     project = _get_project_from_token_email(request, db)
     parliamentarian_ids = _get_project_favorite_ids(db, project.id)
-    if not parliamentarian_ids:
-        return ProjectDashboardStatsOut(
-            propositions_this_week=0,
-            attendance_avg_percent=None,
-            recent_votes_count=0,
-            speeches_count=0,
-        )
-
-    range_start, range_end, range_start_dt, range_end_dt_exclusive = (
-        _last_three_months_range_sao_paulo()
-    )
-    return ProjectDashboardStatsOut(
-        propositions_this_week=_count_propositions_in_range(
-            db,
-            parliamentarian_ids,
-            range_start,
-            range_end,
-        ),
-        attendance_avg_percent=_calculate_attendance_avg_percent(
-            db,
-            parliamentarian_ids,
-            range_start,
-            range_end,
-        ),
-        recent_votes_count=_count_recent_votes(
-            db,
-            parliamentarian_ids,
-            range_start_dt,
-            range_end_dt_exclusive,
-        ),
-        speeches_count=_count_speeches_in_range(
-            db,
-            parliamentarian_ids,
-            range_start,
-            range_end,
-        ),
-    )
+    return _build_dashboard_stats(db, parliamentarian_ids)
 
 
 @router.get(
@@ -1777,40 +1833,9 @@ def get_my_parliamentarian_dashboard_stats(
     parliamentarian_id: int,
     db: Session = Depends(get_db),
 ) -> ProjectDashboardStatsOut:
-    """Retorna estatísticas dos últimos 3 meses para um parlamentar específico."""
+    """Retorna estatísticas do parlamentar em duas janelas: 3 meses e legislatura."""
     _ensure_parliamentarian_exists(db, parliamentarian_id)
-
-    range_start, range_end, range_start_dt, range_end_dt_exclusive = (
-        _last_three_months_range_sao_paulo()
-    )
-    parliamentarian_ids = [parliamentarian_id]
-
-    return ProjectDashboardStatsOut(
-        propositions_this_week=_count_propositions_in_range(
-            db,
-            parliamentarian_ids,
-            range_start,
-            range_end,
-        ),
-        attendance_avg_percent=_calculate_attendance_avg_percent(
-            db,
-            parliamentarian_ids,
-            range_start,
-            range_end,
-        ),
-        recent_votes_count=_count_recent_votes(
-            db,
-            parliamentarian_ids,
-            range_start_dt,
-            range_end_dt_exclusive,
-        ),
-        speeches_count=_count_speeches_in_range(
-            db,
-            parliamentarian_ids,
-            range_start,
-            range_end,
-        ),
-    )
+    return _build_dashboard_stats(db, [parliamentarian_id])
 
 
 __all__ = ["router"]
