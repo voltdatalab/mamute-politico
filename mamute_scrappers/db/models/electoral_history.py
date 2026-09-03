@@ -32,11 +32,20 @@ from ..base import Base
 
 class ElectoralHistory(Base):
     __tablename__ = "electoral_history"
+    # A chave natural do TSE inclui a unidade eleitoral. Ate 2008 os ids de
+    # candidato eram sequenciais curtos, unicos so dentro de (ano, UE): em
+    # 2006 o id 10354 e do Flavio Bolsonaro no RJ E de Manoel do Carmo no AC.
+    # Sem `state` na chave as duas disputas colidiam numa linha so (CS-69).
+    # `candidacy` ja usava a chave certa em uq_candidacy_election_state_tse_id.
+    # NULLS NOT DISTINCT porque `state` e nullable: sem isso, duas linhas com
+    # state nulo escapariam da unicidade.
     __table_args__ = (
         UniqueConstraint(
             "election_year",
+            "state",
             "tse_candidate_id",
-            name="uq_electoral_history_year_tse_id",
+            name="uq_electoral_history_year_state_tse_id",
+            postgresql_nulls_not_distinct=True,
         ),
     )
 
